@@ -9,8 +9,13 @@ function recurseType (value) {
   return values[value] || 'Does not repeat';
 }; 
  
-const DateBox = ({ event }) => {
+const DateBox = ({ event, collapsed }) => {
   if (!event.RecurseEndDate) {
+    if (collapsed) {
+      return <Typography variant="body2">
+      {moment(event.CustomDate).format('MMM Do YY')}  
+    </Typography>
+    }
     return <Chip label={moment(event.CustomDate).format('MMM Do YY')} variant="filled" size="small" color="primary" />
   }
 

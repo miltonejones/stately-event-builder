@@ -1,7 +1,8 @@
 import React from 'react';
 import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
-import { searchEvents, getRooms, getEvent } from '../connector';
+import { engDate } from '../util/engDate';
+import { searchEvents, getRooms, getCalendars, getEvent, getCategories } from '../connector';
 import moment from 'moment';
 import {  
   useLocation, 
@@ -51,7 +52,7 @@ const eventListMachine = createMachine({
       states: {
         ready: {
           description: "Ready state shows the list of selected events",
-          entry: "statusListReady",
+          entry: ["statusListReady", "assignMessage", assign({ busy: false })],
           on: {
             CHANGE: {
               actions: "assignProp",
@@ -71,6 +72,7 @@ const eventListMachine = createMachine({
         },
         searching: {
           description: "Connect to search api with requested params",
+          entry: assign({ busy: true }),
           invoke: {
             src: "findEvents",
             onDone: [
@@ -92,23 +94,64 @@ const eventListMachine = createMachine({
             onDone: [
               {
                 target: "form",
-                actions: "assignEventProps"
+                actions: ["assignEventProps", assign({ busy: false })],
               },
             ],
           },
         },
 
         init: {
-          invoke: {
-            src: "loadRoomList",
-            onDone: [
-              {
-                target: "load_event",
-                actions: "assignRoomList",
+          entry: assign({ busy: true }),
+          initial: "roomload",
+          states: {
+            roomload: {
+              invoke: {
+                src: "loadRoomList",
+                onDone: [
+                  {
+                    target: "categoryload",
+                    actions: "assignRoomList",
+                  },
+                ],
               },
-            ],
+            },
+            categoryload: {
+              invoke: {
+                src: "loadCategories",
+                onDone: [
+                  {
+                    target: "calendarload",
+                    actions: "assignCategories",
+                  },
+                ],
+              },
+            },
+            calendarload: {
+              invoke: {
+                src: "loadCalendars",
+                onDone: [
+                  {
+                    target: "#event_list.editing.load_event",
+                    actions: "assignCalendars",
+                  },
+                ],
+              },
+            },
           },
-        }, 
+        },
+
+        // init: {
+        //   entry: assign({ busy: true }),
+        //   invoke: {
+        //     src: "loadRoomList",
+        //     onDone: [
+        //       {
+        //         target: "load_event",
+        //         actions: "assignRoomList",
+        //       },
+        //     ],
+        //   },
+        // }, 
 
         form: {
           description: "Form state shows the event edit form",
@@ -121,6 +164,10 @@ const eventListMachine = createMachine({
             },
             SAVE: {
               target: "#event_list.saving",
+            },
+            EDIT: {
+              target: "load_event",
+              actions: ["assignID", assign({ busy: true })], 
             },
             LIST: {
               target: "#event_list.listing.ready",
@@ -198,7 +245,11 @@ const eventListMachine = createMachine({
 
     
   },
-  context: {params: {}, props: {},
+  context: {
+    params: {}, 
+    props: {},
+    calendars: [],
+    categories: [],
 logo: 'http://shalomaustin.eventbuilder.pro/dist/poweredby.gif'},
   predictableActionArguments: true,
   preserveActionOrder: true,
@@ -221,17 +272,34 @@ logo: 'http://shalomaustin.eventbuilder.pro/dist/poweredby.gif'},
       roomList: event.data
     })),
     
-    assignEventProp: assign((context, event) => ({
-      eventProp: {
-        ...context.eventProp,
-        [event.key]: event.value
+    assignEventProp: assign((context, event) => {
+      if (event.key.indexOf('Time') > 0) {
+        return {
+          eventProp: {
+            ...context.eventProp,
+            [event.key]: eventTime(event.value)
+          }
+        } 
       }
+      return {
+        eventProp: {
+          ...context.eventProp,
+          [event.key]: event.value
+        }
+      }
+    }),
+    assignCalendars: assign((_, event) => ({
+      calendars: event.data
+    })),
+    assignCategories: assign((_, event) => ({
+      categories: event.data
     })),
     assignEventProps: assign((_, event) => ({
       eventProp: event.data
     })),
     clearID: assign((_, event) => ({
-      ID: null
+      ID: null,
+      props: {}
     })),
     assignID: assign((_, event) => ({
       ID: event.ID
@@ -248,7 +316,35 @@ logo: 'http://shalomaustin.eventbuilder.pro/dist/poweredby.gif'},
       //   ...context.params
       // }
     })),
+    assignMessage: assign(context => {
+      const { params } = context;
+      const { title, start_date, end_date } = params;
+      const label = [context.eventList.length + ' events '];
+
+      if (!Object.keys(params).length) { 
+        label.push('on', engDate())
+      }
+
+      if (start_date) {
+        if (end_date) {
+          label.push('from', engDate(start_date), 'to', engDate(end_date))  
+        } else label.push('on', engDate(start_date))  
+      }
+
+      if (title) {
+        label.push('named', `"${title}"`)
+      }
+      
+      return {
+        label: label.join(" ")
+      }
+      // const label = JSON.stringify(context.params);
+      // return {
+      //   label
+      // }
+    }),
     assignParams: assign((context, event) => ({
+      ID: null,
       params: event.params,
       dirty: 1,
     })),
@@ -281,6 +377,8 @@ export const useEventList = () => {
         }
         return await searchEvents(context.params)
       },
+      loadCalendars: async() => await getCalendars(),
+      loadCategories: async() => await getCategories(),
       loadRoomList: async() => await getRooms(),
       loadEventDetail: async(context) => { 
         return await getEvent(context.ID)
@@ -329,4 +427,10 @@ export const useEventList = () => {
     send, 
     ...state.context
   };
+}
+
+const eventTime = f => {
+  const [hh,mm] = f.split(":");;
+  const num = (((hh % 12) * 3600) + (mm * 60)) * 1000;
+  return moment.utc(num).format('HH:mm') ;
 }

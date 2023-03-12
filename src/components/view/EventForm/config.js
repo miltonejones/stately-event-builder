@@ -17,21 +17,23 @@ export const formProps = [
     xs: 4,
   },
   {
-    label: "Start Time",
+    prefix: "Start Time",
     field: "EventStartTime",
     type: "time",
     xs: 4,
   },
   {
-    label: "End Time",
+    prefix: "End Time",
     field: "EventEndTime",
     type: "time",
     xs: 4,
   },
 
   {
-    label: "Type",
+    prefix: "Repeats",
     field: "RecurseType",
+    icon:"CalendarToday",
+    none: 'Does not repeat',
     types: [
       "daily",
       "weekly",
@@ -45,13 +47,13 @@ export const formProps = [
     xs: 4,
   },
   {
-    label: "Setup Start Time",
+    prefix: "Setup Start",
     field: "SetupStartTime",
     type: "time",
     xs: 4,
   },
   {
-    label: "Setup End Time",
+    prefix: "Setup End",
     field: "SetupEndTime",
     type: "time",
     xs: 4,

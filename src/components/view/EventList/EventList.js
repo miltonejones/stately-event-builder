@@ -1,36 +1,52 @@
 import React from "react";
 
-import { apiDate } from "../../../util/apiDate";
+// import { apiDate } from "../../../util/apiDate";
 
 // import dayjs from 'dayjs';
 // import { LocalizationProvider } from '@mui/x-date-pickers';
 // import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 // import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 
-import { styled, Stack, Box, Collapse, Typography } from "@mui/material";
-import { DateInput, CalendarInput, DateBox } from "../..";
+import { styled, 
+  Stack, 
+  // IconButton, 
+  Card, Box, Collapse, Typography } from "@mui/material";
+import { 
+  // DateInput, 
+  CalendarInput, DateBox } from "../..";
 import {
   Nowrap,
   Btn,
-  IconTextField,
+  // IconTextField,
   TextIcon,
   Columns,
   Spacer,
-  Flex,
+  // Flex,
+  Banner
+  // Demotip
 } from "../../../styled";
 
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 
+const LineItem = styled(Stack)(({ theme, collapsed }) => ({
+  alignItems: collapsed ? "flex-start" : 'center',
+  gap: collapsed ? 0 : theme.spacing(1), 
+}))
+
 const Layout = styled(Box)(({ theme }) => ({
   margin: theme.spacing(0),
 }));
 
-const EventList = ({ handler }) => {
+const EventList = ({ handler, collapsed }) => {
   const navigate = useNavigate();
-  const { eventList, send, state } = handler;
-  const { props, params, dirty } = state.context;
-  const is = (val) => state.matches(val);
+  const { eventList, state } = handler;
+  const { props,  } = state.context;
+  // const is = (val) => Array.isArray(val)
+  //   ? val.some(state.matches)
+  //   : state.matches(val);
+  const width = collapsed ? 'var(--sidebar-width)' : "calc(100vw - 432px)";
+  const direction = collapsed ? "column" : "row";
 
   return (
     <Layout data-testid="test-for-EventList">
@@ -42,10 +58,10 @@ const EventList = ({ handler }) => {
         {!!eventList && (
           <Columns
             spacing={4}
-            sx={{ alignItems: "flex-start", mb: 8 }}
-            columns="300px 1fr"
+            sx={{ alignItems: "flex-start" }}
+            columns={collapsed ? "300px" : "275px 1fr"}
           >
-            <CalendarInput handler={handler} />
+            {!collapsed && <CalendarInput handler={handler} />}
             {/* <Box sx={{p: 1}}>
           <img src={logo} alt="eb" />
           <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -54,9 +70,12 @@ const EventList = ({ handler }) => {
         </Box> */}
 
             <Box>
-              <Flex spacing={1}>
+
+{/*               
+             {!collapsed && <LineItem sx={{ margin: collapsed ? 1 : 0}} direction={direction} collapsed={collapsed} spacing={1}>
+                
                 <Typography sx={{ mt: 1 }}>Find</Typography>
-                {is("listing") && (
+                {is(["listing", "editing"]) && (
                   <IconTextField
                     endIcon={
                       <TextIcon
@@ -100,7 +119,7 @@ const EventList = ({ handler }) => {
                   }}
                 />
 
-                <Collapse in={props.showAdvanced} orientation="horizontal">
+                <Collapse in={props.showAdvanced} orientation={collapsed ? "vertical" : "horizontal"}>
                   <DateInput
                     value={params.end_date}
                     setValue={(value) => {
@@ -113,7 +132,8 @@ const EventList = ({ handler }) => {
                   />
                 </Collapse>
 
-                <Btn
+                <Flex spacing={1}>
+                <Btn  
                   disabled={!dirty}
                   size="small"
                   variant="contained"
@@ -149,61 +169,88 @@ const EventList = ({ handler }) => {
                 >
                   advanced
                 </Btn>
-              </Flex>
+                </Flex>
 
-              <Flex
-                sx={{
-                  mt: 1,
-                  p: 1,
-                  backgroundColor: (t) => t.palette.primary.main,
-                  color: "white",
-                  width: "calc(100vw - 340px)",
-                }}
-              >
-                <Typography color="inherit">
-                  {eventList?.length} events
-                </Typography>
-              </Flex>
 
-              {eventList?.map((ev) => (
-                <Stack
-                  sx={{
-                    p: 1,
-                    borderBottom: 1,
-                    borderColor: "divider",
-                    width: "calc(100vw - 340px)",
+              </LineItem>} */}
+
+
+              <Card sx={{ m: 1 , width, ml: collapsed ? 0 : 3 }}>
+
+                <Banner   
+                  sx={{ 
+                    width
                   }}
                 >
-                  <Flex spacing={1}>
-                    <Nowrap
-                      onClick={() => navigate(`/edit/${ev.ID}`)}
-                      hover
-                      bold={!!ev.RecurseEndDate}
-                    >
-                      {ev.EventName}
-                    </Nowrap>
+                  {!collapsed && <Btn variant="contained" endIcon={<TextIcon icon="Menu" />}>
+                    Actions
+                  </Btn>}
+                  <Typography color="inherit">
+                    {handler.label}
+                  </Typography>
+                  <Spacer />
+               
+                  {!collapsed && <Btn variant="contained" color="warning" endIcon={<TextIcon icon="Add" />}>
+                    Create Event
+                  </Btn>}
+                </Banner>
 
-                    <Nowrap variant="caption" muted>
-                      {ev.RoomNames}
-                    </Nowrap>
 
-                    <Spacer />
-                    <DateBox event={ev} />
-                  </Flex>
+                  <Box sx={{
+                    height: 'calc(100vh - 124px)',
+                    overflowY: 'auto',
+                    overflowX: 'hidden',
+                    width 
+                  }}>
 
-                  <Flex>
-                    <Nowrap small>{ev.Comments}</Nowrap>
-                    <Spacer />
-                    <Typography variant="caption">
-                      {moment("2022-08-22T" + ev.EventStartTime).format(
-                        "h:mm a"
-                      )}{" "}
-                      to{" "}
-                      {moment("2022-08-22T" + ev.EventEndTime).format("h:mm a")}
-                    </Typography>
-                  </Flex>
-                </Stack>
-              ))}
+
+                {eventList?.map((ev) => (
+                  <Stack
+                    sx={{
+                      p: 1,
+                      borderBottom: 1,
+                      borderColor: "divider",
+                      width
+                    }}
+                  >
+                    <LineItem direction={direction} collapsed={collapsed}>
+                      <Nowrap
+                        onClick={() => navigate(`/edit/${ev.ID}`)}
+                        hover
+                       
+                        selected={Number(ev.ID) === Number(handler.ID) ? 1 : 0}
+                        bold={!!ev.RecurseEndDate}
+                      >
+                        {ev.EventName} 
+                      </Nowrap>
+
+                      <Nowrap variant="caption" muted>
+                        {ev.RoomNames}
+                      </Nowrap>
+
+                      <Spacer />
+                      <DateBox collapsed={collapsed} event={ev} />
+                    </LineItem>
+
+                    <LineItem direction={direction} collapsed={collapsed}>
+                    {!collapsed && <Nowrap small>{ev.Comments}</Nowrap>}
+                      <Spacer />
+                      <Typography variant="caption">
+                        {moment("2022-08-22T" + ev.EventStartTime).format(
+                          "h:mm a"
+                        )}{" "}
+                        to{" "}
+                        {moment("2022-08-22T" + ev.EventEndTime).format("h:mm a")}
+                      </Typography>
+                    </LineItem>
+                  </Stack>
+                ))}
+                  </Box>
+
+
+              </Card>
+
+
             </Box>
           </Columns>
         )}

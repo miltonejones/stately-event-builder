@@ -10,7 +10,7 @@ import {
 } from "react-router-dom";
  
 const Layout = styled(Box)(({ theme }) => ({
- margin: theme.spacing(0)
+ margin: theme.spacing(1), 
 }));
  
 const CalendarInput = ({ handler }) => {

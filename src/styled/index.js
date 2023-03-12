@@ -1,3 +1,6 @@
+import JsonCollapse from './JsonCollapse';
+import Banner from './Banner';
+import Demotip from './Demotip';
 import BacklessDrawer from './BacklessDrawer';
 import ChipTextField from './ChipTextField';
 import Check from './Check';
@@ -37,6 +40,9 @@ export const typeIcons = {
 };
 
 export {
+  JsonCollapse,
+  Banner,
+  Demotip,
   BacklessDrawer,
   ChipTextField,
   Check,

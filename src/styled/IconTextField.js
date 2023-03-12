@@ -18,7 +18,7 @@ const IconTextField = ({ endIcon, startIcon, pill, ...props }) => {
     <TextField
       size="small"
       autoComplete="off"
-      InputProps={{ startAdornment, endAdornment }}
+      InputProps={{ startAdornment, endAdornment, ...props.InputProps }}
       {...props}
     />
   );

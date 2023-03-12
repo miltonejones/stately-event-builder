@@ -13,12 +13,13 @@ const Layout = styled(Box)(({ theme }) => ({
  }
 }));
  
-const DateInput = ({ label, value, setValue }) => {
+const DateInput = ({ label, value, setValue, disabled }) => {
  return (
    <Layout data-testid="test-for-DateInput">
        <LocalizationProvider dateAdapter={AdapterDayjs}>
       <DemoContainer components={[  'DateField']}> 
         <DateField 
+          disabled={disabled}
           size="small"
           label={label}
           value={dayjs(value)}

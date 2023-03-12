@@ -1,0 +1,1 @@
+export const initials = name => name.split(' ').map(f => f.substr(0,1)).join('');
