@@ -1,7 +1,7 @@
 import React from "react";
 import { styled, Autocomplete, Avatar, TextField, Stack, Box } from "@mui/material";
 import throttle from "lodash/throttle";
-import { Nowrap, Flex, Spacer } from "../../../styled";
+import { Nowrap, Flex,TextIcon,  Spacer } from "../../../styled";
 import { initials } from "../../../util/initials";
 // import { searchEvents } from "../../../connector";
 // import { useEventSearch } from "../../../machines";
@@ -49,7 +49,8 @@ const EventSearch = (props) => {
    
     return <>
     <Flex {...props} sx={{textAlign: 'left'}} spacing={1}>
-      {!!option.FullName && <Avatar src={user?.image} alt={option.FullName}>{initials(option.FullName)}</Avatar>}
+      {!!option.icon && <Avatar><TextIcon icon={option.icon} /></Avatar>}
+      {!!option.FullName && !option.icon && <Avatar src={user?.image} alt={option.FullName}>{initials(option.FullName)}</Avatar>}
       <Stack>
       <Box>{option.EventName}</Box>
     {!!option.RoomNames && <Box><Nowrap variant="caption">{option.RoomNames}</Nowrap></Box>}
@@ -104,25 +105,62 @@ const EventSearch = (props) => {
   }, [inputValue, fetch, handler.param]);
 
   // const open = handler.auto ? { open: true } : {};
+
+  // if (handler.auto) {
+  //   return (
+  //       <Layout data-testid="test-for-EventSearch"> 
+  //         <Autocomplete
+  //             sx={{
+  //               color: 'white', 
+  //               '& .MuiAutocomplete-root': {
+  //                 color: 'white'
+  //               }
+  //             }}
+  //             renderOption={renderOption}
+  //             getOptionLabel={(option) => option.EventName || option}
+  //             options={handler.options}
+  //             value={handler.param}
+  //             open={true}
+  //             onOpen={console.log}
+  //             onChange={(event, newValue) => {
+  //               onValueSelected && onValueSelected(newValue); 
+  //             }}
+  //             onInputChange={(event, newInputValue) => {
+  //               setInputValue(newInputValue);
+  //             }}
+  //             renderInput={(params) => (
+  //               <TextField  
+  //                 placeholder="Start typing an event name"
+  //                 {...params}
+  //                 size={"small"} 
+  //                 InputProps={{
+  //                   ...params.InputProps,
+  //                   style: { backgroundColor: "white" } // set input text color to white
+  //                 }}
+  //               />
+  //             )}
+  //           />??
+  //       </Layout>
+  //   )
+  // }
  
 
  return (
-   <Layout data-testid="test-for-EventSearch">
-   {/* {JSON.stringify(handler.state.value)}--
-   {JSON.stringify(handler.auto)} */}
+   <Layout data-testid="test-for-EventSearch"> 
      <Autocomplete
-            sx={{
-              color: 'white', 
-              '& .MuiAutocomplete-root': {
-                color: 'white'
-              }
-            }}
+        sx={{
+          color: 'white', 
+          '& .MuiAutocomplete-root': {
+            color: 'white'
+          }
+        }}
+        open={handler.auto || handler.options.length}
+        onOpen={console.log}
         renderOption={renderOption}
         getOptionLabel={(option) => option.EventName || option}
         options={handler.options}
-        value={handler.param}
-        open={handler.auto || handler.options.length}
-        onOpen={console.log}
+        value={handler.param} 
+        onBlur={() => handler.send('EXIT')}
         onChange={(event, newValue) => {
           onValueSelected && onValueSelected(newValue); 
         }}

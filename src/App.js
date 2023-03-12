@@ -3,7 +3,7 @@ import './App.css';
 
 
 import { 
-  LinearProgress, Box, Card, Alert, Drawer,
+  LinearProgress, Box, Card, Alert,  
    Snackbar, IconButton, Stack, Typography, styled } from "@mui/material";
 
 import {
@@ -16,10 +16,10 @@ import {
 
 
  
-import { EventForm, RoomList, UserList, EventList, EventSearch } from './components';
-import { useEventList, useUserList, useDemo, useRoomList, useEventSearch } from './machines';
+import { EventForm, RoomList, DemoStepper, UserList, EventList, EventSearch } from './components';
+import { VIEW, useEventList, useUserList, useDemo, useRoomList, useEventSearch } from './machines';
 // import { objectPath } from './util/objectPath';
-import {  Columns, Nowrap, Btn, TextIcon, Flex } from './styled'; 
+import {  BacklessDrawer, Columns, Nowrap, Btn, TinyButton, TextIcon,  Flex } from './styled'; 
   
 
 
@@ -88,6 +88,9 @@ function Application() {
 
   const navigation = events.state.matches('editing') ? controls : buttons;
 
+  const opened = Boolean(events.view & VIEW.FORM_SIDEBAR);
+  const expandedCols = opened ? "80px var(--sidebar-width) 1fr" : "80px 24px 1fr";
+  const spacer = ['init.dormant'].some(demo.state.matches) ? "60px" : "30px"
 
   
   return (
@@ -111,7 +114,7 @@ function Application() {
 </Stack>}
 
 
-    <Columns columns={events.state.matches('editing') ? "80px var(--sidebar-width) 1fr 80px" : "80px 310px 1fr 80px"} sx={{
+    <Columns columns={events.state.matches('editing') ? `80px var(--sidebar-width) 1fr ${spacer}` : `80px 310px 1fr ${spacer}`} sx={{
       p: 1, backgroundColor: t => t.palette.primary.dark,  
       color: t=> t.palette.common.white
       }} spacing={1}>
@@ -168,7 +171,9 @@ function Application() {
     {events.busy && <LinearProgress variant="indeterminate" />}
 
 
-      <Columns sx={{alignItems: 'flex-start'}} columns={events.state.matches('editing') ? "80px var(--sidebar-width) 1fr" : "80px 100vw"}>
+      <Columns 
+        sx={{alignItems: 'flex-start'}} 
+        columns={events.state.matches('editing') ? expandedCols : "80px 100vw"}>
         <Stack sx={{ borderRight: 1, borderColor: 'divider', height: '100%', backgroundColor: t => t.palette.grey[5]}}>
           {navigation.map(btn => (
             <Ctrl raised={btn.active} elevation={btn.active ? 2 : 0} key={btn.label}    sx={{m: 1}} 
@@ -184,19 +189,37 @@ function Application() {
             </Ctrl>
           ))}
         </Stack>
-    {['listing', 'searching', 'editing'].some(events.state.matches) && <EventList collapsed={events.state.matches('editing')} handler={events} />}
+
+
+    {['listing', 'searching', 'editing'].some(events.state.matches) && 
+      !(!opened && events.state.matches('editing')) && 
+        <EventList collapsed={events.state.matches('editing')} handler={events} /> }
+
+    {(!opened && events.state.matches('editing')) && <Flex sx={{m: 1}}>
+    <TinyButton icon="KeyboardArrowRight" onClick={() => {
+      events.send({
+        type: 'VIEW',
+        bit:  VIEW.FORM_SIDEBAR
+      })
+    }} />
+      </Flex>}
+
+    
     {['editing'].some(events.state.matches) && <EventForm handler={events} />}
       </Columns>
 
 
 
 
-      <Drawer anchor="bottom" open={demo.drawer}>
+      <BacklessDrawer anchor="bottom" open={demo.drawer}>
         <Box sx={{ p: 2}}>
-          <Typography variant="body1">{demo.text}</Typography>
-          <Typography variant="caption">In {demo.ticks} secs.</Typography>
+          <DemoStepper step={demo.step} />
+          <Flex spacing={1}>
+            <Typography variant="body1">{demo.text}</Typography>
+            <Typography color="error" variant="subtitle2">in {demo.ticks} secs.</Typography> 
+          </Flex>
         </Box>
-      </Drawer>
+      </BacklessDrawer>
     <RoomList handler={rooms} />
     <UserList handler={users} />
 

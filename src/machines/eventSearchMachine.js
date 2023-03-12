@@ -117,19 +117,23 @@ const eventSearchMachine = createMachine({
       console.log ({
         opts
       })
+
+      const more = opts.length > 10 ? [{
+        EventName: `Show all ${opts?.length} results.`,
+        value,
+        icon: "Launch",
+        show: 1,
+      }] : [];
       const options = [
         {
           EventName: `Create new event named "${context.param}"`, 
+          RoomNames: "Open the event edit form.",
           value,
+          icon: "Add",
           create: 1,
         },
-        {
-          EventName: `Show all ${opts?.length} results`,
-          RoomNames: "This is the footer",
-          value,
-          show: 1,
-        },
-        ...opts?.slice(0, 6)
+        ...more,
+        ...opts?.slice(0, 10)
       ] ;
       return {
         options

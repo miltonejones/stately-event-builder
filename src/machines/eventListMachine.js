@@ -9,7 +9,11 @@ import {
   useParams,
 } from "react-router-dom";
 
-
+export const VIEW = {
+  LIST_SIDEBAR: 1,
+  FORM_SIDEBAR: 2,
+  FORM_OPTIONBAR: 4
+}
 
 const apiDate = f => moment(f).format('YYYY-MM-DD')
 // add machine code
@@ -18,7 +22,7 @@ const eventListMachine = createMachine({
   initial: "loaded",
   states: {
     loaded: {
-      // entry: "setInitParams",
+       entry: "setInitParams",
       invoke: {
         src: "findEvents",
         onDone: [
@@ -245,12 +249,18 @@ const eventListMachine = createMachine({
 
     
   },
+  on: {
+    VIEW: {
+      actions: "toggleViewBit",
+    },
+  },
   context: {
     params: {}, 
     props: {},
     calendars: [],
     categories: [],
-logo: 'http://shalomaustin.eventbuilder.pro/dist/poweredby.gif'},
+    logo: '/poweredby.gif'
+  },
   predictableActionArguments: true,
   preserveActionOrder: true,
 },
@@ -262,12 +272,16 @@ logo: 'http://shalomaustin.eventbuilder.pro/dist/poweredby.gif'},
     })),
 
 
-    setInitParams: assign((_, event) => ({
-      params: {
-        start_date: apiDate(new Date())
-      }
+    setInitParams: assign({
+      view: VIEW.FORM_OPTIONBAR + VIEW.FORM_SIDEBAR + VIEW.LIST_SIDEBAR
+    }),
+    
+    toggleViewBit: assign((context, event) => ({
+      view: context.view & event.bit 
+        ? context.view - event.bit 
+        : Number(context.view) + Number(event.bit)
     })),
-
+    
     assignRoomList: assign((_, event) => ({
       roomList: event.data
     })),

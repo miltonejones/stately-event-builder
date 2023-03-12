@@ -7,6 +7,7 @@ import UserList from './view/UserList/UserList';
 import RoomSelect from './lib/RoomSelect/RoomSelect';
 import DateBox from './lib/DateBox/DateBox';
 import EventSearch from './lib/EventSearch/EventSearch';
+import DemoStepper from './lib/DemoStepper/DemoStepper';
 
 
 export {
@@ -18,5 +19,6 @@ export {
   RoomSelect,
   EventForm,
   DateBox,
+  DemoStepper,
   EventSearch
 }

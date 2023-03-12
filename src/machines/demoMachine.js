@@ -129,21 +129,53 @@ const demoMachine = createMachine({
         },
       },
     },
-
     welcome: {
-      entry: ["setMessageWelcome", "say"],
-      exit: assign({ open: false }),
-      after: {
-        9500: {
-          target: "#narrator.demo_home",
-          actions: [],
-          internal: false,
+      entry: ["setMessageWelcome", "say", "setDrawerWelcome"],
+      exit: [ "incrementStep", assign({ open: false })],
+      initial: "tick",
+      states: {
+        tick: {
+          after: {
+            "1000": {
+              target: "#narrator.welcome.tock",
+              actions: ["decrementTick"],
+              internal: false,
+            },
+          },
+        },
+        tock: {
+          after: {
+            "1000": [
+              {
+                target: "#narrator.welcome.tick",
+                cond: "zeroTick",
+                actions: ["decrementTick"],
+                internal: false,
+              },
+              {
+                target: "#narrator.demo_home",
+                actions: ["closeDrawer"],
+                internal: false,
+              },
+            ],
+          },
         },
       },
     },
+    // welcome: {
+    //   entry: ["setMessageWelcome", "say"],
+    //   exit: assign({ open: false }),
+    //   after: {
+    //     9500: {
+    //       target: "#narrator.demo_home",
+    //       actions: [],
+    //       internal: false,
+    //     },
+    //   },
+    // },
 
     pause_date: {
-      entry: "setDrawerSearch",
+      entry: ["incrementStep", "setDrawerSearch"],
       initial: "tick",
       states: {
         tick: {
@@ -194,7 +226,7 @@ const demoMachine = createMachine({
           },
         },
         pause: {
-          entry: ["setMessagePause", "say", "setDrawerRoom"],
+          entry: ["incrementStep", "setMessagePause", "say", "setDrawerRoom"],
           initial: "tick",
           states: {
             tick: {
@@ -351,7 +383,7 @@ const demoMachine = createMachine({
           },
         },
         wait: {
-          entry: "setDrawerForm",
+          entry: ["incrementStep", "setDrawerForm"],
           initial: "tick",
           states: {
             tick: {
@@ -448,7 +480,7 @@ const demoMachine = createMachine({
                 internal: false,
               },
               {
-                target: "#narrator.pause_date",
+                target: "#narrator.demo_toggle",
                 actions: [],
                 internal: false,
               },
@@ -457,8 +489,49 @@ const demoMachine = createMachine({
         },
       },
     },
+
+
+    demo_toggle: {
+      entry: [assign({ ticks: 3, bit: 1 }), "setMessageListToggle", "say"],
+      initial: "tick",
+      states: {
+        tick: {
+          invoke: {
+            src: "toggleSidebar",
+          },
+          after: {
+            "2500": {
+              target: "#narrator.demo_toggle.tock",
+              actions: ["decrementTick"],
+              internal: false,
+            },
+          },
+        },
+        tock: {
+          invoke: {
+            src: "toggleSidebar",
+          },
+          after: {
+            "2500": [
+              {
+                target: "#narrator.demo_toggle.tick",
+                cond: "zeroTick",
+                actions: ["decrementTick"],
+                internal: false,
+              },
+              {
+                target: "#narrator.pause_date",
+                actions: ["closeDrawer"],
+                internal: false,
+              },
+            ],
+          },
+        },
+      },
+    },
+
     demo_event: {
-      entry: assign({ count: 0 }),
+      entry: assign({ count: 0, bit: 2 }),
       initial: "get_events",
       states: {
 
@@ -473,8 +546,31 @@ const demoMachine = createMachine({
         //   },
         // },
 
+        toggle_close: {
+          entry: ["setMessageToggle", "say"],
+          invoke: {
+            src: "toggleSidebar",
+            onDone: [
+              {
+                target: "leaving",
+              },
+            ],
+          },
+        },
+        toggle_open: {
+          invoke: {
+            src: "toggleSidebar",
+            onDone: [
+              {
+                target: "#narrator.demo_reset",
+              },
+            ],
+          },
+        },
+
+
         leaving: {
-          entry: "setDrawerBack",
+          entry: ["incrementStep", "setDrawerBack"],
           initial: "tick",
           states: {
             tick: {
@@ -496,7 +592,7 @@ const demoMachine = createMachine({
                     internal: false,
                   },
                   {
-                    target: "#narrator.demo_reset",
+                    target: "#narrator.demo_event.toggle_open",
                     actions: ["closeDrawer"],
                     internal: false,
                   },
@@ -529,7 +625,7 @@ const demoMachine = createMachine({
                 internal: false,
               },
               {
-                target: "#narrator.demo_event.leaving",
+                target: "#narrator.demo_event.toggle_close",
                 actions: ["assignDemoReset"],
                 internal: false,
               },
@@ -561,34 +657,7 @@ const demoMachine = createMachine({
         },
       },
     },
-
-    // demo_event: {
-    //   initial: "send_event",
-    //   states: {
-    //     send_event: {
-    //       entry: ["setMessageEventDemo", "say"],
-    //       exit: assign({ open: false }),
-    //       invoke: {
-    //         src: "changeEvent",
-    //         onDone: [
-    //           {
-    //             target: "show_event",
-    //           },
-    //         ],
-    //       },
-    //     },
-    //     show_event: {
-    //       entry: ["setMessageEventEdit", assign({ open: true }), "say"],
-    //       exit: assign({ open: false }),
-    //     },
-    //   },
-    //   after: {
-    //     15500: {
-    //       target: "#narrator.demo_reset",
-    //       actions: "assignDemoReset"
-    //     },
-    //   },
-    // },
+ 
   },
   context: {
     count: 0,
@@ -598,7 +667,9 @@ const demoMachine = createMachine({
     events: [],
     date: '03/07/2023',
     dates: ['02/07/2023','04/03/2023','01/22/2023','03/01/2023','02/01/2023','01/11/2023'],
-    message: 'loading...'
+    message: 'loading...',
+    bit: 2,
+    step: 0
   },
   predictableActionArguments: true,
   preserveActionOrder: true,
@@ -611,6 +682,7 @@ const demoMachine = createMachine({
   },
   actions: {
     decrementTick: assign(context => ({ ticks: context.ticks - 1 })),
+    incrementStep: assign(context => ({ step: context.step + 1})),
     incrementDemo: assign(context => ({
       date: context.dates[context.count],
       room: context.rooms[context.count],
@@ -619,8 +691,8 @@ const demoMachine = createMachine({
     })),
     assignParam: assign({
       index: 2,
-      param: 'congregation tiferet',
-      value: 'co'
+      param: 'israel purim party',
+      value: 'is'
     }),
     assignNextKey: assign((context) => ({
       index: context.index + 1,
@@ -634,23 +706,26 @@ const demoMachine = createMachine({
     close: assign({ open: false }),
     say: context => speek(context.message),
 
-    setDrawerBack: assign({ text: "Next: Returning to the main list", ticks: 6, drawer: true }),
+    setDrawerWelcome: assign({ text: "Next: Using the home page", ticks: 15, drawer: true }),
+    setDrawerBack: assign({ text: "Next: Returning to the main list", ticks: 10, drawer: true }),
     setDrawerForm: assign({ text: "Next: Editing selected events", ticks: 3, drawer: true }),
     setDrawerRoom: assign({ text: "Next: Using the roomlist", ticks: 6, drawer: true }),
     setDrawerHome: assign({ text: "Next: Using the calendar", ticks: 6, drawer: true }),
     setDrawerSearch: assign({ text: "Next: The event search bar", ticks: 4, drawer: true }),
     closeDrawer: assign({ drawer: false }),
-
+    
+    setMessageListToggle: assign({ message: "The event calendar can be toggled using the X icon in the sidebar like I am doing now."}),
+    setMessageToggle: assign({ message: "for more space, The event list can be hidden using the X icon in the sidebar"}),
     setMessageWelcomeTicks: assign(context => ({ message: `Starting demo in ${context.ticks} seconds`})),
     setMessageTick: assign(context => ({ message: `${context.ticks}`})),
-    setMessageSearch: assign({ open: true, message: "Events can be searched using the provided input bar which displays event details including the date, time and the name of the event creator."}),
+    setMessageSearch: assign({ open: true, message: "Events can be searched using the provided input bar which displays event details including the date, room name and the name of the event creator."}),
     setMessageHome: assign({ open: true, message: "This is the home page listing all events for the current date."}),
-    setMessageEventEdit: assign({ message: 'The event form allows the editing of individual events in your facility. Notice that the event list is still available in the left panel to allow continuous editing without returning to the main list'}),
+    setMessageEventEdit: assign({ message: 'The event form allows the editing of individual events in your facility. Notice that the event list is still visible in the left panel to allow continuous editing without returning to the main list'}),
     setMessageReset: assign({ message: 'Once editing is complete, the full event list can be reopened by using the back button on the sidebar'}),
-    setMessageRoomEdit: assign({ message: 'by clicking the room name like I am doing now, Rooms can be edited without losing your place in the list . Check it out.'}),
+    setMessageRoomEdit: assign({ message: 'by clicking the room name like I am doing now, Rooms can be edited without losing your place in the list . Pretty cool no?'}),
     setMessageRoomDemo: assign({ message: 'For example, the room list can be opened by clicking the Rooms button in the sidebar like so.'}),
     setMessagePause: assign({ message: 'although The event list is the main page of the application. Other pages can be reached using the sidebar controls', open: true}),
-    setMessageWelcome: assign({ message: 'Welcome to the demo. I will control your screen while showing you the features of the new Event Builder. Sit back relax and I will do all the work.', open: true}),
+    setMessageWelcome: assign({ message: 'This is an automated demo. I will control your screen while showing you the features of the new Event Builder. Sit back relax and I will do all the work.', open: true}),
     setMessageDateDemo: assign(context => ({ message: "Dates can be changed using the inline calendar, like this.", open: true})),
     setMessageEventDemo: assign({ message: 'Open an event for editing by clicking on any event name.', open: true}), 
   }
@@ -675,8 +750,13 @@ export const useDemo = (events, room, find) => {
       exitSearch: async (context) => {
         find('EXIT')
       },
-      simulateSearch: async (context) => {
-        console.log (context.value)
+      toggleSidebar: async (context) => { 
+        chat({
+          type: 'VIEW',
+          bit: context.bit
+        })
+      },
+      simulateSearch: async (context) => { 
         find({
           type: 'FIND',
           param: context.value,

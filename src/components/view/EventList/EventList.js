@@ -19,6 +19,7 @@ import {
   Btn,
   // IconTextField,
   TextIcon,
+  TinyButton,
   Columns,
   Spacer,
   // Flex,
@@ -26,6 +27,7 @@ import {
   // Demotip
 } from "../../../styled";
 
+import { VIEW } from '../../../machines';
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 
@@ -45,7 +47,10 @@ const EventList = ({ handler, collapsed }) => {
   // const is = (val) => Array.isArray(val)
   //   ? val.some(state.matches)
   //   : state.matches(val);
-  const width = collapsed ? 'var(--sidebar-width)' : "calc(100vw - 432px)";
+  const opened = Boolean(handler.view & VIEW.LIST_SIDEBAR);
+  const expandedCols = opened ? "275px 1fr" : "0 1fr";
+
+  const width = collapsed ? 'var(--sidebar-width)' : `calc(100vw - ${opened ? 432 : 132}px)`;
   const direction = collapsed ? "column" : "row";
 
   return (
@@ -57,17 +62,24 @@ const EventList = ({ handler, collapsed }) => {
       <Collapse in={!props.showJSON}>
         {!!eventList && (
           <Columns
-            spacing={4}
+            spacing={opened ? 4 : 0}
             sx={{ alignItems: "flex-start" }}
-            columns={collapsed ? "300px" : "275px 1fr"}
+            columns={collapsed ? "300px" : expandedCols}
           >
-            {!collapsed && <CalendarInput handler={handler} />}
-            {/* <Box sx={{p: 1}}>
-          <img src={logo} alt="eb" />
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateCalendar  value={dayjs(params.start_date)} onChange={handleDateChange} />
-          </LocalizationProvider>
-        </Box> */}
+
+            
+            {!collapsed && <Box sx={{ width: '100%', pt: 1}}>
+
+            <TinyButton icon="KeyboardArrowLeft" deg={opened?0:180} onClick={() => {
+                  handler.send({
+                    type: 'VIEW',
+                    bit: VIEW.LIST_SIDEBAR
+                  })
+                }} />
+
+              {opened && <CalendarInput handler={handler} />}
+              
+              </Box>} 
 
             <Box>
 
@@ -193,6 +205,13 @@ const EventList = ({ handler, collapsed }) => {
                   {!collapsed && <Btn variant="contained" color="warning" endIcon={<TextIcon icon="Add" />}>
                     Create Event
                   </Btn>}
+
+                 {!!collapsed &&  <TinyButton icon="KeyboardArrowLeft" onClick={() => {
+                    handler.send({
+                      type: 'VIEW',
+                      bit: VIEW.FORM_SIDEBAR
+                    })
+                  }} />}
                 </Banner>
 
 
@@ -233,7 +252,7 @@ const EventList = ({ handler, collapsed }) => {
                     </LineItem>
 
                     <LineItem direction={direction} collapsed={collapsed}>
-                    {!collapsed && <Nowrap small>{ev.Comments}</Nowrap>}
+                    {!collapsed && <Nowrap sx={{maxWidth: '50vw'}} small>{ev.Comments}</Nowrap>}
                       <Spacer />
                       <Typography variant="caption">
                         {moment("2022-08-22T" + ev.EventStartTime).format(

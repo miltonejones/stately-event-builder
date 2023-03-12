@@ -1,3 +1,4 @@
+import RotateButton from './RotateButton';
 import JsonCollapse from './JsonCollapse';
 import Banner from './Banner';
 import Demotip from './Demotip';
@@ -40,6 +41,7 @@ export const typeIcons = {
 };
 
 export {
+  RotateButton,
   JsonCollapse,
   Banner,
   Demotip,
