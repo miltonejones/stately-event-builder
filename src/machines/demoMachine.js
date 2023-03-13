@@ -9,7 +9,13 @@ const demoMachine = createMachine({
   id: "narrator",
   initial: "idle",
   states: {
-    idle: {},
+    idle: {
+      after: {
+        300: {
+          target: "#narrator.init.dormant"
+        }
+      }
+    },
     // init: {
     //   on: {
     //     'START': {
@@ -32,7 +38,7 @@ const demoMachine = createMachine({
           after: {
             "500": {
               target: "#narrator.init.tick",
-              actions: [assign({ open: true }), "setMessageWelcomeTicks", "say"],
+              actions: [assign({ open: true, step: 0 })],
               internal: false,
             },
           },
@@ -64,6 +70,9 @@ const demoMachine = createMachine({
           on: {
             START: {
               target: "#narrator.welcome",
+            },
+            LOGIN: {
+              target: "#narrator.logging_in",
             },
           },
         },
@@ -491,7 +500,7 @@ const demoMachine = createMachine({
     },
 
     demo_reset: {
-      entry: ["setMessageReset", "say", assign({ open: true })],
+      entry: ["setMessageReset","incrementStep", "say",  assign({ open: true })],
       initial: "reset",
       states: {
         reset: {
@@ -507,7 +516,7 @@ const demoMachine = createMachine({
         wait: {
           after: {
             "7500": {
-              target: "#narrator.init.dormant",
+              target: "#narrator.demo_complete",
               actions: [assign({ open: false })],
               internal: false,
             },
@@ -749,6 +758,126 @@ const demoMachine = createMachine({
       },
     },
  
+    logging_in: {
+      entry: ["setMessageReady", "say"],
+      initial: "explaining",
+      states: {
+        set_user: {
+          entry: ["assignUserProp", "setMessageLogin", "say"],
+          invoke: {
+            src: "setAuthProp",
+          },
+          after: {
+            "2500": {
+              target: "#narrator.logging_in.set_pass",
+              actions: [],
+              internal: false,
+            },
+          },
+        },
+        set_pass: {
+          entry: "assignPassProp",
+          invoke: {
+            src: "setAuthProp",
+          },
+          after: {
+            "500": {
+              target: "#narrator.logging_in.send_login",
+              actions: [],
+              internal: false,
+            },
+          },
+        },
+        send_login: {
+          invoke: {
+            src: "signOn",
+          },
+          after: {
+            "4500": {
+              target: "#narrator.init",
+              actions: [],
+              internal: false,
+            },
+          },
+        },
+        ready: {
+          on: {
+            BEGIN: {
+              target: "set_user",
+            },
+          },
+        },
+        explaining: {
+          after: {
+            "8000": {
+              target: "#narrator.logging_in.ready",
+              actions: [],
+              internal: false,
+            },
+          },
+        },
+      },
+      on: {
+        CANCEL: {
+          target: "#narrator.init.dormant",
+        },
+      },
+    },
+    demo_complete: {
+      entry: ["setMessageComplete", "setDrawerComplete", "say"],
+      initial: "tick",
+      states: {
+        tick: {
+          after: {
+            "1000": {
+              target: "#narrator.demo_complete.tock",
+              actions: ["decrementTick"],
+              internal: false,
+            },
+          },
+        },
+        tock: {
+          after: {
+            "1000": [
+              {
+                target: "#narrator.demo_complete.tick",
+                cond: "zeroTick",
+                actions: ["decrementTick"],
+                internal: false,
+              },
+              {
+                target: "#narrator.demo_complete.logging_off",
+                actions: [],
+                internal: false,
+              },
+            ],
+          },
+        },
+        paused: {
+          on: {
+            RESUME: {
+              target: "tock",
+            },
+          },
+        },
+        logging_off: {
+          invoke: {
+            src: "signOut",
+            onDone: [
+              {
+                target: "#narrator.init.dormant",
+              },
+            ]
+          },
+        },
+      },
+      on: {
+        PAUSE: {
+          target: ".paused",
+        },
+      },
+    },
+
   },
   context: {
     count: 0,
@@ -772,6 +901,14 @@ const demoMachine = createMachine({
     doneKeys: context => !(context.index < (context.param.length + 1))
   },
   actions: {
+    assignUserProp: assign({ props: {
+      key: 'username',
+      value: 'guest'
+    }}),
+    assignPassProp: assign({ props: {
+      key: 'password',
+      value: 'pj0m$$@d'
+    }}),
     decrementTick: assign(context => ({ ticks: context.ticks - 1 })),
     incrementStep: assign(context => ({ step: context.step + 1})),
     incrementDemo: assign(context => ({
@@ -798,7 +935,8 @@ const demoMachine = createMachine({
     pauseOn: assign({ paused: true }),
     close: assign({ open: false }),
     say: context => speek(context.message),
-
+    
+    setDrawerComplete: assign({ text: "Next: Logging off", ticks: 8, drawer: true }),
     setDrawerWelcome: assign({ text: "Next: Using the home page", ticks: 10, drawer: true }),
     setDrawerBack: assign({ text: "Next: Returning to the main list", ticks: 10, drawer: true }),
     setDrawerForm: assign({ text: "Next: Editing selected events", ticks: 3, drawer: true }),
@@ -806,7 +944,9 @@ const demoMachine = createMachine({
     setDrawerHome: assign({ text: "Next: Using the calendar", ticks: 6, drawer: true }),
     setDrawerSearch: assign({ text: "Next: The event search bar", ticks: 4, drawer: true }),
     closeDrawer: assign({ drawer: false }),
-    
+    setMessageLogin: assign({message: "Logging in as guest"}),
+    setMessageReady: assign({message: "This will begin an automated walk-through. Please avoid using your mouse or keyboard during the demo. Click Next when ready."}),
+    setMessageComplete: assign({ message: "This completes the demo. More information will be added as development continues. Thank you for your attention."}),
     setMessageListToggle: assign({ message: "To hide or show the event calendar, click the X icon in the sidebar like this."}),
     setMessageToggle: assign({ message: "However if you want more space, the event list can be hidden using the X icon in the sidebar"}),
     setMessageWelcomeTicks: assign(context => ({ message: `Starting demo in ${context.ticks} seconds`})),
@@ -824,7 +964,7 @@ const demoMachine = createMachine({
   }
 });
 
-export const useDemo = (events, room, find) => {
+export const useDemo = (events, room, find, auth) => {
   const chat = events.send;
   const [state, send] = useMachine(demoMachine, {
     services: { 
@@ -834,6 +974,18 @@ export const useDemo = (events, room, find) => {
           params: {
             start_date: apiDate(new Date(context.date))
           }
+        })
+      },
+      signOn: async(context) => {
+        auth('SIGNIN')
+      },
+      signOut: async(context) => {
+        auth('SIGNOUT')
+      },
+      setAuthProp: async(context) => { 
+        auth({
+          type: 'CHANGE',
+          ...context.props
         })
       },
       loadEventIDs: async() => {

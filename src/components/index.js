@@ -7,12 +7,14 @@ import RoomList from './view/RoomList/RoomList';
 import UserList from './view/UserList/UserList';
 import RoomSelect from './lib/RoomSelect/RoomSelect';
 import DateBox from './lib/DateBox/DateBox';
+import UserMenu from './lib/UserMenu/UserMenu';
 import EventSearch from './lib/EventSearch/EventSearch';
 import DemoStepper from './lib/DemoStepper/DemoStepper';
 
 
 export {
   AuthForm,
+  UserMenu,
   CalendarInput,
   DateInput,
   EventList,

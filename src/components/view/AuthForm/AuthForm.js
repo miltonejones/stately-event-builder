@@ -118,7 +118,7 @@ const SignUpForm = ({send, state, email, verificationCode, username, password })
 }
  
 
-const SignInForm = ({ send, state, verificationCode, username, password }) => {
+const SignInForm = ({ demo, send, state, verificationCode, username, password }) => {
   const handleChange = (event) => {
     send({
       type: 'CHANGE',
@@ -126,7 +126,23 @@ const SignInForm = ({ send, state, verificationCode, username, password }) => {
       value: event.target.value
     })
   }
-  return <Card sx={{ width: 400, height: 400}}>
+  return <Box>
+
+    <Collapse in={demo.state.matches('logging_in')}>
+      <Stack sx={{width: 500}} spacing={2}>
+      <Alert>{demo.message}</Alert>
+      
+        <Flex sx={{ width: '100%'}} spacing={2}>
+          <Spacer/> 
+          <Btn onClick={() => demo.send('CANCEL')}>cancel</Btn>
+          <Btn disabled={!demo.state.matches('logging_in.ready')} variant="contained" onClick={() => demo.send('BEGIN')}> next</Btn>
+        </Flex>
+      </Stack>
+    </Collapse>
+
+
+    <Collapse in={demo.state.matches('init')}>
+    <Card sx={{ width: 400, height: 400}}>
     <Banner>Please sign in
 
       <Spacer />
@@ -202,7 +218,7 @@ const SignInForm = ({ send, state, verificationCode, username, password }) => {
     
     <Columns columns="100px 1fr" spacing={2}>
       <Btn variant="contained" onClick={() => send('SIGNIN')}>Login</Btn>
-      <Typography variant="caption">This is a <b>secure area</b>. Please log in to use EventBuilder 7.</Typography>
+      <Typography variant="caption">This is a <b>secure area</b>. Please log in to use EventBuilder 8.</Typography>
     </Columns>
 
 </Collapse>
@@ -232,17 +248,28 @@ const SignInForm = ({ send, state, verificationCode, username, password }) => {
     
   </Stack>
   </Card>
+
+    </Collapse>
+ 
+
+{demo.state.matches('init') && <Flex sx={{ width: 400}}>
+  <Spacer/>
+ View the 
+  <Btn disabled={!demo.state.matches('init')} onClick={() => demo.send('LOGIN')}> Automated demo</Btn>
+</Flex>}
+    </Box>
 }
 
 
  
-const AuthForm = ({ handler }) => {
+const AuthForm = ({ handler, demo }) => {
   console.log (handler.user)
  return (
    <Layout data-testid="test-for-AuthForm">
 
+
     {handler.state.matches('start.error') && <InvalidUser {...handler} />}
-    {handler.state.matches('signing_in') && <SignInForm {...handler} />}
+    {handler.state.matches('signing_in') && <SignInForm demo={demo} {...handler} />}
     {handler.state.matches('signing_up') && <SignUpForm {...handler} />}
     {handler.state.matches('send_signin.error') && <SignInError {...handler} />}
 

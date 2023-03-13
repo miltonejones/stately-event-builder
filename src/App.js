@@ -21,7 +21,7 @@ import {
 
 
  
-import { EventForm, RoomList, DemoStepper, UserList, EventList, AuthForm, EventSearch } from './components';
+import { EventForm, UserMenu, RoomList, DemoStepper, UserList, EventList, AuthForm, EventSearch } from './components';
 import { VIEW, useAmplify, useEventList, useUserList, useDemo, useRoomList, useEventSearch } from './machines';
 // import { objectPath } from './util/objectPath';
 import {  BacklessDrawer, Columns, Nowrap, Btn, TinyButton, TextIcon,  Flex } from './styled'; 
@@ -52,13 +52,13 @@ function Application() {
   const rooms = useRoomList() ;
   const events = useEventList() ;
   const search = useEventSearch()
-  const demo = useDemo(events, rooms.send, search.send)
+  const demo = useDemo(events, rooms.send, search.send, authenticator.send)
 
 
   if (!authenticator.state.matches('signed_in')) {
     return <>
     {/* {JSON.stringify(authenticator.state.value)} */}
-    <AuthForm handler={authenticator} />
+    <AuthForm handler={authenticator} demo={demo}/>
     </>
   }
 
@@ -133,7 +133,7 @@ function Application() {
 </Stack>}
 
 
-    <Columns columns={events.state.matches('editing') ? `80px var(--sidebar-width) 1fr ${spacer}` : `80px 310px 1fr ${spacer}`} sx={{
+    <Columns columns={events.state.matches('editing') ? `80px var(--sidebar-width) 1fr ${spacer} 300px` : `80px 310px 1fr ${spacer} 300px`} sx={{
       p: 1, backgroundColor: t => t.palette.primary.dark,  
       color: t=> t.palette.common.white
       }} spacing={1}>
@@ -150,8 +150,6 @@ function Application() {
     />
 
   
-
-
 
       {/* {navigation.map(btn => <Btn 
         onClick={() => btn.action && btn.action()}
@@ -185,6 +183,8 @@ function Application() {
 
 
     </Flex>
+      <UserMenu handler={authenticator} />
+
     </Columns>
   
     {events.busy && <LinearProgress variant="indeterminate" />}

@@ -16,7 +16,8 @@ const DemoStepper = ({ step }) => {
     "Finding events",
     "Working with rooms",
     "Editing events",
-    "Returning home"
+    "Returning home",
+    "Conclusion"
   ]
  return (
    <Layout data-testid="test-for-DemoStepper">
