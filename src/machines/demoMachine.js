@@ -7,8 +7,9 @@ import { shuffle } from "../util/shuffle";
 // add machine code
 const demoMachine = createMachine({
   id: "narrator",
-  initial: "init",
+  initial: "idle",
   states: {
+    idle: {},
     // init: {
     //   on: {
     //     'START': {
@@ -58,12 +59,15 @@ const demoMachine = createMachine({
         },
 
         dormant: {
+          description: "Wait for user to request demo",
+          entry: assign({ step: 0 }),
           on: {
             START: {
               target: "#narrator.welcome",
             },
           },
         },
+
         tock: {
           entry: ["setMessageTick"],
           after: {
@@ -127,6 +131,20 @@ const demoMachine = createMachine({
             ],
           },
         },
+        paused: {
+          on: {
+            RESUME: {
+              target: 'tock',
+              actions: 'pauseOff',
+            },
+          },
+        },
+      },
+      on: {
+        PAUSE: {
+          target: '.paused',
+          actions: 'pauseOn',
+        },
       },
     },
     welcome: {
@@ -160,19 +178,22 @@ const demoMachine = createMachine({
             ],
           },
         },
+        paused: {
+          on: {
+            RESUME: {
+              target: "tock",
+              actions: "pauseOff",
+            },
+          },
+        },
       },
-    },
-    // welcome: {
-    //   entry: ["setMessageWelcome", "say"],
-    //   exit: assign({ open: false }),
-    //   after: {
-    //     9500: {
-    //       target: "#narrator.demo_home",
-    //       actions: [],
-    //       internal: false,
-    //     },
-    //   },
-    // },
+      on: {
+        PAUSE: {
+          target: ".paused",
+          actions: "pauseOn",
+        },
+      },
+    }, 
 
     pause_date: {
       entry: ["incrementStep", "setDrawerSearch"],
@@ -203,6 +224,20 @@ const demoMachine = createMachine({
               },
             ],
           },
+        },
+        paused: {
+          on: {
+            RESUME: {
+              target: 'tock',
+              actions: 'pauseOff',
+            },
+          },
+        },
+      },
+      on: {
+        PAUSE: {
+          target: '.paused',
+          actions: 'pauseOn',
         },
       },
     },
@@ -254,6 +289,20 @@ const demoMachine = createMachine({
                   },
                 ],
               },
+            },
+            paused: {
+              on: {
+                RESUME: {
+                  target: "tock",
+                  actions: "pauseOff",
+                },
+              },
+            },
+          },
+          on: {
+            PAUSE: {
+              target: ".paused",
+              actions: "pauseOn",
             },
           },
         },
@@ -412,6 +461,20 @@ const demoMachine = createMachine({
                 ],
               },
             },
+            paused: {
+              on: {
+                RESUME: {
+                  target: "tock",
+                  actions: "pauseOff",
+                },
+              },
+            },
+          },
+          on: {
+            PAUSE: {
+              target: ".paused",
+              actions: "pauseOn",
+            },
           },
         },
         next: {
@@ -527,6 +590,20 @@ const demoMachine = createMachine({
             ],
           },
         },
+        paused: {
+          on: {
+            RESUME: {
+              target: 'tock',
+              actions: 'pauseOff',
+            },
+          },
+        },
+      },
+      on: {
+        PAUSE: {
+          target: '.paused',
+          actions: 'pauseOn',
+        },
       },
     },
 
@@ -598,6 +675,20 @@ const demoMachine = createMachine({
                   },
                 ],
               },
+            },
+            paused: {
+              on: {
+                RESUME: {
+                  target: "tock",
+                  actions: "pauseOff",
+                },
+              },
+            },
+          },
+          on: {
+            PAUSE: {
+              target: ".paused",
+              actions: "pauseOn",
             },
           },
         },
@@ -703,10 +794,12 @@ const demoMachine = createMachine({
       ev: event.data[0]
     })),
     assignDemoReset: assign({ count: 0 , date: new Date()}),
+    pauseOff: assign({ paused: false }),
+    pauseOn: assign({ paused: true }),
     close: assign({ open: false }),
     say: context => speek(context.message),
 
-    setDrawerWelcome: assign({ text: "Next: Using the home page", ticks: 15, drawer: true }),
+    setDrawerWelcome: assign({ text: "Next: Using the home page", ticks: 10, drawer: true }),
     setDrawerBack: assign({ text: "Next: Returning to the main list", ticks: 10, drawer: true }),
     setDrawerForm: assign({ text: "Next: Editing selected events", ticks: 3, drawer: true }),
     setDrawerRoom: assign({ text: "Next: Using the roomlist", ticks: 6, drawer: true }),
@@ -714,18 +807,18 @@ const demoMachine = createMachine({
     setDrawerSearch: assign({ text: "Next: The event search bar", ticks: 4, drawer: true }),
     closeDrawer: assign({ drawer: false }),
     
-    setMessageListToggle: assign({ message: "The event calendar can be toggled using the X icon in the sidebar like I am doing now."}),
-    setMessageToggle: assign({ message: "for more space, The event list can be hidden using the X icon in the sidebar"}),
+    setMessageListToggle: assign({ message: "To hide or show the event calendar, click the X icon in the sidebar like this."}),
+    setMessageToggle: assign({ message: "However if you want more space, the event list can be hidden using the X icon in the sidebar"}),
     setMessageWelcomeTicks: assign(context => ({ message: `Starting demo in ${context.ticks} seconds`})),
     setMessageTick: assign(context => ({ message: `${context.ticks}`})),
-    setMessageSearch: assign({ open: true, message: "Events can be searched using the provided input bar which displays event details including the date, room name and the name of the event creator."}),
-    setMessageHome: assign({ open: true, message: "This is the home page listing all events for the current date."}),
+    setMessageSearch: assign({ open: true, message: "You can search for events by using the provided input bar which displays event details including the date, room name and the name of the event creator."}),
+    setMessageHome: assign({ open: true, message: "This is the home page. It shows all events for the current date by default."}),
     setMessageEventEdit: assign({ message: 'The event form allows the editing of individual events in your facility. Notice that the event list is still visible in the left panel to allow continuous editing without returning to the main list'}),
     setMessageReset: assign({ message: 'Once editing is complete, the full event list can be reopened by using the back button on the sidebar'}),
-    setMessageRoomEdit: assign({ message: 'by clicking the room name like I am doing now, Rooms can be edited without losing your place in the list . Pretty cool no?'}),
+    setMessageRoomEdit: assign({ message: 'By clicking the room name like I am doing now, Rooms can be edited without losing your place in the list . Now is that cool or what!'}),
     setMessageRoomDemo: assign({ message: 'For example, the room list can be opened by clicking the Rooms button in the sidebar like so.'}),
-    setMessagePause: assign({ message: 'although The event list is the main page of the application. Other pages can be reached using the sidebar controls', open: true}),
-    setMessageWelcome: assign({ message: 'This is an automated demo. I will control your screen while showing you the features of the new Event Builder. Sit back relax and I will do all the work.', open: true}),
+    setMessagePause: assign({ message: 'Although the event list is the main page of the application. Other pages can be reached using the sidebar controls', open: true}),
+    setMessageWelcome: assign({ message: 'This is an automated demo. I will control your screen while showing you the features of the new EventBuilder version 8. Sit back relax and I will do all the work.', open: true}),
     setMessageDateDemo: assign(context => ({ message: "Dates can be changed using the inline calendar, like this.", open: true})),
     setMessageEventDemo: assign({ message: 'Open an event for editing by clicking on any event name.', open: true}), 
   }

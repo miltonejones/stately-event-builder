@@ -2,6 +2,7 @@ import DateInput from './lib/DateInput/DateInput';
 import CalendarInput from './lib/CalendarInput/CalendarInput';
 import EventForm from './view/EventForm/EventForm';
 import EventList from './view/EventList/EventList';
+import AuthForm from './view/AuthForm/AuthForm';
 import RoomList from './view/RoomList/RoomList';
 import UserList from './view/UserList/UserList';
 import RoomSelect from './lib/RoomSelect/RoomSelect';
@@ -11,6 +12,7 @@ import DemoStepper from './lib/DemoStepper/DemoStepper';
 
 
 export {
+  AuthForm,
   CalendarInput,
   DateInput,
   EventList,

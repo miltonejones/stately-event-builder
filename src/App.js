@@ -1,6 +1,11 @@
 // import logo from './logo.svg';
 import './App.css';
+import { Amplify } from 'aws-amplify';
 
+// import { withAuthenticator } from '@aws-amplify/ui-react';
+import '@aws-amplify/ui-react/styles.css';
+
+import awsExports from './aws-exports';
 
 import { 
   LinearProgress, Box, Card, Alert,  
@@ -16,11 +21,12 @@ import {
 
 
  
-import { EventForm, RoomList, DemoStepper, UserList, EventList, EventSearch } from './components';
-import { VIEW, useEventList, useUserList, useDemo, useRoomList, useEventSearch } from './machines';
+import { EventForm, RoomList, DemoStepper, UserList, EventList, AuthForm, EventSearch } from './components';
+import { VIEW, useAmplify, useEventList, useUserList, useDemo, useRoomList, useEventSearch } from './machines';
 // import { objectPath } from './util/objectPath';
 import {  BacklessDrawer, Columns, Nowrap, Btn, TinyButton, TextIcon,  Flex } from './styled'; 
   
+Amplify.configure(awsExports);
 
 
 function App() { 
@@ -40,12 +46,23 @@ function App() {
 
 
 function Application() { 
+  const authenticator = useAmplify()
   const navigate = useNavigate();
   const users = useUserList() ;
   const rooms = useRoomList() ;
   const events = useEventList() ;
   const search = useEventSearch()
   const demo = useDemo(events, rooms.send, search.send)
+
+
+  if (!authenticator.state.matches('signed_in')) {
+    return <>
+    {/* {JSON.stringify(authenticator.state.value)} */}
+    <AuthForm handler={authenticator} />
+    </>
+  }
+
+
   const buttons = [
     {
       label: 'Events',
@@ -90,7 +107,9 @@ function Application() {
 
   const opened = Boolean(events.view & VIEW.FORM_SIDEBAR);
   const expandedCols = opened ? "80px var(--sidebar-width) 1fr" : "80px 24px 1fr";
-  const spacer = ['init.dormant'].some(demo.state.matches) ? "60px" : "30px"
+  const spacer = ['init.dormant'].some(demo.state.matches) ? "60px" : "30px";
+
+  
 
   
   return (
@@ -170,7 +189,11 @@ function Application() {
   
     {events.busy && <LinearProgress variant="indeterminate" />}
 
+{/* <pre>
 
+[{JSON.stringify(authenticator.state.value,0,2)}]
+[{JSON.stringify(authenticator.user,0,2)}]
+</pre> */}
       <Columns 
         sx={{alignItems: 'flex-start'}} 
         columns={events.state.matches('editing') ? expandedCols : "80px 100vw"}>
@@ -216,7 +239,8 @@ function Application() {
           <DemoStepper step={demo.step} />
           <Flex spacing={1}>
             <Typography variant="body1">{demo.text}</Typography>
-            <Typography color="error" variant="subtitle2">in {demo.ticks} secs.</Typography> 
+            <Typography color="error" variant="subtitle2">{demo.paused ? "PAUSED" : <>in {demo.ticks} secs.</>}</Typography> 
+            <Btn variant="contained" onClick={() => demo.send(demo.paused ? "RESUME" : "PAUSE")}>{demo.paused ? "Resume" : "Pause"}</Btn>
           </Flex>
         </Box>
       </BacklessDrawer>
@@ -224,8 +248,8 @@ function Application() {
     <UserList handler={users} />
 
 
-      <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal:'right' }} open={demo.open}>
-        <Alert severity="info" sx={{ maxWidth: 400 }}>
+      <Snackbar anchorOrigin={{ vertical: 'top', horizontal:'right' }} open={demo.open}>
+        <Alert severity="info" sx={{ maxWidth: 300 }}>
           {demo.message}
         </Alert>
       </Snackbar>

@@ -7,7 +7,8 @@ import moment from 'moment';
 import {  
   useLocation, 
   useParams,
-} from "react-router-dom";
+} from "react-router-dom"; 
+
 
 export const VIEW = {
   LIST_SIDEBAR: 1,
@@ -383,7 +384,7 @@ export const useEventList = () => {
   const routeProps = useParams();
   const [state, send] = useMachine(eventListMachine, {
     services: { 
-      findEvents: async(context) => {
+      findEvents: async(context) => { 
         if (!Object.keys(context.params).length) {
           return searchEvents({
             start_date: apiDate(new Date())
@@ -397,7 +398,6 @@ export const useEventList = () => {
       loadEventDetail: async(context) => { 
         return await getEvent(context.ID)
       },
-      
       getTodaysEvents: async() => {
         return await searchEvents({
           start_date: apiDate(new Date())

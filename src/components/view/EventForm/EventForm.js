@@ -287,9 +287,9 @@ const EventForm = ({ handler }) => {
           </Btn>
          */}
         <Layout>
-          <Banner>
+          <Banner disabled={handler.busy}>
             Edit{" "}
-            <Nowrap sx={{ color: "white" }} small bold>
+            <Nowrap small bold>
               {handler.eventProp.EventName}
             </Nowrap>
             <Spacer />
@@ -364,7 +364,7 @@ const EventForm = ({ handler }) => {
       
       <Stack spacing={1} sx={{ p: 1 }}>
         <Layout>
-          <Banner><Nowrap small bold><b>Options</b></Nowrap></Banner>
+          <Banner disabled><Nowrap small bold><b>Options</b></Nowrap></Banner>
           <Box sx={{ m: 1 }}>
             <Flex>
               <Switch checked={!!handler.eventProp.ApproveLogin} /> 
@@ -387,7 +387,7 @@ const EventForm = ({ handler }) => {
         </Layout>
 
         <Layout>
-          <Banner><Nowrap small bold><b>Categories</b></Nowrap></Banner>
+          <Banner disabled><Nowrap small bold><b>Categories</b></Nowrap></Banner>
           <Box sx={{ m: 1 }}>
             {handler.categories.map(cat => <Flex key={cat.id}>
               <Switch /> 
@@ -397,7 +397,7 @@ const EventForm = ({ handler }) => {
         </Layout>
 
         <Layout>
-          <Banner><Nowrap small bold><b>Calendars</b></Nowrap></Banner>
+          <Banner disabled><Nowrap small bold><b>Calendars</b></Nowrap></Banner>
           <Box sx={{ m: 1 }}>
             {handler.calendars.map(cat => <Flex key={cat.id}>
               <Switch /> 
