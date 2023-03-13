@@ -262,8 +262,7 @@ const SignInForm = ({ demo, send, state, verificationCode, username, password })
 
 
  
-const AuthForm = ({ handler, demo }) => {
-  console.log (handler.user)
+const AuthForm = ({ handler, demo }) => { 
  return (
    <Layout data-testid="test-for-AuthForm">
 
@@ -272,9 +271,9 @@ const AuthForm = ({ handler, demo }) => {
     {handler.state.matches('signing_in') && <SignInForm demo={demo} {...handler} />}
     {handler.state.matches('signing_up') && <SignUpForm {...handler} />}
     {handler.state.matches('send_signin.error') && <SignInError {...handler} />}
+    {/* {JSON.stringify(handler.state.value)} */}
 
-
-     {/* {JSON.stringify(handler.state.value)}
+     {/*
      <pre>
      {JSON.stringify(handler.user, 0, 2)}  
      </pre> */}

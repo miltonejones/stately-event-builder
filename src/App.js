@@ -22,7 +22,7 @@ import {
 
  
 import { EventForm, UserMenu, RoomList, DemoStepper, UserList, EventList, AuthForm, EventSearch } from './components';
-import { VIEW, useAmplify, useEventList, useUserList, useDemo, useRoomList, useEventSearch } from './machines';
+import { VIEW, useAmplify, useProfile, useEventList, useUserList, useDemo, useRoomList, useEventSearch } from './machines';
 // import { objectPath } from './util/objectPath';
 import {  BacklessDrawer, Columns, Nowrap, Btn, TinyButton, TextIcon,  Flex } from './styled'; 
   
@@ -46,6 +46,7 @@ function App() {
 
 
 function Application() { 
+  const profile = useProfile()
   const authenticator = useAmplify()
   const navigate = useNavigate();
   const users = useUserList() ;
@@ -127,9 +128,9 @@ function Application() {
   zIndex: 25,
   justifyContent: 'center',
   
-}}  onClick={() => demo.send('CANCEL')}> 
+}}  > 
 <Box sx={{ fontSize: '3rem', }}>automated demo  starts in  {demo.ticks}</Box>
-<Btn variant="contained">Cancel</Btn>
+<Btn onClick={() => demo.send('CANCEL')} variant="contained">Cancel</Btn>
 </Stack>}
 
 
@@ -183,7 +184,7 @@ function Application() {
 
 
     </Flex>
-      <UserMenu handler={authenticator} />
+      <UserMenu handler={authenticator} profile={profile} />
 
     </Columns>
   
@@ -228,7 +229,7 @@ function Application() {
       </Flex>}
 
     
-    {['editing'].some(events.state.matches) && <EventForm handler={events} />}
+    {['editing'].some(events.state.matches) && <EventForm handler={events} disabled={!authenticator.admin} />}
       </Columns>
 
 
@@ -244,8 +245,8 @@ function Application() {
           </Flex>
         </Box>
       </BacklessDrawer>
-    <RoomList handler={rooms} />
-    <UserList handler={users} />
+    <RoomList handler={rooms} disabled={!authenticator.admin} />
+    <UserList handler={users} disabled={!authenticator.admin} />
 
 
       <Snackbar anchorOrigin={{ vertical: 'top', horizontal:'right' }} open={demo.open}>

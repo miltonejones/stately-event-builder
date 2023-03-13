@@ -19,7 +19,7 @@ const Layout = styled(Box)(({ theme }) => ({
   overflow: 'hidden'
 }));
  
-const UserList = ({ handler }) => {
+const UserList = ({ handler, disabled }) => {
   const items = handler.userList;
   const hidden = <em> not set</em>
   const handleEdit = ID => {
@@ -107,7 +107,7 @@ const UserList = ({ handler }) => {
         <Flex sx={{pt: 2}} spacing={1}>
           <Spacer />
           <Btn onClick={() => handler.send('CLOSE')}>Cancel</Btn>
-          <Btn disabled={!handler.dirty} onClick={() => handler.send('SAVE')} variant="contained">Save</Btn>
+          <Btn disabled={disabled || !handler.dirty} onClick={() => handler.send('SAVE')} variant="contained">Save</Btn>
         </Flex>
       </Box>
 

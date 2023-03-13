@@ -251,7 +251,7 @@ const Field = (props) => {
 
  
 
-const EventForm = ({ handler }) => {
+const EventForm = ({ handler, disabled }) => {
   const navigate = useNavigate();
   if (!handler.eventProp) {
     return <i />;
@@ -336,7 +336,7 @@ const EventForm = ({ handler }) => {
                 </Btn>
                 <Btn size="small" variant="contained" color="warning"
                 endIcon={   <TextIcon icon="Save" /> }
-                      disabled={handler.busy}>
+                      disabled={handler.busy || disabled}>
                   Save
                 </Btn>
               </Flex>

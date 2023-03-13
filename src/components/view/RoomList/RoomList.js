@@ -39,7 +39,7 @@ const RoomTree = ({ rooms, filter, ID, onChange, parentID = 0, ml = 0 }) => {
   )
 }
  
-const RoomList = ({ handler }) => {
+const RoomList = ({ handler, disabled }) => {
  return (
   <Drawer anchor="bottom" open={handler.open}>
    <Layout data-testid="test-for-RoomList">
@@ -91,7 +91,7 @@ const RoomList = ({ handler }) => {
             <Flex spacing={1}>
               <Spacer />
               <Btn onClick={() => handler.send('CLOSE')}>Cancel</Btn>
-              <Btn variant="contained">Save</Btn>
+              <Btn disabled={disabled} variant="contained">Save</Btn>
             </Flex>
           {/* <pre>
             {JSON.stringify(handler.room.ID,0,2)}

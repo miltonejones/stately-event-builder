@@ -333,7 +333,8 @@ const amplifyMachine = createMachine({
       [event.key]: event.value
     })),
     assignAuth: assign((_, event) => ({
-      user: event.data
+      user: event.data,
+      admin: event.data.groups?.indexOf('Admins') > -1
     })),
     clearAuth: assign((_, event) => ({
       user: null
@@ -357,10 +358,15 @@ export const useAmplify = () => {
       loadUserList: async() => await getUsers(),
       authenticateUser: async() => {  
         const e = await Auth.currentAuthenticatedUser();
-        // alert(JSON.stringify(e))
+
+        const groups = e.signInUserSession.accessToken.payload['cognito:groups'];
+        console.log('User groups:', groups);
+
+        console.log ( { e })
         return {
           username: e?.username,
-          attributes: e?.attributes
+          attributes: e?.attributes,
+          groups
         }; 
       },
       signOut: async(context) => { 
@@ -377,9 +383,11 @@ export const useAmplify = () => {
       signIn: async(context) => {
         const { username, password } = context;
         const e = await Auth.signIn(username, password); 
+        const groups = e.signInUserSession.accessToken.payload['cognito:groups'];
         return {
           username: e?.username,
-          attributes: e?.attributes
+          attributes: e?.attributes,
+          groups
         }; 
       },
       confirmSignUp: async(context) => {
