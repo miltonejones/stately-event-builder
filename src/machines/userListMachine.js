@@ -1,7 +1,7 @@
 
 import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
-import { getUsers , commitUser} from '../connector';
+import { getUsers , getCognitoGroups, commitUser} from '../connector';
 
 
 // add machine code
@@ -26,8 +26,20 @@ const userListMachine = createMachine({
             src: "loadUserList",
             onDone: [
               {
-                target: "ready",
+                target: "groups",
                 actions: "assignUserList",
+              },
+            ],
+          },
+        },
+        
+        groups: {
+          invoke: {
+            src: "loadGroupList",
+            onDone: [
+              {
+                target: "ready",
+                actions: "assignGroupList",
               },
             ],
           },
@@ -142,6 +154,7 @@ const userListMachine = createMachine({
     assignProp: assign((_, event) => ({
       [event.key]: event.value
     })),
+    assignGroupList: assign((_, event) => ({ groups: event.data?.map(g => g.GroupName)})),
     applyChanges: assign((context, event) => ({ 
        user: {
         ...context.user,
@@ -175,6 +188,7 @@ export const useUserList = () => {
   const [state, send] = useMachine(userListMachine, {
     services: { 
       loadUserList: async() => await getUsers(),
+      loadGroupList: async() => await getCognitoGroups(),
       saveUser: async(context) => await commitUser(context.user)
     },
   }); 

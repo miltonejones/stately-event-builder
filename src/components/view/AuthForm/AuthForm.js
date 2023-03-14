@@ -142,7 +142,7 @@ const SignInForm = ({ demo, send, state, verificationCode, username, password })
 
 
     <Collapse in={demo.state.matches('init')}>
-    <Card sx={{ width: 400, height: 400}}>
+    <Card sx={{ width: 400, minHeight: 400}}>
     <Banner>Please sign in
 
       <Spacer />

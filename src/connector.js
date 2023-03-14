@@ -23,7 +23,12 @@ export const getUsers = async () => {
   const response = await fetch(API_ENDPOINT + `/cognito`);
   return await response.json();
 };
- 
+
+export const getCognitoGroups = async (id) => {
+  const response = await fetch(API_ENDPOINT + `/groups`);
+  return await response.json();
+};
+
 export const getUser = async (id) => {
   const response = await fetch(API_ENDPOINT + `/cognito/${id}`);
   return await response.json();

@@ -2,6 +2,14 @@
  box-sizing: border-box;
 } 
 
+sup {
+  background-color: red;
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
 body {
   --sidebar-width: 20vw;
 }

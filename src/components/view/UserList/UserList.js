@@ -1,5 +1,5 @@
 import React from 'react';
-import { styled, Grid, Drawer, IconButton, Avatar, LinearProgress, TextField, Box } from '@mui/material';
+import { styled, Grid, MenuItem, Drawer, IconButton, Avatar, LinearProgress, TextField, Box } from '@mui/material';
 import { 
   Flex,
   Nowrap,
@@ -99,10 +99,22 @@ const UserList = ({ handler, disabled }) => {
               onChange={e => handleChange(conf.field, e.target.value)}
               fullWidth size="small" value={handler.user[conf.field]} /></Grid>
           ))}
+
+          <Grid item xs={12}>
+            <TextField size="small" select 
+              disabled={disabled}
+              fullWidth 
+              label="Security Group"
+              name="group"
+              onChange={e => handleChange(e.target.name, e.target.value)}
+              value={handler.user.group}>
+              {handler.groups.map(name => <MenuItem key={name} value={name}>{name}</MenuItem>)}
+            </TextField>
+          </Grid>
           </Grid></JsonCollapse>}
-          {/* {config.length}
-        <pre>
-          {JSON.stringify(handler.user,0,2)}
+      
+        {/* <pre>
+          {JSON.stringify(handler.groups,0,2)}
         </pre> */}
         <Flex sx={{pt: 2}} spacing={1}>
           <Spacer />
@@ -130,7 +142,7 @@ const UserField = ({type, ...props}) => {
         const value = window.prompt("Enter a path to the user image", props.value);
         !!value && props.onChange({ target: { value }}); 
       }}
-    >A</Avatar>
+    ><TextIcon icon="Person" /></Avatar>
   } 
   return <TextField {...props}  />
 }

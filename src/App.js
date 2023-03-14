@@ -9,6 +9,9 @@ import awsExports from './aws-exports';
 
 import { 
   LinearProgress, Box, Card, Alert,  
+  createTheme,
+  useTheme, 
+  ThemeProvider, 
    Snackbar, IconButton, Stack, Typography, styled } from "@mui/material";
 
 import {
@@ -51,6 +54,7 @@ function Application() {
     type: 'UPDATE',
     user
   }))
+  const defaultTheme = useTheme();
   const navigate = useNavigate();
   const users = useUserList() ;
   const rooms = useRoomList() ;
@@ -58,16 +62,45 @@ function Application() {
   const search = useEventSearch()
   const demo = useDemo(events, rooms.send, search.send, authenticator.send)
 
+  const theme = createTheme({
+    palette: {
+      text: {
+        primary: "#393939"
+      }
+    },
+    typography: {
+      lineHeight: '.1rem',
+      letterSpacing: '0.025rem', 
+      fontFamily: [ 
+        'Archivo',
+        'Inconsolata',
+        'Sono',
+        'Lato',
+        '"Roboto Slab"',
+        '"Segoe UI"',
+        '"Helvetica Neue"',
+        '-apple-system',
+        'BlinkMacSystemFont',
+        'Roboto',
+        'Arial',
+        'sans-serif',
+        '"Apple Color Emoji"',
+        '"Segoe UI Emoji"',
+        '"Segoe UI Symbol"',
+      ].join(','),
+    },
+  });
+
 
   if (!authenticator.state.matches('signed_in')) {
-    return <>
+    return <ThemeProvider theme={theme}>
     {/* {JSON.stringify(authenticator.state.value)} */}
     <PageTitle handler={{
       pagename: "Home",
       label: "Please log in"
     }} />
     <AuthForm handler={authenticator} demo={demo}/>
-    </>
+    </ThemeProvider>
   }
 
 
@@ -121,6 +154,7 @@ function Application() {
 
   
   return (
+    <ThemeProvider theme={theme}>
     <div className="App">
 <PageTitle handler={events} />
 
@@ -149,7 +183,7 @@ function Application() {
     <Box sx={{ width: 64, textAlign: 'center'}}>   <TextIcon icon="Menu"  /></Box>
 
       <Typography variant="body1">
-      <b>EventBuilder 8 (beta)</b>
+      <b>EventBuilder 8 <sup>beta</sup></b>
       </Typography>
 
 
@@ -210,12 +244,12 @@ function Application() {
             <Ctrl raised={btn.active} elevation={btn.active ? 2 : 0} key={btn.label}    sx={{m: 1}} 
             onClick={() => btn.action && btn.action()}>
             <Stack sx={{ alignItems: 'center'}}>
-            <IconButton sx={{ color: theme => btn.active ? theme.palette.primary.dark : theme.palette.text.main}}>
+            <IconButton sx={{ color: theme => btn.active ? theme.palette.primary.dark : theme.palette.text.primary}}>
               <TextIcon icon={btn.icon}  />
             </IconButton>
               <Nowrap color={
                 btn.active ? "primary.dark" : "text.primary"
-              } bold={btn.active  || btn.warning} variant="caption">{btn.label}</Nowrap>
+              } bold={btn.active  || btn.warning} sx={{fontSize: '0.8rem'}} variant="caption">{btn.label}</Nowrap>
           </Stack>
             </Ctrl>
           ))}
@@ -262,6 +296,7 @@ function Application() {
         </Alert>
       </Snackbar>
     </div>
+    </ThemeProvider>
   );
 }
 
