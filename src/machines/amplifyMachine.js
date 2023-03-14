@@ -75,18 +75,21 @@ const amplifyMachine = createMachine({
         },
       },
     },
+
     signed_in: {
       description: "Successful login adds the authenticated user to scope",
       on: {
         SIGNOUT: {
           target: "signing_out",
         },
+        UPDATE: {
+          actions: "updateUser",
+        },
       },
     },
+
     auth_error: {},
 
-
- 
     signing_in: {
       initial: "form_entry",
       states: {
@@ -306,6 +309,12 @@ const amplifyMachine = createMachine({
     successAuth: (_, event) => !!event.data.username
   },
   actions: { 
+    updateUser: assign((context, event) => ({
+      user: {
+        ...context.user,
+        ...event.user 
+      }
+    })),
     assignValid: assign((context) => {
       const { user, userList } = context;
       if (user) {

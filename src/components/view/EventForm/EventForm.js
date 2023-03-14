@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import moment from 'moment';
 import { Flex, Btn, Spacer, IconTextField, TextIcon, TinyButton, Columns, Banner, Nowrap } from "../../../styled";
-import { DateInput,  RoomSelect } from "../..";
+import { DateInput, RoomSelect } from "../..";
 import { formProps } from "./config";
 import { useNavigate } from "react-router-dom";
 import { apiDate } from "../../../util/apiDate"; 
@@ -144,7 +144,7 @@ const Input = (props) => {
 
   // if (["time"].find((f) => f === type)) {
   //   return (
-  //     <IconTextField
+  //     <TimeInput
   //     startIcon={!prefix ? null : <Flex 
   //         sx={{
   //           fontSize: '0.8rem',
@@ -160,9 +160,7 @@ const Input = (props) => {
   //       disabled={handler.busy}
   //       setValue={(e) => handleChange(field, apiDate(new Date(e)))}
   //       value={handler.eventProp[field]}
-  //       inputProps={{
-  //         step: 900, // 5 min
-  //       }}
+      
   //     />
   //   );
   // }
@@ -218,7 +216,8 @@ const Input = (props) => {
   }
 
   if (type === "rooms" && handler.roomList) {
-    return <RoomSelect rooms={handler.roomList} value={handler.eventProp[field]}/>
+    return <RoomSelect rooms={handler.roomList} eventfk={handler.eventProp.ID}  
+      onChange={(e) => handleChange(field, e)} value={handler.eventProp[field]}/>
     // return (
     //   <TextField
     //     select

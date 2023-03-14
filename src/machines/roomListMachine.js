@@ -2,6 +2,7 @@
 import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
 import { getRooms } from '../connector';
+import { scrubRoom } from '../util/scrubRoom';
 
 // add machine code
 const roomListMachine = createMachine({
@@ -134,7 +135,7 @@ const roomListMachine = createMachine({
 {
   actions: {
     assignRoomList: assign((_, event) => ({
-      roomList: event.data
+      roomList: event.data?.map(scrubRoom)
     })),
     assignProp: assign((_, event) => ({
       [event.key]: event.value

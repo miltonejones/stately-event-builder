@@ -21,7 +21,7 @@ import {
 
 
  
-import { EventForm, UserMenu, RoomList, DemoStepper, UserList, EventList, AuthForm, EventSearch } from './components';
+import { EventForm, UserMenu, PageTitle, RoomList, DemoStepper, UserList, EventList, AuthForm, EventSearch } from './components';
 import { VIEW, useAmplify, useProfile, useEventList, useUserList, useDemo, useRoomList, useEventSearch } from './machines';
 // import { objectPath } from './util/objectPath';
 import {  BacklessDrawer, Columns, Nowrap, Btn, TinyButton, TextIcon,  Flex } from './styled'; 
@@ -46,8 +46,11 @@ function App() {
 
 
 function Application() { 
-  const profile = useProfile()
-  const authenticator = useAmplify()
+  const authenticator = useAmplify();
+  const profile = useProfile(user => authenticator.send({
+    type: 'UPDATE',
+    user
+  }))
   const navigate = useNavigate();
   const users = useUserList() ;
   const rooms = useRoomList() ;
@@ -59,6 +62,10 @@ function Application() {
   if (!authenticator.state.matches('signed_in')) {
     return <>
     {/* {JSON.stringify(authenticator.state.value)} */}
+    <PageTitle handler={{
+      pagename: "Home",
+      label: "Please log in"
+    }} />
     <AuthForm handler={authenticator} demo={demo}/>
     </>
   }
@@ -115,7 +122,7 @@ function Application() {
   
   return (
     <div className="App">
-
+<PageTitle handler={events} />
 
 
 {['init.tick', 'init.tock', 'init.waiting'].some(demo.state.matches) && <Stack  sx={{
@@ -134,7 +141,7 @@ function Application() {
 </Stack>}
 
 
-    <Columns columns={events.state.matches('editing') ? `80px var(--sidebar-width) 1fr ${spacer} 300px` : `80px 310px 1fr ${spacer} 300px`} sx={{
+    <Columns columns={events.state.matches('editing') ? `80px var(--sidebar-width) 1fr ${spacer} 360px` : `80px 310px 1fr ${spacer} 360px`} sx={{
       p: 1, backgroundColor: t => t.palette.primary.dark,  
       color: t=> t.palette.common.white
       }} spacing={1}>

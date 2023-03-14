@@ -157,6 +157,8 @@ const SignInForm = ({ demo, send, state, verificationCode, username, password })
       <Typography>Username</Typography>
       <IconTextField
         fullWidth
+        placeholder="Username"
+        autoComplete="off"
         startIcon={<TextIcon icon="Person" />}
         size="small"
         name="username"
@@ -171,6 +173,8 @@ const SignInForm = ({ demo, send, state, verificationCode, username, password })
       <Typography>Verification Code</Typography>
       <IconTextField
         fullWidth
+        placeholder="Verification Code"
+        autoComplete="off"
         startIcon={<TextIcon icon="Code" />}
         size="small"
         name="verificationCode"
@@ -199,6 +203,8 @@ const SignInForm = ({ demo, send, state, verificationCode, username, password })
     <Typography>Password</Typography>
     <IconTextField
       fullWidth
+      autoComplete="off"
+      placeholder="Password"
       startIcon={<TextIcon icon="Lock" />}
       size="small"
       type="password"
@@ -252,7 +258,7 @@ const SignInForm = ({ demo, send, state, verificationCode, username, password })
     </Collapse>
  
 
-{demo.state.matches('init') && <Flex sx={{ width: 400}}>
+{demo.state.matches('init') && <Flex sx={{ m: 1, width: 400}}>
   <Spacer/>
  View the 
   <Btn disabled={!demo.state.matches('init')} onClick={() => demo.send('LOGIN')}> Automated demo</Btn>

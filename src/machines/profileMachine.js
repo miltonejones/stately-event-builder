@@ -1,7 +1,7 @@
 
 import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
-import { commitUser } from '../connector';
+import { commitUser, getUser } from '../connector';
 
 // add machine code
 const profileMachine = createMachine({
@@ -18,30 +18,72 @@ const profileMachine = createMachine({
     },
     opened: {
       description: "show user form for editing profile",
+      initial: "load",
+      states: {
+        load: {
+          invoke: {
+            src: "loadUser",
+            onDone: [
+              {
+                target: "ready",
+                actions: "curateUser",
+              },
+            ],
+          },
+        },
+        ready: {
+          on: {
+            SAVE: {
+              target: "#profile.saving",
+            },
+            CHANGE: {
+              actions: "applyChanges",
+            },
+            JSON: {
+              target: "#profile.json",
+            },
+          },
+        },
+      },
       on: {
-        CHANGE: {
-          actions: "applyChanges",
-        },
-        SAVE: {
-          target: "saving",
-        },
         CLOSE: {
           target: "idle",
           actions: assign({ open: false }),
         },
       },
     },
-    saving: {
-      invoke: {
-        src: "saveUser",
-        onDone: [
-          {
-            target: "idle",
-            actions: assign({ open: false }),
-          },
-        ],
-      },
+    json: {
+      on: {
+        EXIT: 'opened'
+      }
     },
+
+    saving: {
+      initial: "save",
+      states: {
+        save: {
+          invoke: {
+            src: "saveUser",
+            onDone: [
+              {
+                target: "emit",
+              },
+            ],
+          },
+        },
+        emit: {
+          invoke: {
+            src: "emitSave",
+            onDone: [
+              {
+                target: "#profile.idle",
+                actions: assign({ open: false }),
+              },
+            ],
+          },
+        },
+      },
+    }, 
   },
   context: { open: false },
   predictableActionArguments: true,
@@ -49,6 +91,10 @@ const profileMachine = createMachine({
 },
 {
   actions: {
+    curateUser: assign((context, event) => ({ user: {
+      ...context.user,
+      ...event.data
+    }})),
     assignUser: assign((_, event) => ({ user: event.user})),
     applyChanges: assign((context, event) => ({
      user: {
@@ -59,10 +105,32 @@ const profileMachine = createMachine({
   }
 });
 
-export const useProfile = () => {
+export const useProfile = (onChanged) => {
   const [state, send] = useMachine(profileMachine, {
     services: {
-      commitUser: async(context) => commitUser(context.user)
+      emitSave: async(context) => onChanged && onChanged(context.user),
+      loadUser: async(context) => await getUser(context.user.ID),
+      saveUser: async(context) => {
+        
+        const {
+          ID ,
+          Salutation ,
+          FirstName ,
+          LastName ,
+          Title  ,
+          Phone  ,
+          image 
+        } = context.user;
+
+        await commitUser({
+          ID ,
+          Salutation ,
+          FirstName ,
+          LastName ,
+          Title  ,
+          Phone  ,
+          image 
+        })}
      },
   }); 
 

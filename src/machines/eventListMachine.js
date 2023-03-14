@@ -3,6 +3,7 @@ import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
 import { engDate } from '../util/engDate';
 import { searchEvents, getRooms, getCalendars, getEvent, getCategories } from '../connector';
+// import { scrubRoom } from '../util/scrubRoom';
 import moment from 'moment';
 import {  
   useLocation, 
@@ -41,7 +42,6 @@ const eventListMachine = createMachine({
       },
     },
 
-
     load_error: {
       on: {
         RECOVER: {
@@ -49,8 +49,6 @@ const eventListMachine = createMachine({
         },
       },
     },
-
-    
 
     listing: {
       initial: "ready",
@@ -90,6 +88,7 @@ const eventListMachine = createMachine({
         },
       },
     },
+
     editing: {
       initial: "init",
       states: {
@@ -143,20 +142,7 @@ const eventListMachine = createMachine({
               },
             },
           },
-        },
-
-        // init: {
-        //   entry: assign({ busy: true }),
-        //   invoke: {
-        //     src: "loadRoomList",
-        //     onDone: [
-        //       {
-        //         target: "load_event",
-        //         actions: "assignRoomList",
-        //       },
-        //     ],
-        //   },
-        // }, 
+        }, 
 
         form: {
           description: "Form state shows the event edit form",
@@ -186,6 +172,7 @@ const eventListMachine = createMachine({
         },
       },
     },
+
     saving: {
       initial: "validating",
       states: {
@@ -248,7 +235,6 @@ const eventListMachine = createMachine({
       },
     },
 
-    
   },
   on: {
     VIEW: {
@@ -310,7 +296,9 @@ const eventListMachine = createMachine({
       categories: event.data
     })),
     assignEventProps: assign((_, event) => ({
-      eventProp: event.data
+      eventProp: event.data,
+      pagename: "Edit",
+      label: event.data?.EventName
     })),
     clearID: assign((_, event) => ({
       ID: null,
@@ -351,7 +339,8 @@ const eventListMachine = createMachine({
       }
       
       return {
-        label: label.join(" ")
+        label: label.join(" "),
+        pagename: "List",
       }
       // const label = JSON.stringify(context.params);
       // return {

@@ -1,5 +1,7 @@
-const API_ENDPOINT = 'https://34m4mho8me.execute-api.us-east-1.amazonaws.com';
 
+import { scrubRoom } from './util/scrubRoom';
+
+const API_ENDPOINT = 'https://34m4mho8me.execute-api.us-east-1.amazonaws.com';
 
 export const getEvents = async () => {
   const response = await fetch(API_ENDPOINT + `/events`);
@@ -18,20 +20,14 @@ export const getCalendars = async () => {
 
 
 export const getUsers = async () => {
-  const response = await fetch(API_ENDPOINT + `/users`);
+  const response = await fetch(API_ENDPOINT + `/cognito`);
   return await response.json();
 };
  
-export const getRooms = async () => {
-  const response = await fetch(API_ENDPOINT + `/rooms`);
+export const getUser = async (id) => {
+  const response = await fetch(API_ENDPOINT + `/cognito/${id}`);
   return await response.json();
 };
- 
-export const getEvent = async (id) => {
-  const response = await fetch(API_ENDPOINT + `/event/${id}`);
-  return await response.json();
-};
-
 
 export const commitUser = async (options) => {
   const requestOptions = {
@@ -39,10 +35,20 @@ export const commitUser = async (options) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(options),
   };
-  const response = await fetch(API_ENDPOINT + '/users', requestOptions );
+  const response = await fetch(API_ENDPOINT + '/cognito', requestOptions );
   return await response.json();
 };
-
+ 
+export const getRooms = async () => {
+  const response = await fetch(API_ENDPOINT + `/rooms`);
+  const rooms = await response.json();
+  return rooms?.map(scrubRoom)
+};
+ 
+export const getEvent = async (id) => {
+  const response = await fetch(API_ENDPOINT + `/event/${id}`);
+  return await response.json();
+};
 
 export const searchEvents = async (options) => {
   const requestOptions = {
@@ -50,7 +56,9 @@ export const searchEvents = async (options) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(options),
   };
-  const response = await fetch(API_ENDPOINT + '/event', requestOptions );
-  return await response.json();
+  const response =  await fetch(API_ENDPOINT + '/event', requestOptions ); 
+  const rooms = await response.json();
+  return rooms?.map(scrubRoom)
+ // return await response.json();
 };
 

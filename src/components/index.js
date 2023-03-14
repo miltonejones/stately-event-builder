@@ -9,6 +9,8 @@ import RoomSelect from './lib/RoomSelect/RoomSelect';
 import DateBox from './lib/DateBox/DateBox';
 import UserMenu from './lib/UserMenu/UserMenu';
 import EventSearch from './lib/EventSearch/EventSearch';
+import PageTitle from './lib/PageTitle/PageTitle';
+import TimeInput from './lib/TimeInput/TimeInput';
 import DemoStepper from './lib/DemoStepper/DemoStepper';
 
 
@@ -23,6 +25,8 @@ export {
   RoomSelect,
   EventForm,
   DateBox,
+  PageTitle,
+  TimeInput,
   DemoStepper,
   EventSearch
 }

@@ -5,8 +5,8 @@ export const formProps = [
     field: "EventName",
   },
   {
-    label: "Room Name",
-    field: "RoomID",
+    label: "Room(s)",
+    field: "rooms",
     type: "rooms",
   },
 

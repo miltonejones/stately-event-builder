@@ -1,6 +1,6 @@
 import React from 'react';
 import { styled, Avatar, Box, TextField, Grid, Dialog } from '@mui/material';
-import { Nowrap, Btn, Flex, Spacer, Banner  } from "../../../styled";
+import { Nowrap, Btn, Flex, Spacer, TinyButton, JsonCollapse, Banner  } from "../../../styled";
 import { initials  } from "../../../util/initials";
  
 const Layout = styled(Box)(({ theme }) => ({
@@ -35,8 +35,9 @@ const UserMenu = ({ handler, profile }) => {
  return (
    <Layout data-testid="test-for-UserMenu">
    <Flex spacing={1}>
-   <Nowrap small>
-     Welcome back, {FirstName || username}  
+  <Spacer />
+   <Nowrap variant="caption">
+     Welcome back, {FirstName || username} 
     </Nowrap>
     <Btn variant="contained" onClick={() => handler.send('SIGNOUT')}>Sign Out</Btn> 
     <Avatar onClick={() => profile.send({
@@ -45,8 +46,11 @@ const UserMenu = ({ handler, profile }) => {
     })} size="small" src={image} alt={FirstName}>{initials(`${FirstName} ${LastName}`)}</Avatar>
    </Flex>
   {!!profile?.user && <Dialog onClose={() => profile.send('CLOSE')} open={profile.open}>
-    <Banner>Edit Profile</Banner>
+    <Banner>Edit Profile<Spacer />
+    <TinyButton icon="Code" onClick={() => profile.send(profile.state.matches('json') ? 'EXIT' : 'JSON')} />
+    </Banner>  
     <Box sx={{ p: 2 }}>
+      <JsonCollapse object={profile.user} open={profile.state.matches('json')}>
     <Grid  sx={{maxWidth: '100%'}} container spacing={2}> 
 
 {config.map(conf => (
@@ -62,10 +66,11 @@ const UserMenu = ({ handler, profile }) => {
   <Btn onClick={() =>  profile.send('CLOSE')}>Cancel</Btn>
   <Btn onClick={() =>  profile.send('SAVE')} variant="contained">Save</Btn>
 </Flex>
+</JsonCollapse>
     </Box>
-      <pre>
+      {/* <pre>
         {JSON.stringify(profile.user.groups,0,2)}
-      </pre>
+      </pre> */}
    </Dialog>}
    </Layout>
  );
