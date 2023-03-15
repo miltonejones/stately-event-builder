@@ -9,15 +9,16 @@ const Layout = styled(Box)(({ theme }) => ({
  margin: theme.spacing(1)
 }));
  
-const DemoStepper = ({ step }) => {
+const DemoStepper = ({ handler}) => {
+  const { step, messages } = handler;
   const steps = [
-    "Welcome",
-    "Using the home page",
-    "Finding events",
-    "Working with rooms",
-    "Editing events",
-    "Returning home",
-    "Conclusion"
+    messages.step1,
+    messages.step2,
+    messages.step3,
+    messages.step4,
+    messages.step5,
+    messages.step6,
+    messages.step7, 
   ]
  return (
    <Layout data-testid="test-for-DemoStepper">

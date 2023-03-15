@@ -101,7 +101,8 @@ const UserList = ({ handler, disabled }) => {
           ))}
 
           <Grid item xs={12}>
-            <TextField size="small" select 
+            <IconTextField size="small" select 
+            startIcon={<TextIcon icon="Lock" /> }
               disabled={disabled}
               fullWidth 
               label="Security Group"
@@ -109,7 +110,7 @@ const UserList = ({ handler, disabled }) => {
               onChange={e => handleChange(e.target.name, e.target.value)}
               value={handler.user.group}>
               {handler.groups.map(name => <MenuItem key={name} value={name}>{name}</MenuItem>)}
-            </TextField>
+            </IconTextField>
           </Grid>
           </Grid></JsonCollapse>}
       

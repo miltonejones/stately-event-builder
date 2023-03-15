@@ -297,8 +297,8 @@ const eventListMachine = createMachine({
     })),
     assignEventProps: assign((_, event) => ({
       eventProp: event.data,
-      pagename: "Edit",
-      label: event.data?.EventName
+      pagename: "Edit", 
+      title: event.data?.EventName
     })),
     clearID: assign((_, event) => ({
       ID: null,
@@ -340,6 +340,7 @@ const eventListMachine = createMachine({
       
       return {
         label: label.join(" "),
+        title: label.join(" "),
         pagename: "List",
       }
       // const label = JSON.stringify(context.params);

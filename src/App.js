@@ -10,7 +10,7 @@ import awsExports from './aws-exports';
 import { 
   LinearProgress, Box, Card, Alert,  
   createTheme,
-  useTheme, 
+  // useTheme, 
   ThemeProvider, 
    Snackbar, IconButton, Stack, Typography, styled } from "@mui/material";
 
@@ -54,7 +54,7 @@ function Application() {
     type: 'UPDATE',
     user
   }))
-  const defaultTheme = useTheme();
+  // const defaultTheme = useTheme();
   const navigate = useNavigate();
   const users = useUserList() ;
   const rooms = useRoomList() ;
@@ -278,7 +278,7 @@ function Application() {
 
       <BacklessDrawer anchor="bottom" open={demo.drawer}>
         <Box sx={{ p: 2}}>
-          <DemoStepper step={demo.step} />
+          <DemoStepper step={demo.step} handler={demo} />
           <Flex spacing={1}>
             <Typography variant="body1">{demo.text}</Typography>
             <Typography color="error" variant="subtitle2">{demo.paused ? "PAUSED" : <>in {demo.ticks} secs.</>}</Typography> 

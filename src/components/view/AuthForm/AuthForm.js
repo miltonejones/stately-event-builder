@@ -1,5 +1,5 @@
 import React from 'react';
-import { styled, Collapse, Box, Switch, Alert, Card, Typography, Stack } from '@mui/material';
+import { styled, Collapse, Box, MenuItem, Switch, Alert, Card, Typography, LinearProgress, Stack } from '@mui/material';
 import { Nowrap, Columns, Flex, TextIcon, Spacer, Banner, IconTextField, Btn } from "../../../styled";
  
 const Layout = styled(Box)(({ theme }) => ({
@@ -128,11 +128,35 @@ const SignInForm = ({ demo, send, state, verificationCode, username, password })
   }
   return <Box>
 
+    <Collapse in={demo.state.matches('translate')}>
+      <Stack sx={{width: 500}} spacing={2}>
+        <Alert>{demo.message}</Alert>
+        <LinearProgress variant="determinate" value={demo.progress} />
+        <Nowrap muted small><em>{demo.translation}</em></Nowrap>
+      
+        <Flex sx={{ width: '100%'}} spacing={2}> 
+          <Spacer/> 
+          <Btn onClick={() => demo.send('CANCEL')}>cancel</Btn> 
+        </Flex>
+      </Stack>
+    </Collapse>
+
     <Collapse in={demo.state.matches('logging_in')}>
       <Stack sx={{width: 500}} spacing={2}>
-      <Alert>{demo.message}</Alert>
+      {!demo.state.matches('logging_in.choose_lang') && <Alert>{demo.message}</Alert>}
+      {!!demo.state.matches('logging_in.choose_lang') && <Stack spacing={1}>
+        <Nowrap variant="body2">Choose the language for your demo presenter</Nowrap>
+      <IconTextField label="Choose language" fullWidth size="small"
+        select onChange={(e) => demo.send({
+          type: 'DECODE',
+          code: e.target.value
+        })}>
+            {Object.keys(demo.languages).map(lang => <MenuItem key={lang} value={demo.languages[lang]}>{lang}</MenuItem>)}
+            </IconTextField>
+        </Stack>}
       
         <Flex sx={{ width: '100%'}} spacing={2}>
+          <Btn variant="contained" color="warning" disabled={demo.state.matches('logging_in.choose_lang')} onClick={() => demo.send('LANG')}>change language</Btn>
           <Spacer/> 
           <Btn onClick={() => demo.send('CANCEL')}>cancel</Btn>
           <Btn disabled={!demo.state.matches('logging_in.ready')} variant="contained" onClick={() => demo.send('BEGIN')}> next</Btn>

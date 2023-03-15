@@ -3,6 +3,8 @@ import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
 import { apiDate } from "../util/apiDate";
 import { shuffle } from "../util/shuffle";
+import { translateText } from "../translate";
+import { demoMessages, demoLanguages } from './demo';
 
 // add machine code
 const demoMachine = createMachine({
@@ -34,7 +36,7 @@ const demoMachine = createMachine({
       states: {
 
         waiting: {
-          entry: [assign({ ticks: 10, message: "The automated demo will begin in a few seconds"}), "say"],
+          entry: [assign(context => ({ ticks: 10, message: context.messages.messageBegin })), "say"],
           after: {
             "500": {
               target: "#narrator.init.tick",
@@ -801,6 +803,7 @@ const demoMachine = createMachine({
           },
         },
         ready: {
+          description: "Give user a chance to cancel the demo",
           on: {
             BEGIN: {
               target: "set_user",
@@ -809,10 +812,22 @@ const demoMachine = createMachine({
         },
         explaining: {
           after: {
-            "8000": {
+            "3000": {
               target: "#narrator.logging_in.ready",
               actions: [],
               internal: false,
+            },
+          },
+        },
+        choose_lang: {
+          description: "show language selection form",
+          on: {
+            DECODE: {
+              target: "#narrator.translate",
+              actions: "assignLangCode",
+            },
+            CANCEL: {
+              target: "ready",
             },
           },
         },
@@ -821,8 +836,65 @@ const demoMachine = createMachine({
         CANCEL: {
           target: "#narrator.init.dormant",
         },
+        LANG: {
+          target: ".choose_lang",
+        },
       },
     },
+
+    translate: {
+      entry: "resetTranslate",
+      initial: "start",
+      states: {
+        next: {
+          after: {
+            "100": [
+              {
+                target: "#narrator.translate.decode",
+                cond: "moreLang",
+                actions: [],
+                internal: false,
+              },
+              {
+                target: "#narrator.logging_in",
+                actions: [],
+                internal: false,
+              },
+            ],
+          },
+        },
+        decode: {
+          invoke: {
+            src: "translateProp",
+            onDone: [
+              {
+                target: "next",
+                actions: ["assignLangProp", "incrementLangIndex"],
+              },
+            ],
+          },
+        },
+        start: {
+          entry: "setMessageTranslate",
+          invoke: {
+            src: "translateBegin",
+            onDone: [
+              {
+                target: "stalling",
+                actions: "assignTranslate",
+              },
+            ],
+          },
+        },
+        stalling: {
+          entry: "say",
+          always: {
+            target: "next",
+          },
+        },
+      },
+    },
+
     demo_complete: {
       entry: ["setMessageComplete", "setDrawerComplete", "say"],
       initial: "tick",
@@ -889,18 +961,33 @@ const demoMachine = createMachine({
     dates: ['02/07/2023','04/03/2023','01/22/2023','03/01/2023','02/01/2023','01/11/2023'],
     message: 'loading...',
     bit: 2,
-    step: 0
+    step: 0,
+    languages: demoLanguages,
+    messages: demoMessages
   },
   predictableActionArguments: true,
   preserveActionOrder: true,
 },
 {
   guards: {
+    moreLang: context => context.lang_index < Object.keys(context.messages).length,
     oneDemo: context => context.count < 4,
     zeroTick: context => context.ticks > 1,
     doneKeys: context => !(context.index < (context.param.length + 1))
   },
   actions: {
+    assignLangCode: assign((_, event) => ({
+      lang_code: event.code
+    })),
+    resetTranslate: assign({
+      lang_index: 0,
+      messages: demoMessages,
+      translation: null
+    }),
+    incrementLangIndex: assign(context => ({
+      lang_index: context.lang_index + 1,
+      progress: 100 * (context.lang_index /  Object.keys(context.messages).length)
+    })),
     assignUserProp: assign({ props: {
       key: 'username',
       value: 'guest'
@@ -934,33 +1021,59 @@ const demoMachine = createMachine({
     pauseOff: assign({ paused: false }),
     pauseOn: assign({ paused: true }),
     close: assign({ open: false }),
-    say: context => speek(context.message),
+    say: context => speek(context.message, context.lang_code),
+    assignTranslate: assign((context, event) => {
+      const { lang_code } = context;
+      const [ code ] = lang_code.split('-');
+      const prop = event.data[code];
+      return {
+        message: prop.value,
+        translation: ""
+      }
+    }),
+    assignLangProp: assign((context, event) => {
+      const { lang_index, lang_code, messages } = context;
+      const [ code ] = lang_code.split('-');
+      const key = Object.keys(messages)[lang_index];
+      const prop = event.data[code];
+      return {
+        translation: prop?.value,
+        messages: {
+          ...messages,
+          [key]: prop?.value
+        }
+      } 
+    }),
     
-    setDrawerComplete: assign({ text: "Next: Logging off", ticks: 8, drawer: true }),
-    setDrawerWelcome: assign({ text: "Next: Using the home page", ticks: 10, drawer: true }),
-    setDrawerBack: assign({ text: "Next: Returning to the main list", ticks: 10, drawer: true }),
-    setDrawerForm: assign({ text: "Next: Editing selected events", ticks: 3, drawer: true }),
-    setDrawerRoom: assign({ text: "Next: Using the roomlist", ticks: 6, drawer: true }),
-    setDrawerHome: assign({ text: "Next: Using the calendar", ticks: 6, drawer: true }),
-    setDrawerSearch: assign({ text: "Next: The event search bar", ticks: 4, drawer: true }),
+    setDrawerComplete: assign(context => ({ text: context.messages.drawerComplete, ticks: 8, drawer: true })),
+    setDrawerWelcome: assign(context => ({ text: context.messages.drawerWelcome, ticks: 10, drawer: true })),
+    setDrawerBack: assign(context => ({ text: context.messages.drawerBack, ticks: 10, drawer: true })),
+    setDrawerForm: assign(context => ({ text: context.messages.drawerForm, ticks: 3, drawer: true })),
+    setDrawerRoom: assign(context => ({ text: context.messages.drawerRoom, ticks: 6, drawer: true })),
+    setDrawerHome: assign(context => ({ text: context.messages.drawerHome, ticks: 6, drawer: true })),
+    setDrawerSearch: assign(context => ({ text: context.messages.drawerSearch, ticks: 4, drawer: true })),
     closeDrawer: assign({ drawer: false }),
-    setMessageLogin: assign({message: "Logging in as guest"}),
-    setMessageReady: assign({message: "This will begin an automated walk-through. Please avoid using your mouse or keyboard during the demo. Click Next when ready."}),
-    setMessageComplete: assign({ message: "This completes the demo. More information will be added as development continues. Thank you for your attention."}),
-    setMessageListToggle: assign({ message: "To hide or show the event calendar, click the X icon in the sidebar like this."}),
-    setMessageToggle: assign({ message: "However if you want more space, the event list can be hidden using the X icon in the sidebar"}),
+    setMessageLogin: assign(context => ({message: context.messages.messageLogin})),
+    setMessageReady: assign(context => ({ message: context.messages.messageReady})),
+    setMessageComplete: assign(context => ({ message: context.messages.messageComplete})),
+    setMessageListToggle: assign(context => ({ message: context.messages.messageListToggle })),
+    setMessageToggle: assign(context => ({ message: context.messages.messageToggle })),
     setMessageWelcomeTicks: assign(context => ({ message: `Starting demo in ${context.ticks} seconds`})),
     setMessageTick: assign(context => ({ message: `${context.ticks}`})),
-    setMessageSearch: assign({ open: true, message: "You can search for events by using the provided input bar which displays event details including the date, room name and the name of the event creator."}),
-    setMessageHome: assign({ open: true, message: "This is the home page. It shows all events for the current date by default."}),
-    setMessageEventEdit: assign({ message: 'The event form allows the editing of individual events in your facility. Notice that the event list is still visible in the left panel to allow continuous editing without returning to the main list'}),
-    setMessageReset: assign({ message: 'Once editing is complete, the full event list can be reopened by using the back button on the sidebar'}),
-    setMessageRoomEdit: assign({ message: 'By clicking the room name like I am doing now, Rooms can be edited without losing your place in the list . Now is that cool or what!'}),
-    setMessageRoomDemo: assign({ message: 'For example, the room list can be opened by clicking the Rooms button in the sidebar like so.'}),
-    setMessagePause: assign({ message: 'Although the event list is the main page of the application. Other pages can be reached using the sidebar controls', open: true}),
-    setMessageWelcome: assign({ message: 'This is an automated demo. I will control your screen while showing you the features of the new EventBuilder version 8. Sit back relax and I will do all the work.', open: true}),
-    setMessageDateDemo: assign(context => ({ message: "Dates can be changed using the inline calendar, like this.", open: true})),
-    setMessageEventDemo: assign({ message: 'Open an event for editing by clicking on any event name.', open: true}), 
+    setMessageSearch: assign(context => ({ message: context.messages.messageSearch })),
+    setMessageHome: assign(context => ({ message: context.messages.messageHome })),
+    setMessageEventEdit: assign(context => ({ message: context.messages.messageEventEdit })),
+    setMessageReset: assign(context => ({ message: context.messages.messageReset })),
+    setMessageRoomEdit: assign(context => ({ message: context.messages.messageRoomEdit })),
+    setMessageRoomDemo: assign(context => ({ message: context.messages.messageRoomDemo })),
+    setMessagePause: assign(context => ({ message: context.messages.messagePause })),
+    setMessageWelcome: assign(context => ({ message: context.messages.messageWelcome })),
+    setMessageDateDemo: assign(context => ({ message: context.messages.messageDateDemo})),
+    setMessageEventDemo: assign(context => ({ message: context.messages.messageEventDemo })), 
+    setMessageTranslate: assign(context => {
+      const key = Object.keys(demoLanguages).find(f => demoLanguages[f] === context.lang_code);
+      return { message: `Please wait a moment while we give your presenter a quick lesson in ${key}` }
+    }), 
   }
 });
 
@@ -975,6 +1088,17 @@ export const useDemo = (events, room, find, auth) => {
             start_date: apiDate(new Date(context.date))
           }
         })
+      },
+      translateBegin: async(context) => {
+        const { lang_code, message } = context; 
+        const [ code ] = lang_code.split('-');
+        return await translateText(code, message);
+      },
+      translateProp: async(context) => {
+        const { lang_index, lang_code, messages } = context;
+        const key = Object.keys(messages)[lang_index];
+        const [ code ] = lang_code.split('-');
+        return await translateText(code, messages[key]);
       },
       signOn: async(context) => {
         auth('SIGNIN')
@@ -1036,9 +1160,9 @@ export const useDemo = (events, room, find, auth) => {
   };
 }
 const utterThis = new SpeechSynthesisUtterance()
-const speek = msg => {
+const speek = (msg, lang) => {
   const synth = window.speechSynthesis;
-  utterThis.lang = "en-US";
+  utterThis.lang = lang || "en-US";
   utterThis.text = msg
   synth.speak(utterThis)
 }

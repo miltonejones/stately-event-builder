@@ -1,7 +1,7 @@
 
 import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
-import { getUsers , getCognitoGroups, commitUser} from '../connector';
+import { getUsers , getUserByName, getCognitoGroups, commitUser} from '../connector';
 
 
 // add machine code
@@ -61,10 +61,27 @@ const userListMachine = createMachine({
             }, 
           },
         },
+
         editing: {
           description: "Show user editing form",
+          initial: "load",
+          states: {
+            load: {
+              invoke: {
+                src: "loadUser",
+                onDone: [
+                  {
+                    target: "ready",
+                    actions: "assignUser",
+                  },
+                ],
+              },
+            },
+            ready: {},
+          },
           on: {
             EDIT: {
+              target: ".load",
               actions: "assignID",
             },
             CHANGE: {
@@ -79,6 +96,26 @@ const userListMachine = createMachine({
             },
           },
         },
+
+        // editing: {
+        //   description: "Show user editing form",
+        //   on: {
+        //     EDIT: {
+        //       actions: "assignID",
+        //     },
+        //     CHANGE: {
+        //       actions: ["applyChanges", assign({ dirty: true })],
+        //     },
+        //     SAVE: {
+        //       target: "saving",
+        //     },
+        //     CLOSE: {
+        //       target: "ready",
+        //       actions: "clearID",
+        //     },
+        //   },
+        // },
+ 
         saving: {
           invoke: {
             src: "saveUser",
@@ -151,6 +188,9 @@ const userListMachine = createMachine({
     assignUserList: assign((_, event) => ({
       userList: event.data
     })),
+    assignUser: assign((_, event) => ({
+      user: event.data
+    })),
     assignProp: assign((_, event) => ({
       [event.key]: event.value
     })),
@@ -187,6 +227,7 @@ const userListMachine = createMachine({
 export const useUserList = () => {
   const [state, send] = useMachine(userListMachine, {
     services: { 
+      loadUser: async(context) => await getUserByName(context.user.UserID),
       loadUserList: async() => await getUsers(),
       loadGroupList: async() => await getCognitoGroups(),
       saveUser: async(context) => await commitUser(context.user)

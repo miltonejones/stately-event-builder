@@ -2,12 +2,12 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 
 function PageTitle({ handler }) {
-  if  (typeof handler.label !== 'string' || typeof handler.pagename !== 'string') {
-    return <>{JSON.stringify(handler.label)}</>
+  if  (typeof handler.title !== 'string' || typeof handler.pagename !== 'string') {
+    return <>{JSON.stringify(handler.title)}</>
   }
   return ( 
       <Helmet>
-        <title>EventBuilder | {handler.pagename} | {handler.label}</title> 
+        <title>EventBuilder | {handler.pagename} | {handler.title}</title> 
       </Helmet> 
   );
 }

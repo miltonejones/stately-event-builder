@@ -351,12 +351,15 @@ const EventForm = ({ handler, disabled }) => {
           <Banner>
             Comments
           </Banner>
-          <Box sx={{ m: 1}}>
+          <Flex spacing={1} sx={{ m: 1}}>
             <TextField 
+              multiline
+              placeholder="Enter a comment"
               size="small"
               fullWidth
             />
-          </Box>
+            <Btn variant="contained">add comment</Btn>
+          </Flex>
         </Layout>
       </Stack>
 
