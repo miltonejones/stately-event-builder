@@ -243,6 +243,11 @@ const amplifyMachine = createMachine({
           },
         },
       },
+      on: {
+        CANCEL: {
+          target: "#auth.signing_in",
+        },
+      },
     },
     send_signin: {
       initial: "login",
@@ -415,9 +420,22 @@ export const useAmplify = () => {
     },
   }); 
 
+  const is = (val) => Array.isArray(val)
+    ? val.some(state.matches)
+    : state.matches(val);
+
+  const diagnosticProps = {
+    id: amplifyMachine.id,
+    states: amplifyMachine.states,
+    state,
+    send,
+  };
+
   return {
+    diagnosticProps,
     state,
     send, 
+    is,
     ...state.context
   };
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
 import { engDate } from '../util/engDate';
-import { searchEvents, getRooms, getCalendars, getEvent, getCategories } from '../connector';
+import { searchEvents, saveEvent, getRooms, getCalendars, getEvent, getCategories } from '../connector';
 // import { scrubRoom } from '../util/scrubRoom';
 import moment from 'moment';
 import {  
@@ -193,12 +193,13 @@ const eventListMachine = createMachine({
           },
         },
         saving: {
+          entry: assign({ saving: true }),
           invoke: {
             src: "commitEvent",
             onDone: [
               {
-                target: "#event_list.editing",
-                actions: assign({ dirty: false }),
+                target: "#event_list.editing.load_event",
+                actions: assign({ dirty: false, saving: false }),
               },
             ],
             onError: [
@@ -300,9 +301,11 @@ const eventListMachine = createMachine({
       pagename: "Edit", 
       title: event.data?.EventName
     })),
-    clearID: assign((_, event) => ({
+    clearID: assign((context, event) => ({
       ID: null,
-      props: {}
+      props: {
+        active_machine: context.props.active_machine
+      }
     })),
     assignID: assign((_, event) => ({
       ID: event.ID
@@ -382,6 +385,8 @@ export const useEventList = () => {
         }
         return await searchEvents(context.params)
       },
+      commitEvent: async(context) => await saveEvent(context.eventProp),
+      validateEvent: async() => true,
       loadCalendars: async() => await getCalendars(),
       loadCategories: async() => await getCategories(),
       loadRoomList: async() => await getRooms(),
@@ -426,9 +431,22 @@ export const useEventList = () => {
     send(event.toUpperCase())
   }, [location, send, routeProps])
 
+  const diagnosticProps = {
+    id: eventListMachine.id,
+    states: eventListMachine.states,
+    state,
+    send,
+  };
+
+  const is = (val) => Array.isArray(val)
+    ? val.some(state.matches)
+    : state.matches(val);
+
   return {
     state,
+    is,
     send, 
+    diagnosticProps,
     ...state.context
   };
 }

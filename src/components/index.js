@@ -12,6 +12,8 @@ import EventSearch from './lib/EventSearch/EventSearch';
 import PageTitle from './lib/PageTitle/PageTitle';
 import TimeInput from './lib/TimeInput/TimeInput';
 import DemoStepper from './lib/DemoStepper/DemoStepper';
+import DiagnosticsMenu from './lib/DiagnosticsMenu/DiagnosticsMenu';
+import Diagnostics from './lib/Diagnostics/Diagnostics';
 
 
 export {
@@ -28,5 +30,7 @@ export {
   PageTitle,
   TimeInput,
   DemoStepper,
-  EventSearch
+  EventSearch,
+  Diagnostics,
+  DiagnosticsMenu
 }

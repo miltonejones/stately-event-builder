@@ -70,7 +70,7 @@ const EventList = ({ handler, collapsed }) => {
             
             {!collapsed && <Box sx={{ width: '100%', pt: 1}}>
 
-            <TinyButton icon="KeyboardArrowLeft" deg={opened?0:180} onClick={() => {
+            <TinyButton icon={!opened ? "KeyboardArrowLeft" : "Close"} deg={opened?0:180} onClick={() => {
                   handler.send({
                     type: 'VIEW',
                     bit: VIEW.LIST_SIDEBAR
@@ -206,7 +206,7 @@ const EventList = ({ handler, collapsed }) => {
                     Create Event
                   </Btn>}
 
-                 {!!collapsed &&  <TinyButton icon="KeyboardArrowLeft" onClick={() => {
+                 {!!collapsed &&  <TinyButton color="inherit" icon="Close" onClick={() => {
                     handler.send({
                       type: 'VIEW',
                       bit: VIEW.FORM_SIDEBAR

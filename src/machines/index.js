@@ -1,3 +1,4 @@
+import { useMenu } from './menuMachine';
 import { useProfile } from './profileMachine';
 import { useAmplify } from './amplifyMachine'; 
 import { useEventSearch } from './eventSearchMachine';
@@ -7,6 +8,7 @@ import { useRoomList } from './roomListMachine';
 import { useEventList, VIEW } from './eventListMachine';
 
 export {
+  useMenu,
   useProfile,
   useAmplify, 
   useEventSearch,

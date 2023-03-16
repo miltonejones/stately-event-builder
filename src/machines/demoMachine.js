@@ -951,6 +951,12 @@ const demoMachine = createMachine({
     },
 
   },
+  on: {
+    QUIT: {
+      target: ".init.dormant",
+      actions: [assign({ open: false }), assign({ drawer: false })],
+    },
+  },
   context: {
     count: 0,
     room: 86,
@@ -1153,9 +1159,22 @@ export const useDemo = (events, room, find, auth) => {
     },
   }); 
 
+  const is = (val) => Array.isArray(val)
+    ? val.some(state.matches)
+    : state.matches(val);
+
+    const diagnosticProps = {
+      id: demoMachine.id,
+      states: demoMachine.states,
+      state,
+      send,
+    };
+  
   return {
     state,
     send, 
+    is,
+    diagnosticProps,
     ...state.context
   };
 }

@@ -72,3 +72,14 @@ export const searchEvents = async (options) => {
  // return await response.json();
 };
 
+
+export const saveEvent = async (options) => {
+  const requestOptions = {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(options),
+  };
+  const response =  await fetch(API_ENDPOINT + '/event', requestOptions ); 
+  return await response.json();  
+};
+

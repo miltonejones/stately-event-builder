@@ -24,7 +24,7 @@ import {
 
 
  
-import { EventForm, UserMenu, PageTitle, RoomList, DemoStepper, UserList, EventList, AuthForm, EventSearch } from './components';
+import { DiagnosticsMenu, Diagnostics, EventForm, UserMenu, PageTitle, RoomList, DemoStepper, UserList, EventList, AuthForm, EventSearch } from './components';
 import { VIEW, useAmplify, useProfile, useEventList, useUserList, useDemo, useRoomList, useEventSearch } from './machines';
 // import { objectPath } from './util/objectPath';
 import {  BacklessDrawer, Columns, Nowrap, Btn, TinyButton, TextIcon,  Flex } from './styled'; 
@@ -62,6 +62,8 @@ function Application() {
   const search = useEventSearch()
   const demo = useDemo(events, rooms.send, search.send, authenticator.send)
 
+  const debuggableMachines = [events, demo, authenticator]
+
   const theme = createTheme({
     palette: {
       text: {
@@ -89,8 +91,7 @@ function Application() {
         '"Segoe UI Symbol"',
       ].join(','),
     },
-  });
-
+  }); 
 
   if (!authenticator.state.matches('signed_in')) {
     return <ThemeProvider theme={theme}>
@@ -144,11 +145,11 @@ function Application() {
     },
   ]
 
-  const navigation = events.state.matches('editing') ? controls : buttons;
+  const navigation = events.is(['editing', 'saving']) ? controls : buttons;
 
   const opened = Boolean(events.view & VIEW.FORM_SIDEBAR);
   const expandedCols = opened ? "80px var(--sidebar-width) 1fr" : "80px 24px 1fr";
-  const spacer = ['init.dormant'].some(demo.state.matches) ? "60px" : "30px";
+  const spacer = ['init.dormant'].some(demo.state.matches) ? "90px" : "60px";
 
   
 
@@ -175,7 +176,7 @@ function Application() {
 </Stack>}
 
 
-    <Columns columns={events.state.matches('editing') ? `80px var(--sidebar-width) 1fr ${spacer} 360px` : `80px 310px 1fr ${spacer} 360px`} sx={{
+    <Columns columns={events.is(['editing', 'saving']) ? `80px var(--sidebar-width) 1fr ${spacer} 360px` : `80px 310px 1fr ${spacer} 360px`} sx={{
       p: 1, backgroundColor: t => t.palette.primary.dark,  
       color: t=> t.palette.common.white
       }} spacing={1}>
@@ -222,11 +223,18 @@ function Application() {
           })
         }}
           />
-
+    <DiagnosticsMenu machines={debuggableMachines} handler={events} value={events.props.active_machine} 
+      onChange={val => { 
+        events.send({
+          type: 'CHANGE',
+          key: 'active_machine',
+          value: val
+        })
+      }} />
 
     </Flex>
       <UserMenu handler={authenticator} profile={profile} />
-
+ 
     </Columns>
   
     {events.busy && <LinearProgress variant="indeterminate" />}
@@ -238,7 +246,7 @@ function Application() {
 </pre> */}
       <Columns 
         sx={{alignItems: 'flex-start'}} 
-        columns={events.state.matches('editing') ? expandedCols : "80px 100vw"}>
+        columns={events.is(['editing', 'saving']) ? expandedCols : "80px 100vw"}>
         <Stack sx={{ borderRight: 1, borderColor: 'divider', height: '100%', backgroundColor: t => t.palette.grey[5]}}>
           {navigation.map(btn => (
             <Ctrl raised={btn.active} elevation={btn.active ? 2 : 0} key={btn.label}    sx={{m: 1}} 
@@ -256,11 +264,11 @@ function Application() {
         </Stack>
 
 
-    {['listing', 'searching', 'editing'].some(events.state.matches) && 
-      !(!opened && events.state.matches('editing')) && 
-        <EventList collapsed={events.state.matches('editing')} handler={events} /> }
+    {['listing', 'searching', 'editing', 'saving'].some(events.state.matches) && 
+      !(!opened && events.is(['editing', 'saving'])) && 
+        <EventList collapsed={events.is(['editing', 'saving'])} handler={events} /> }
 
-    {(!opened && events.state.matches('editing')) && <Flex sx={{m: 1}}>
+    {(!opened && events.is(['editing', 'saving'])) && <Flex sx={{m: 1}}>
     <TinyButton icon="KeyboardArrowRight" onClick={() => {
       events.send({
         type: 'VIEW',
@@ -270,11 +278,12 @@ function Application() {
       </Flex>}
 
     
-    {['editing'].some(events.state.matches) && <EventForm handler={events} disabled={!authenticator.admin} />}
+    {events.is(['editing', 'saving']) && <EventForm handler={events} disabled={!authenticator.admin} />}
       </Columns>
 
 
 
+     {debuggableMachines.map(mac =>  <Diagnostics key={mac.diagnosticProps.id} handler={events} {...mac.diagnosticProps} /> )}
 
       <BacklessDrawer anchor="bottom" open={demo.drawer}>
         <Box sx={{ p: 2}}>
@@ -282,7 +291,8 @@ function Application() {
           <Flex spacing={1}>
             <Typography variant="body1">{demo.text}</Typography>
             <Typography color="error" variant="subtitle2">{demo.paused ? "PAUSED" : <>in {demo.ticks} secs.</>}</Typography> 
-            <Btn variant="contained" onClick={() => demo.send(demo.paused ? "RESUME" : "PAUSE")}>{demo.paused ? "Resume" : "Pause"}</Btn>
+            <Btn size="small" variant="contained" onClick={() => demo.send(demo.paused ? "RESUME" : "PAUSE")}>{demo.paused ? "Resume" : "Pause"}</Btn>
+            <Btn size="small" variant="outlined" color="error" onClick={() => demo.send('QUIT')}>quit</Btn>
           </Flex>
         </Box>
       </BacklessDrawer>
