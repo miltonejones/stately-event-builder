@@ -1,9 +1,10 @@
 import React from 'react';
-import { styled, Popover, Switch, Stack, TextField, LinearProgress, Box } from '@mui/material';
+import { styled, Avatar, Popover, Switch, Stack, TextField, LinearProgress, Box } from '@mui/material';
 import { Flex, Spacer, Btn, TextIcon, Tooltag, TinyButton, Nowrap } from '../../../../../styled';
 import { RoomSelect, DateInput } from '../../../..';
 import { timeToNum } from '../../../../../util/timeToNum';
 import { recurseText } from '../../../../../util/recurseText';
+import { useClipboard } from '../../../../../util/useClipboard';
 // import dayjs from 'dayjs';
 import moment from 'moment';
 import { 
@@ -88,14 +89,25 @@ const EventPopover = ({ menu }) => {
     const room = menu.rooms?.find(f => f.ID === id)
     return room?.RoomName
   }
+
+  const event = menu.data;
+  const creator = menu.users?.find(f => f.ID === event?.CreateLogin);
+
+  const { copy } = useClipboard();
+
+  const isEditMode = menu.state.matches('opened.editing');
+  
+
+
  
  return (
   <Popover anchorEl={menu.anchorEl}
   onClose={menu.handleClose()}  
   open={Boolean(menu.anchorEl) }
    >
+    {/* {JSON.stringify(creator)} */}
     {!menu.state.matches('opened') && <Layout><LinearProgress />Loading event details...</Layout>}
-   {menu.state.matches('opened') && <Layout on={menu.editing}>
+   {menu.state.matches('opened') && <Layout on={isEditMode}>
     <Box sx={{ p: 2}}>
 
 
@@ -103,19 +115,29 @@ const EventPopover = ({ menu }) => {
         <Nowrap muted variant="body2">Event Detail</Nowrap>
       {/* [  {JSON.stringify(eventDesc)}] */}
         <Spacer />
-        <Tooltag component={TinyButton} title="Edit event" 
+
+
+        {!!isEditMode && <Tooltag component={TinyButton} title="Save event" 
+          caption="Save the event details you entered"
+           icon="Save" />}
+
+        <Tooltag component={TinyButton}  title={isEditMode ? "Close edit mode" : "Edit event"}  
+          onClick={() => menu.send(isEditMode ? "cancel" : "edit")}
+          icon={isEditMode ? "Close" : "BorderColor"} />
+
+
+        <Tooltag component={TinyButton} title="Edit event details"  
           caption="Open event form for detailed editing"
           onClick={openEvent} icon="OpenInFull" />
-        <TinyButton onClick={menu.handleClose()} icon="Close" />
       </Flex>
 
-      <Stack spacing={menu.editing ? 1 : 0} sx={{ pt: menu.editing ? 2 : 0}}>
+      <Stack spacing={isEditMode ? 1 : 0} sx={{ pt: isEditMode ? 2 : 0}}>
         <Flex sx={{ mt: 1 }}> 
           <TextInput 
             label="Event Name"
             bold={!!menu.data.RecurseEndDate}
             variant="h6" 
-            editing={menu.editing}
+            editing={isEditMode}
             fullWidth
             value={menu.data.EventName} 
             onChange={console.log}/> 
@@ -125,14 +147,14 @@ const EventPopover = ({ menu }) => {
         <Flex> 
           <TextInput 
             variant="body1" 
-            editing={menu.editing}
+            editing={isEditMode}
             
             room
             roomList={menu.rooms}
             eventfk={menu.data.ID}
 
             fullWidth
-            value={ menu.editing ? menu.data.rooms : menu.data.rooms?.map(f => getRoomName(f.roomfk)).join(", ")} 
+            value={ isEditMode ? menu.data.rooms : menu.data.rooms?.map(f => getRoomName(f.roomfk)).join(", ")} 
             onChange={console.log}/> 
         </Flex>
 
@@ -141,24 +163,24 @@ const EventPopover = ({ menu }) => {
           <TextInput 
             muted  
             date
-            editing={menu.editing}
+            editing={isEditMode}
             type="date"
             sx={{ maxWidth: 220 }}
             variant="body2"
             label="Event Date"
-            value={menu.editing ? menu.data.CustomDate : moment(new Date(menu.data.CustomDate)).format('dddd MMM Do, YYYY')} 
+            value={isEditMode ? menu.data.CustomDate : moment(new Date(menu.data.CustomDate)).format('dddd MMM Do, YYYY')} 
           /> 
 
           <TextInput
             label="Start Time"
-          sx={{mt: menu.editing ? 1 : 0}} muted variant="body2" value={menu.editing ? menu.data.EventStartTime : timeof(menu.data.EventStartTime)} 
-            type="time"  editing={menu.editing}/>
+          sx={{mt: isEditMode ? 1 : 0}} muted variant="body2" value={isEditMode ? menu.data.EventStartTime : timeof(menu.data.EventStartTime)} 
+            type="time"  editing={isEditMode}/>
           <Box>to</Box>
 
           <TextInput
             label="End Time"
-          sx={{mt: menu.editing ? 1 : 0}} muted variant="body2" value={menu.editing ? menu.data.EventEndTime : timeof(menu.data.EventEndTime)} 
-            type="time"  editing={menu.editing}/>
+          sx={{mt: isEditMode ? 1 : 0}} muted variant="body2" value={isEditMode ? menu.data.EventEndTime : timeof(menu.data.EventEndTime)} 
+            type="time"  editing={isEditMode}/>
                 
         </Flex>
 
@@ -166,7 +188,7 @@ const EventPopover = ({ menu }) => {
           <RecurseDesc event={menu.data} />
         </Flex>
 
-      {!!menu.editing && <Flex spacing={1}> 
+      {!!isEditMode && <Flex spacing={1}> 
         <Switch checked />  
         <Nowrap variant="body2">Allow 30 minutes setup and breakdown time</Nowrap> 
       </Flex>}
@@ -174,31 +196,38 @@ const EventPopover = ({ menu }) => {
 
     </Stack>
    
-
+{/* 
       <Flex sx={{ mt: 3 }} spacing={1}>
+
+
         <Btn 
-          endIcon={<TextIcon  icon={menu.editing ? "Close" : "Edit"}   />}
-          variant={menu.editing ? "outlined" : "contained"}  
+          endIcon={<TextIcon  icon={isEditMode ? "Close" : "Edit"}   />}
+          variant={isEditMode ? "outlined" : "contained"}  
           onClick={() => {
             menu.send({
               type: 'prop',
               key: 'editing',
-              value: !menu.editing
+              value: !isEditMode
             })
           }}>
-          {menu.editing ? "Cancel" : "Edit event"}
+          {isEditMode ? "Cancel" : "Edit event"}
         </Btn>
-      {!!menu.editing && <Btn onClick={menu.handleClose()} 
+
+
+      {!!isEditMode && <Btn onClick={menu.handleClose()} 
         endIcon={<TextIcon icon="Save" />}
         variant="contained">
         Save changes
       </Btn>}
-      </Flex>
+
+
+      </Flex> */}
     </Box>
 
-    <Box sx={{ p: 2, backgroundColor: t => menu.editing ? t.palette.grey[100] : 'white'}}>
-    <Flex spacing={1}> 
-        <TextIcon icon="Person" /> 
+    <Box sx={{ borderBottom: 1, borderColor: 'divider', p: 2, backgroundColor: t => isEditMode ? t.palette.grey[100] : 'white'}}>
+      <Flex spacing={1}  > 
+        {/* <TextIcon icon="Person" />  */}
+        <Avatar src={creator?.image} alt={event.FullName} />
         <Stack>
         <Nowrap>{menu.data.FullName}</Nowrap>
         <Nowrap variant="caption">Creator</Nowrap>
@@ -206,6 +235,14 @@ const EventPopover = ({ menu }) => {
       </Flex>
     </Box>
  
+    <Flex sx={{p: 2, backgroundColor: t => isEditMode ? t.palette.grey[100] : 'white'}} spacing={1}> 
+        <TextIcon icon="Email" /> 
+     
+        
+        <Nowrap hover><a rel="noreferrer" target="_blank" href={`mailto:${creator?.Email}`}>{creator?.Email}</a></Nowrap> 
+        <Spacer />
+        <TinyButton icon="CopyAll" onClick={() => copy(creator?.Email)} />
+      </Flex>
    </Layout>}
  </Popover>
 

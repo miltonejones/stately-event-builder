@@ -557,7 +557,6 @@ const demoMachine = createMachine({
       },
     },
 
-
     demo_toggle: {
       entry: [assign({ ticks: 3, bit: 1 }), "setMessageListToggle", "say"],
       initial: "tick",
@@ -943,8 +942,6 @@ const demoMachine = createMachine({
       },
     },
 
-
-   
     demo_daytimer: {
       entry: ["setMessageDaytimer", "say"],
       initial: "open_daytimer",

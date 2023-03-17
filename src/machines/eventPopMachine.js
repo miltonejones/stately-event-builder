@@ -1,13 +1,14 @@
 
 import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
-import { saveEvent, getRooms, getEvent } from '../connector';
+import { saveEvent, getRooms, getUsers, getEvent } from '../connector';
 
 // add machine code
 const eventPopMachine = createMachine({
   id: "menu_controller",
   initial: "closed",
   states: {
+
     closed: {
       initial: "prepare",
       states: {
@@ -16,7 +17,7 @@ const eventPopMachine = createMachine({
             src: "loadRooms",
             onDone: [
               {
-                target: "ready",
+                target: "users",
                 actions: "assignRooms",
               },
             ],
@@ -30,9 +31,22 @@ const eventPopMachine = createMachine({
             },
           },
         },
+        users: {
+          invoke: {
+            src: "loadUsers",
+            onDone: [
+              {
+                target: "ready",
+                actions: "assignUsers",
+              },
+            ],
+          },
+        },
       },
     },
+
     closing: {
+      entry: assign({ editing: false }),
       invoke: {
         src: "menuClicked",
         onDone: [
@@ -42,12 +56,35 @@ const eventPopMachine = createMachine({
         ],
       },
     },
+ 
     opened: {
       entry: assign({ busy: false }),
-      on: {
-        change: {
-          actions: "applyChanges",
+      initial: "idle",
+      states: {
+        idle: {
+          description: "Show event in display mode",
+          on: {
+            edit: {
+              target: "editing",
+            },
+          },
         },
+        editing: {
+          description: "Open event edit form",
+          on: {
+            save: {
+              target: "#menu_controller.saving",
+            },
+            change: {
+              actions: "applyChanges",
+            },
+            cancel: {
+              target: "idle",
+            },
+          },
+        },
+      },
+      on: {
         prop: {
           actions: "assignProp",
         },
@@ -55,11 +92,10 @@ const eventPopMachine = createMachine({
           target: "closing",
           actions: "assignClose",
         },
-        save: {
-          target: "saving",
-        },
       },
     },
+
+    
     opening: {
       invoke: {
         src: "loadEvent",
@@ -93,13 +129,17 @@ const eventPopMachine = createMachine({
     assignClose: assign((_, event) => ({
       anchorEl: null,
       value: event.value,
-      data: null
+      data: null,
+      editing: false 
     })),
     assignOpen: assign((_, event) => ({
       anchorEl: event.anchorEl,
       ID: event.ID,
       date: event.date,
       busy: true
+    })),
+    assignUsers: assign((_, event) => ({
+      users: event.data
     })),
     assignRooms: assign((_, event) => ({
       rooms: event.data
@@ -130,6 +170,7 @@ export const useEventPop = (onChange) => {
       menuClicked: async (context, event) => {
         onChange && onChange(event.value);
       }, 
+      loadUsers: async(context) => await getUsers(context),
       loadRooms: async(context) => await getRooms(context),
       loadEvent: async(context) => await getEvent(context.ID),
       commitEvent: async(context) => await saveEvent(context.data)
