@@ -12,7 +12,7 @@ import {
   Btn,
   Spacer, 
   TextIcon,
-  // TinyButton,
+  Nowrap,
   Columns,  
 } from '../../../styled'; 
 import { formProps } from './config';
@@ -62,6 +62,19 @@ const EventForm = ({ handler, disabled }) => {
   };
 
   const columns = opened ? "1fr 300px" : "1fr 24px";
+
+
+  if (handler.is('editing.leaving')) {
+    return <Card sx={{p: 2, m: 2, maxWidth: 500}}><Stack>
+    <Nowrap>You have unsaved changes.</Nowrap>
+      <Nowrap>Are you sure you want to exit?</Nowrap>
+      <Flex spacing={1}>
+        <Spacer />
+        <Btn onClick={() => handler.send('CANCEL')}>Cancel</Btn>
+        <Btn variant="contained" onClick={() => handler.send('OK')}>Leave</Btn>
+      </Flex>
+    </Stack></Card>
+  }
 
   return (
     <Columns sx={{ alignItems: 'flex-start', mb: 8 }} columns={columns}>

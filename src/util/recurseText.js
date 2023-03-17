@@ -44,7 +44,7 @@ export const recurseText = (ev) => {
     },
     {
       label: "weekday" + s,
-      middle: " (M-F)",
+      // middle: " (M-F)",
     },
     {},
     {

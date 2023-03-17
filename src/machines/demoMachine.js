@@ -18,13 +18,7 @@ const demoMachine = createMachine({
         }
       }
     },
-    // init: {
-    //   on: {
-    //     'START': {
-    //       target: "#narrator.welcome", 
-    //     },
-    //   },
-    // },
+ 
 
     init: {
       on: {
@@ -72,6 +66,7 @@ const demoMachine = createMachine({
           on: {
             START: {
               target: "#narrator.welcome",
+              // target: "#narrator.demo_daytimer",
             },
             LOGIN: {
               target: "#narrator.logging_in",
@@ -229,7 +224,7 @@ const demoMachine = createMachine({
                 internal: false,
               },
               {
-                target: "#narrator.demo_search",
+                target: "#narrator.demo_daytimer",
                 actions: ["closeDrawer"],
                 internal: false,
               },
@@ -359,8 +354,6 @@ const demoMachine = createMachine({
         },
       },
     },
-
- 
 
     demo_room: {
       entry: [
@@ -950,6 +943,166 @@ const demoMachine = createMachine({
       },
     },
 
+
+   
+    demo_daytimer: {
+      entry: ["setMessageDaytimer", "say"],
+      initial: "open_daytimer",
+      states: {
+        open_daytimer: {
+          invoke: {
+            src: "daytimerOpen",
+            onDone: [
+              {
+                target: "showing",
+                actions: "assignRoomList",
+              },
+            ],
+          },
+        },
+        showing: {
+          entry: ["setMessageDaytimerShowing", "say"],
+          after: {
+            "4500": {
+              target: "#narrator.demo_daytimer.expand_columns",
+              actions: [],
+              internal: false,
+            },
+          },
+        },
+        expand_columns: {
+          entry: assign({ count: 0 }),
+          initial: "tick",
+          states: {
+            tick: {
+              invoke: {
+                src: "collapseColumn",
+              },
+              after: {
+                "1000": {
+                  target: "#narrator.demo_daytimer.expand_columns.tock",
+                  actions: ["incrementDemo"],
+                  internal: false,
+                },
+              },
+            },
+            tock: {
+              after: {
+                "1000": [
+                  {
+                    target: "#narrator.demo_daytimer.expand_columns.tick",
+                    cond: "oneDemo",
+                    actions: ["incrementDemo"],
+                    internal: false,
+                  },
+                  {
+                    target: "#narrator.demo_daytimer.column_menu",
+                    actions: [],
+                    internal: false,
+                  },
+                ],
+              },
+            },
+          },
+        },
+        column_menu: {
+          initial: "open_menu",
+          states: {
+            open_menu: {
+              entry: ["setMessageColumnMenu", "say"],
+              invoke: {
+                src: "openColumnMenu",
+                onDone: [
+                  {
+                    target: "exclude_columns",
+                  },
+                ],
+              },
+            },
+            exclude_columns: {
+              entry: [assign({ count: 0 }), assign({ excluded: [] })],
+              initial: "tick",
+              states: {
+                tick: {
+                  invoke: {
+                    src: "excludeColumn",
+                    onDone: [
+                      {
+                        target: "concat",
+                        actions: "assignExcluded",
+                      },
+                    ],
+                  },
+                },
+                tock: {
+                  after: {
+                    "1000": [
+                      {
+                        target:
+                          "#narrator.demo_daytimer.column_menu.exclude_columns.tick",
+                        cond: "oneDemo",
+                        actions: ["incrementDemo"],
+                        internal: false,
+                      },
+                      {
+                        target:
+                          "#narrator.demo_daytimer.column_menu.close_menu",
+                        actions: [],
+                        internal: false,
+                      },
+                    ],
+                  },
+                },
+                concat: {
+                  after: {
+                    "1000": {
+                      target:
+                        "#narrator.demo_daytimer.column_menu.exclude_columns.tock",
+                      actions: ["incrementDemo"],
+                      internal: false,
+                    },
+                  },
+                },
+              },
+            },
+            close_menu: {
+              invoke: {
+                src: "closeColumnMenu",
+                onDone: [
+                  {
+                    target: "#narrator.demo_daytimer.finish",
+                  },
+                ],
+              },
+            },
+          },
+        },
+        finish: {
+          initial: "pause",
+          states: {
+            pause: {
+              after: {
+                "4500": {
+                  target: "#narrator.demo_daytimer.finish.next",
+                  actions: [],
+                  internal: false,
+                },
+              },
+            },
+            next: {
+              invoke: {
+                src: "daytimerClose",
+                onDone: [
+                  {
+                    target: "#narrator.demo_search",
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    },
   },
   on: {
     QUIT: {
@@ -968,6 +1121,7 @@ const demoMachine = createMachine({
     message: 'loading...',
     bit: 2,
     step: 0,
+    excluded: [],
     languages: demoLanguages,
     messages: demoMessages
   },
@@ -1019,6 +1173,9 @@ const demoMachine = createMachine({
       index: context.index + 1,
       value: context.param.substr(0, context.index)
     })),
+    assignExcluded: assign((_, event) => ({
+      excluded: event.data, 
+    })),
     assignEventIDs: assign((_, event) => ({
       events: event.data,
       ev: event.data[0]
@@ -1050,6 +1207,21 @@ const demoMachine = createMachine({
         }
       } 
     }),
+    assignRoomList: assign((_, event) => {
+      const eventList = event.data;
+      const roomsList = eventList.reduce((out, ev) => {
+        if (!out[ev.RoomNames]) {
+          out[ev.RoomNames] = [];
+        }
+        out[ev.RoomNames].push(ev);
+        return out;
+      }, {});
+    
+      const roomKeys = shuffle(Object.keys(roomsList));
+      return {
+        roomKeys
+      }
+    }),
     
     setDrawerComplete: assign(context => ({ text: context.messages.drawerComplete, ticks: 8, drawer: true })),
     setDrawerWelcome: assign(context => ({ text: context.messages.drawerWelcome, ticks: 10, drawer: true })),
@@ -1059,6 +1231,13 @@ const demoMachine = createMachine({
     setDrawerHome: assign(context => ({ text: context.messages.drawerHome, ticks: 6, drawer: true })),
     setDrawerSearch: assign(context => ({ text: context.messages.drawerSearch, ticks: 4, drawer: true })),
     closeDrawer: assign({ drawer: false }),
+
+
+    setMessageDaytimerShowing: assign(context => ({message: context.messages.messageDaytimerShowing})),
+    setMessageColumnMenu: assign(context => ({message: context.messages.messageColumnMenu})),
+    setMessageDaytimer: assign(context => ({message: context.messages.messageDaytimer})),
+    
+    
     setMessageLogin: assign(context => ({message: context.messages.messageLogin})),
     setMessageReady: assign(context => ({ message: context.messages.messageReady})),
     setMessageComplete: assign(context => ({ message: context.messages.messageComplete})),
@@ -1155,7 +1334,61 @@ export const useDemo = (events, room, find, auth) => {
           type: 'EDIT',
           ID: context.ev
         })
-      }
+       },
+       daytimerOpen: async () => {
+         chat({
+           type: 'CHANGE',
+           key: 'format',
+           value: 2
+         });
+         return events.eventList
+       },
+       
+       daytimerClose: async () => {
+        chat({
+          type: 'CHANGE',
+          key: 'format',
+          value: 1
+        }); 
+      },
+      
+       closeColumnMenu: async () => {
+         chat({
+           type: 'CHANGE',
+           key: 'daytimerOpen',
+           value: false
+         }); 
+       },
+       
+       openColumnMenu: async () => {
+        chat({
+          type: 'CHANGE',
+          key: 'daytimerOpen',
+          value: true
+        });
+        return events.eventList
+      },
+      
+      collapseColumn: async (context) => {
+        const { roomKeys, count } = context;
+
+        chat({
+          type: 'CHANGE',
+          key: 'selectedCol',
+          value: roomKeys[count]
+        });
+ 
+      },
+      excludeColumn: async (context) => {
+        const { roomKeys, count, excluded } = context;
+        const value = excluded.concat(roomKeys[count]);
+        chat({
+          type: 'CHANGE',
+          key: 'excluded',
+          value 
+        });
+        return value
+      },
     },
   }); 
 

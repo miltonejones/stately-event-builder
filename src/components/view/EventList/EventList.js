@@ -7,6 +7,10 @@ import React from "react";
 // import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 // import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Daytimer from './components/Daytimer/Daytimer';
+
 import { styled, 
   Stack, 
   // IconButton, 
@@ -47,17 +51,35 @@ const EventList = ({ handler, collapsed }) => {
   // const is = (val) => Array.isArray(val)
   //   ? val.some(state.matches)
   //   : state.matches(val);
-  const opened = Boolean(handler.view & VIEW.LIST_SIDEBAR);
+  const opened = Boolean(handler.view & VIEW.LIST_SIDEBAR) && handler.props.format === 1;
   const expandedCols = opened ? "275px 1fr" : "0 1fr";
 
   const width = collapsed ? 'var(--sidebar-width)' : `calc(100vw - ${opened ? 432 : 132}px)`;
   const direction = collapsed ? "column" : "row";
+ 
+
+  const handleChange = (event, value) => {
+    handler.send({
+      type: 'CHANGE',
+      key: 'format',
+      value
+    })
+  };
+
+  const control = {
+    value: handler.props.format,
+    onChange: handleChange,
+    exclusive: true,
+  };
+
 
   return (
     <Layout data-testid="test-for-EventList">
       <Collapse in={!!props.showJSON}>
         <pre>{JSON.stringify(eventList, 0, 2)}</pre>
       </Collapse>
+
+ 
 
       <Collapse in={!props.showJSON}>
         {!!eventList && (
@@ -83,109 +105,7 @@ const EventList = ({ handler, collapsed }) => {
 
             <Box>
 
-{/*               
-             {!collapsed && <LineItem sx={{ margin: collapsed ? 1 : 0}} direction={direction} collapsed={collapsed} spacing={1}>
-                
-                <Typography sx={{ mt: 1 }}>Find</Typography>
-                {is(["listing", "editing"]) && (
-                  <IconTextField
-                    endIcon={
-                      <TextIcon
-                        icon={!params.title ? "Search" : "Close"}
-                        onClick={() => {
-                          send({
-                            type: "FIND",
-                            params: {
-                              ...params,
-                              start_date: apiDate(new Date()),
-                              title: null,
-                            },
-                          });
-                        }}
-                      />
-                    }
-                    sx={{ mt: 1, maxWidth: 200 }}
-                    label="Event title"
-                    placeholder="Type an event name"
-                    size="small"
-                    value={params.title}
-                    onChange={(e) => {
-                      send({
-                        type: "PARAM",
-                        key: "title",
-                        value: e.target.value,
-                      });
-                    }}
-                  />
-                )}
-
-                <DateInput
-                  label="Date"
-                  value={params.start_date}
-                  setValue={(value) => {
-                    send({
-                      type: "PARAM",
-                      key: "start_date",
-                      value: apiDate(new Date(value)),
-                    });
-                  }}
-                />
-
-                <Collapse in={props.showAdvanced} orientation={collapsed ? "vertical" : "horizontal"}>
-                  <DateInput
-                    value={params.end_date}
-                    setValue={(value) => {
-                      send({
-                        type: "PARAM",
-                        key: "end_date",
-                        value: apiDate(new Date(value)),
-                      });
-                    }}
-                  />
-                </Collapse>
-
-                <Flex spacing={1}>
-                <Btn  
-                  disabled={!dirty}
-                  size="small"
-                  variant="contained"
-                  onClick={() => {
-                    send({
-                      type: "FIND",
-                      params,
-                    });
-                  }}
-                >
-                  search
-                </Btn>
-
-                <Btn
-                  size="small"
-                  endIcon={
-                    <TextIcon
-                      icon={
-                        props.showAdvanced
-                          ? "KeyboardArrowDown"
-                          : "KeyboardArrowRight"
-                      }
-                    />
-                  }
-                  variant={props.showAdvanced ? "contained" : "outlined"}
-                  onClick={() => {
-                    send({
-                      type: "CHANGE",
-                      key: "showAdvanced",
-                      value: !props.showAdvanced,
-                    });
-                  }}
-                >
-                  advanced
-                </Btn>
-                </Flex>
-
-
-              </LineItem>} */}
-
+ 
 
               <Card sx={{ m: 1 , width, ml: collapsed ? 0 : 3 }}>
 
@@ -202,6 +122,16 @@ const EventList = ({ handler, collapsed }) => {
                   </Typography>
                   <Spacer />
                
+
+                  <ToggleButtonGroup sx={{ color: "inherit"}} size="small" {...control} >
+                    <ToggleButton sx={{ color: "inherit"}} value={1} key="left">
+                      <TextIcon icon="FormatListBulleted" />
+                    </ToggleButton>,
+                    <ToggleButton sx={{ color: "inherit"}}  value={2} key="center">
+                      <TextIcon icon="CalendarMonth" />
+                    </ToggleButton>
+                  </ToggleButtonGroup>
+
                   {!collapsed && <Btn variant="contained" color="warning" endIcon={<TextIcon icon="Add" />}>
                     Create Event
                   </Btn>}
@@ -214,59 +144,69 @@ const EventList = ({ handler, collapsed }) => {
                   }} />}
                 </Banner>
 
-
-                  <Box sx={{
-                    height: 'calc(100vh - 124px)',
-                    overflowY: 'auto',
-                    overflowX: 'hidden',
-                    width 
-                  }}>
-
-
-                {eventList?.map((ev) => (
-                  <Stack
-                    sx={{
-                      p: 1,
-                      borderBottom: 1,
-                      borderColor: "divider",
-                      width
-                    }}
-                  >
-                    <LineItem direction={direction} collapsed={collapsed}>
-                      <Nowrap
-                        onClick={() => navigate(`/edit/${ev.ID}`)}
-                        hover
-                       
-                        selected={Number(ev.ID) === Number(handler.ID) ? 1 : 0}
-                        bold={!!ev.RecurseEndDate}
-                      >
-                        {ev.EventName} 
-                      </Nowrap>
-
-                      <Nowrap variant="caption" muted>
-                        {ev.RoomNames}
-                      </Nowrap>
-
-                      <Spacer />
-                      <DateBox collapsed={collapsed} event={ev} />
-                    </LineItem>
-
-                    <LineItem direction={direction} collapsed={collapsed}>
-                    {!collapsed && <Nowrap sx={{maxWidth: '50vw'}} small>{ev.Comments}</Nowrap>}
-                      <Spacer />
-                      <Typography variant="caption">
-                        {moment("2022-08-22T" + ev.EventStartTime).format(
-                          "h:mm a"
-                        )}{" "}
-                        to{" "}
-                        {moment("2022-08-22T" + ev.EventEndTime).format("h:mm a")}
-                      </Typography>
-                    </LineItem>
-                  </Stack>
-                ))}
-                  </Box>
+{/*  
+                  <Collapse in={handler.props.format === 2}>
+                  
+                  horizontal date picker
+                  
+                  </Collapse> */}
 
 
+          
+
+            <Box sx={{
+                  height: 'calc(100vh - 124px)',
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                  width 
+                }}>
+
+                {handler.props.format === 2 && <Daytimer handler={handler} />}
+
+              {handler.props.format  === 1 && eventList?.map((ev) => (
+                <Stack
+                  sx={{
+                    p: 1,
+                    borderBottom: 1,
+                    borderColor: "divider",
+                    width
+                  }}
+                >
+                  <LineItem direction={direction} collapsed={collapsed}>
+                    <Nowrap
+                      onClick={() => navigate(`/edit/${ev.ID}`)}
+                      hover
+                      
+                      selected={Number(ev.ID) === Number(handler.ID) ? 1 : 0}
+                      bold={!!ev.RecurseEndDate}
+                    >
+                      {ev.EventName} 
+                    </Nowrap>
+
+                    <Nowrap variant="caption" muted>
+                      {ev.RoomNames}
+                    </Nowrap>
+
+                    <Spacer />
+                    <DateBox collapsed={collapsed} event={ev} />
+                  </LineItem>
+
+                  <LineItem direction={direction} collapsed={collapsed}>
+                  {!collapsed && <Nowrap sx={{maxWidth: '50vw'}} small>{ev.Comments}</Nowrap>}
+                    <Spacer />
+                    <Typography variant="caption">
+                      {moment("2022-08-22T" + ev.EventStartTime).format(
+                        "h:mm a"
+                      )}{" "}
+                      to{" "}
+                      {moment("2022-08-22T" + ev.EventEndTime).format("h:mm a")}
+                    </Typography>
+                  </LineItem>
+                </Stack>
+              ))}
+
+              
+                </Box>
               </Card>
 
 

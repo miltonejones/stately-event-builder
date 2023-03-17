@@ -93,6 +93,7 @@ const eventListMachine = createMachine({
       initial: "init",
       states: {
         load_event: {
+          entry: assign({ busy: true }),
           invoke: {
             src: "loadEventDetail",
             onDone: [
@@ -144,6 +145,58 @@ const eventListMachine = createMachine({
           },
         }, 
 
+        leaving: {
+          initial: "list",
+          states: {
+            list: {
+              description: "Confirm closing form",
+              always: {
+                target: "#event_list.listing",
+                cond: "isClean",
+                actions: "clearID",
+              },
+              on: {
+                OK: {
+                  target: "#event_list.listing",
+                  actions: ["clearID", assign({ dirty: false })],
+                },
+              },
+            },
+            find: {
+              description: "Confirm closing form",
+              always: {
+                target: "#event_list.listing.searching",
+                cond: "isClean",
+              },
+              on: {
+                OK: {
+                  target: "#event_list.listing.searching",
+                  actions: assign({ dirty: false }),
+                },
+              },
+            },
+            edit: {
+              description: "Confirm loading new event",
+              always: {
+                target: "#event_list.editing.load_event",
+                cond: "isClean",
+              },
+              on: {
+                OK: {
+                  target: "#event_list.editing.load_event",
+                },
+              },
+            },
+          },
+          on: {
+            CANCEL: {
+              target: "form",
+              actions: "resetID"
+            },
+          },
+        },
+
+
         form: {
           description: "Form state shows the event edit form",
           on: {
@@ -157,15 +210,14 @@ const eventListMachine = createMachine({
               target: "#event_list.saving",
             },
             EDIT: {
-              target: "load_event",
-              actions: ["assignID", assign({ busy: true })], 
+              target: "#event_list.editing.leaving.edit",
+              actions: "assignID",
             },
             LIST: {
-              target: "#event_list.listing.ready",
-              actions: "clearID",
+              target: "#event_list.editing.leaving.list",
             },
             FIND: {
-              target: "#event_list.listing.searching",
+              target: "#event_list.editing.leaving.find",
               actions: "assignParams",
             },
           },
@@ -244,7 +296,9 @@ const eventListMachine = createMachine({
   },
   context: {
     params: {}, 
-    props: {},
+    props: {
+      format: 1
+    },
     calendars: [],
     categories: [],
     logo: '/poweredby.gif'
@@ -253,6 +307,9 @@ const eventListMachine = createMachine({
   preserveActionOrder: true,
 },
 {
+  guards: {
+    isClean: context => !context.dirty
+  },
   actions: {
 
     statusListReady: assign((context) => ({
@@ -304,11 +361,15 @@ const eventListMachine = createMachine({
     clearID: assign((context, event) => ({
       ID: null,
       props: {
-        active_machine: context.props.active_machine
+        active_machine: context.props.active_machine,
+        format: context.props.format
       }
     })),
     assignID: assign((_, event) => ({
       ID: event.ID
+    })),
+    resetID: assign((context) => ({
+      ID: context.eventProp.ID
     })),
     assignProblem: assign((_, event) => ({
       error: event.data.message,
@@ -316,11 +377,7 @@ const eventListMachine = createMachine({
     })),
     assignEvents: assign((context, event) => ({
       eventList: event.data,
-      dirty: false,
-      // props: {
-      //   ...context.props,
-      //   ...context.params
-      // }
+      dirty: false ,
     })),
     assignMessage: assign(context => {
       const { params } = context;

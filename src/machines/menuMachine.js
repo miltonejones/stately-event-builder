@@ -11,9 +11,7 @@ const menuMachine = createMachine({
       on: {
         open: {
           target: 'opened',
-          actions: assign({
-            anchorEl: (context, event) => event.anchorEl,
-          }),
+          actions: "assignOpen",
         },
       },
     }, 
@@ -29,16 +27,41 @@ const menuMachine = createMachine({
     },
     opened: {
       on: {
+        change: {
+          actions: "applyChanges"
+        },  
+        prop: {
+          actions: "assignProp"
+        },  
         close: {
           target: 'closing',
-          actions: assign({
-            anchorEl: null,
-            value: (context, event) => event.value,
-          }),
+          actions: "assignClose",
         },
       },
     },
   },
+},
+{
+  actions: {
+    assignClose: assign((_, event) => ({
+      anchorEl: null,
+      value: event.value,
+      data: null
+    })),
+    assignOpen: assign((_, event) => ({
+      anchorEl: event.anchorEl,
+      data: event.data
+    })),
+    applyChanges: assign((context, event) => ({
+      data: {
+        ...context.data,
+        [event.key]: event.value
+      }
+    })),
+    assignProp: assign((_, event) => ({
+      [event.key]: event.value
+    })),
+  }
 });
 
 
@@ -56,10 +79,11 @@ export const useMenu = (onChange) => {
       type: "close",
       value,
     });
-  const handleClick = (event) => {
+  const handleClick = (event, data) => {  
     send({
       type: "open",
       anchorEl: event.currentTarget,
+      data
     });
   };
 
@@ -71,6 +95,7 @@ export const useMenu = (onChange) => {
   };
 
   return {
+    ...state.context,
     state,
     send,
     anchorEl,

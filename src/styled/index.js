@@ -1,3 +1,4 @@
+import Tooltag from './Tooltag';
 import RotateButton from './RotateButton';
 import JsonCollapse from './JsonCollapse';
 import Banner from './Banner';
@@ -41,6 +42,7 @@ export const typeIcons = {
 };
 
 export {
+  Tooltag,
   RotateButton,
   JsonCollapse,
   Banner,

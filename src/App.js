@@ -147,7 +147,7 @@ function Application() {
 
   const navigation = events.is(['editing', 'saving']) ? controls : buttons;
 
-  const opened = Boolean(events.view & VIEW.FORM_SIDEBAR);
+  const opened = Boolean(events.view & VIEW.FORM_SIDEBAR) && events.props.format === 1;
   const expandedCols = opened ? "80px var(--sidebar-width) 1fr" : "80px 24px 1fr";
   const spacer = ['init.dormant'].some(demo.state.matches) ? "90px" : "60px";
 

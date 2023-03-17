@@ -3,7 +3,8 @@ import { styled, Box, Autocomplete, TextField } from '@mui/material';
 import { roomRecurse } from '../../../util/roomRecurse';
  
 const Layout = styled(Box)(({ theme }) => ({
- margin: theme.spacing(0)
+ margin: theme.spacing(0),
+ width: "100%"
 }));
 
 const keys = {
@@ -67,7 +68,7 @@ const RoomSelect = ({ rooms, eventfk, onChange, value }) => {
         })) 
         onChange(updated)
       }}
-      renderInput={(params) => <TextField {...params} size="small" label="Event Room" />}
+      renderInput={(params) => <TextField {...params} fullWidth size="small" label="Event Room" />}
       value={found.map(scrubRoom)}
     />
      {/* <TextField 
