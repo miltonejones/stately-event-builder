@@ -46,7 +46,7 @@ const eventPopMachine = createMachine({
     },
 
     closing: {
-      entry: assign({ editing: false }),
+      entry: [assign({ editing: false }), "assignClose"],
       invoke: {
         src: "menuClicked",
         onDone: [
@@ -62,7 +62,7 @@ const eventPopMachine = createMachine({
       initial: "idle",
       states: {
         idle: {
-          description: "Show event in display mode",
+          description: "Show event in display mode only",
           on: {
             edit: {
               target: "editing",
@@ -70,17 +70,64 @@ const eventPopMachine = createMachine({
           },
         },
         editing: {
-          description: "Open event edit form",
-          on: {
-            save: {
-              target: "#menu_controller.saving",
-            },
+          description: "Open event form for editing", 
+          on: { 
             change: {
-              actions: "applyChanges",
+              actions: ["applyChanges", assign({ dirty: true })],
             },
             cancel: {
-              target: "idle",
+              target: "#menu_controller.opened.cancelling.edit",
             },
+            close: {
+              target: "#menu_controller.opened.cancelling.close",
+            },
+          },
+        },
+        cancelling: {
+          initial: "edit",
+          states: {
+            edit: {
+              description: "confirm exit when changes unsaved",
+              always: {
+                target: "#menu_controller.opened.idle",
+                cond: "isClean",
+              },
+              on: {
+                exit: {
+                  target: "#menu_controller.opened.editing",
+                },
+                ok: {
+                  target: "#menu_controller.opened.reload",
+                  actions: ["assignClean"]
+                },
+              },
+            },
+            close: {
+              description: "Confirm window close",
+              always: {
+                target: "#menu_controller.closing",
+                cond: "isClean",
+              },
+              on: {
+                ok: {
+                  target: "#menu_controller.closing",
+                },
+                exit: {
+                  target: "#menu_controller.opened.editing",
+                },
+              },
+            },
+          },
+        },
+        reload: {
+          invoke: {
+            src: "loadEvent",
+            onDone: [
+              {
+                target: "idle",
+                actions: "assignEvent",
+              },
+            ],
           },
         },
       },
@@ -90,12 +137,13 @@ const eventPopMachine = createMachine({
         },
         close: {
           target: "closing",
-          actions: "assignClose",
+        },
+        save: {
+          target: "saving",
         },
       },
     },
 
-    
     opening: {
       invoke: {
         src: "loadEvent",
@@ -107,15 +155,31 @@ const eventPopMachine = createMachine({
         ],
       },
     },
+     
     saving: {
       entry: assign({ busy: true }),
-      invoke: {
-        src: "commitEvent",
-        onDone: [
-          {
-            target: "opening",
+      initial: "save",
+      states: {
+        save: {
+          invoke: {
+            src: "commitEvent",
+            onDone: [
+              {
+                target: "emit",
+              },
+            ],
           },
-        ],
+        },
+        emit: {
+          invoke: {
+            src: "menuClicked",
+            onDone: [
+              {
+                target: "#menu_controller.opening",
+              },
+            ],
+          },
+        },
       },
     },
   },
@@ -125,12 +189,17 @@ const eventPopMachine = createMachine({
 },
 
 {
+  guards: {
+    isClean: context => !context.dirty
+  },
   actions: {
+    assignClean: assign({ dirty: false }),
     assignClose: assign((_, event) => ({
       anchorEl: null,
       value: event.value,
       data: null,
-      editing: false 
+      editing: false ,
+      dirty: false
     })),
     assignOpen: assign((_, event) => ({
       anchorEl: event.anchorEl,

@@ -10,7 +10,7 @@ import {
   Typography,
 } from "@mui/material";
  
-import { Flex, Nowrap } from "../../../styled";
+import { Flex, Nowrap, TinyButton } from "../../../styled";
 
 const IceCream = styled(Box)(({ open }) => ({
   position: "fixed",
@@ -43,7 +43,7 @@ const TargetNode = ({ id, target, prefix }) => {
 };
 
 const EventNode = ({ event, id, prefix, current, name, transitions }) => {
-  if (event?.target) {
+  if (event?.target) { 
     return (
       <>
         <TargetNode target={event.target} />
@@ -56,7 +56,7 @@ const EventNode = ({ event, id, prefix, current, name, transitions }) => {
     const transition = Array.isArray(trans) ? trans.pop() : trans;
     if (!transition?.target) {
       if (Object.values(current).length) {
-        return <ChipBody>↳ {Object.values(current)[0]}</ChipBody>;
+        return <ChipBody>↳ {JSON.stringify(Object.values(current)[0])}</ChipBody>;
       }
       return <ChipBody>↳ {JSON.stringify(current)}</ChipBody>;
     }
@@ -98,11 +98,7 @@ const StatusChip = ({
             prefix={prefix}
           />
 
-          {/* {!!events[name].target && (
-            <Typography sx={{ lineHeight: 0.9 }} variant="caption">
-              ↳ <em>{events[name].target}</em>
-            </Typography>
-          )} */}
+  
         </Stack>
       }
       sx={{ mb: 1 }}
@@ -135,12 +131,15 @@ const StateName = ({ state }) => {
   );
 };
 
-const Diagnostics = ({ handler, id, send, state, states, error: problem, onClose }) => {
+const Diagnostics = ({ handler, id, send, state, states, error: problem, onClose, layer }) => {
   const error = problem || state.context.error;
   const [showContext, setShowContext] = React.useState(false);
   const { previous } = state.context;
-  const event = getEvent(states, state);
-  // const context = React.useContext(AppStateContext);
+  const e = state.configuration?.find(f => !!f.config?.on)
+  const event = e || getEvent(states, state); 
+
+
+  // console.log ({state, e})
 
   // if (!event) return <IceCream open
   // ><Card sx={{p: 2}}>{JSON.stringify(state.value)}</Card></IceCream>;
@@ -150,8 +149,8 @@ const Diagnostics = ({ handler, id, send, state, states, error: problem, onClose
     typeof state.value === "string" ? state.value : Object.keys(state.value)[0];
   const is = handler.props.active_machine === id;
   return (
-    <IceCream key={id} open={is  ? 1 : 0}>
-      <Card sx={{ mt: 2, width: "fit-content", minWidth: 400 }}>
+    <IceCream key={id} open={is || error  ? 1 : 0}>
+      <Card sx={{ mt: 2, width: "fit-content", minWidth: 400, maxWidth: '50vw',maxHeight: '50vh', overflow: 'auto' }}>
         <Layout data-testid="test-for-Diagnostics">
           <Stack direction="row" sx={{ alignItems: "center" }}>
             <Typography color={error?"error":"text.secondary"} variant="body2">
@@ -174,6 +173,7 @@ const Diagnostics = ({ handler, id, send, state, states, error: problem, onClose
           </Stack>
 
           {!!error && <Typography>
+            <TinyButton onClick={() => send('RECOVER')} icon="Warning" color="warning" />
               {error}
               </Typography>}
           {!!state.context.stack && <Typography variant="caption">
@@ -181,14 +181,20 @@ const Diagnostics = ({ handler, id, send, state, states, error: problem, onClose
               </Typography>}
           <Divider sx={{ m: (t) => t.spacing(0.5, 0) }} />
 
-          {!!showContext && (<Box>
+          {!!showContext && is && (<Box>
 
             {Object.keys(state.context).map((key) => (
               <Flex key={key} between>
-                <Nowrap variant="body2" bold>
+                <Nowrap variant="body2" hover
+                onClick={() => {
+                  console.log ({
+                    [key]: state.context[key]
+                  });
+                  alert(JSON.stringify(state.context[key], 0, 2));
+                }} bold>
                   {key}
                 </Nowrap>
-                <Nowrap variant="caption" onClick={() => alert(JSON.stringify(state.context[key]))} width={300}>
+                <Nowrap variant="caption" width={300}>
                   {JSON.stringify(state.context[key])}
                 </Nowrap>
               </Flex>
@@ -221,6 +227,7 @@ const Diagnostics = ({ handler, id, send, state, states, error: problem, onClose
               </em>{" "}
               state
             </Typography>
+           
             <Stack direction="row" sx={{ flexWrap: "wrap" }} spacing={1}>
               {!!events &&
                 Object.keys(events).map((key) => (

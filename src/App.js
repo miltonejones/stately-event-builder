@@ -9,9 +9,9 @@ import awsExports from './aws-exports';
 
 import { 
   LinearProgress, Box, Card, Alert,  
-  createTheme,
-  // useTheme, 
+  createTheme, 
   ThemeProvider, 
+  useTheme,
    Snackbar, IconButton, Stack, Typography, styled } from "@mui/material";
 
 import {
@@ -22,12 +22,14 @@ import {
 } from "react-router-dom";
 
 
+import { themeTypes } from './colors';
 
  
-import { DiagnosticsMenu, Diagnostics, EventForm, UserMenu, PageTitle, RoomList, DemoStepper, UserList, EventList, AuthForm, EventSearch } from './components';
+import { DiagnosticsMenu, AppsMenu, Diagnostics, EventForm, UserMenu, PageTitle, RoomList, DemoStepper, 
+  UserList, EventList, AuthForm, EventSearch, ThemeMenu } from './components';
 import { VIEW, useAmplify, useProfile, useEventList, useUserList, useDemo, useRoomList, useEventSearch } from './machines';
 // import { objectPath } from './util/objectPath';
-import {  BacklessDrawer, Columns, Nowrap, Btn, TinyButton, TextIcon,  Flex } from './styled'; 
+import {  BacklessDrawer, Columns, Nowrap, Btn, TinyButton, TextIcon, Warn, Flex } from './styled'; 
   
 Amplify.configure(awsExports);
 
@@ -45,8 +47,8 @@ function App() {
   );
 }
 
-
-
+ 
+ 
 
 function Application() { 
   const authenticator = useAmplify();
@@ -54,7 +56,7 @@ function Application() {
     type: 'UPDATE',
     user
   }))
-  // const defaultTheme = useTheme();
+   const defaultTheme = useTheme();
   const navigate = useNavigate();
   const users = useUserList() ;
   const rooms = useRoomList() ;
@@ -62,13 +64,19 @@ function Application() {
   const search = useEventSearch()
   const demo = useDemo(events, rooms.send, search.send, authenticator.send)
 
-  const debuggableMachines = [events, demo, authenticator]
+  const debuggableMachines = [events, demo, authenticator];
+  const themeType = themeTypes[events.props.theme];
+
+
+  // return <pre>{JSON.stringify(defaultTheme,0,2)}</pre>
 
   const theme = createTheme({
     palette: {
       text: {
         primary: "#393939"
-      }
+      },
+      primary: themeType,
+      secondary: defaultTheme.palette[['default','primary'].some(f => events.props.theme === f) ? 'secondary' :  'primary']
     },
     typography: {
       lineHeight: '.1rem',
@@ -149,7 +157,7 @@ function Application() {
 
   const opened = Boolean(events.view & VIEW.FORM_SIDEBAR) && events.props.format === 1;
   const expandedCols = opened ? "80px var(--sidebar-width) 1fr" : "80px 24px 1fr";
-  const spacer = ['init.dormant'].some(demo.state.matches) ? "90px" : "60px";
+  const spacer = ['init.dormant'].some(demo.state.matches) ? "120px" : "90px";
 
   
 
@@ -158,8 +166,14 @@ function Application() {
     <ThemeProvider theme={theme}>
     <div className="App">
 <PageTitle handler={events} />
-
-
+ 
+{!events.props.informed && !authenticator.admin && <Warn filled severity="warning" onDismiss={() => {
+  events.send({
+    type: 'CHANGE',
+    key: 'informed',
+    value: 1
+  })
+}}>You are logged in as Guest. Some features may be disabled.</Warn>}
 {['init.tick', 'init.tock', 'init.waiting'].some(demo.state.matches) && <Stack  sx={{
   width: '100vw',
   height: '100vh',
@@ -176,19 +190,21 @@ function Application() {
 </Stack>}
 
 
-    <Columns columns={events.is(['editing', 'saving']) ? `80px var(--sidebar-width) 1fr ${spacer} 360px` : `80px 310px 1fr ${spacer} 360px`} sx={{
+    <Columns 
+    columns={events.is(['editing', 'saving']) ? `80px var(--sidebar-width) 1fr ${spacer} 360px` : `80px 310px 1fr ${spacer} 360px`} 
+      sx={{
       p: 1, backgroundColor: t => t.palette.primary.dark,  
       color: t=> t.palette.common.white
       }} spacing={1}>
 
-    <Box sx={{ width: 64, textAlign: 'center'}}>   <TextIcon icon="Menu"  /></Box>
+    <Box sx={{ width: 64, textAlign: 'center'}}>   <AppsMenu groups={events.groups} samples={events.eventList} /> </Box>
 
       <Typography variant="body1">
       <b>EventBuilder 8 <sup>beta</sup></b>
       </Typography>
 
 
-    <EventSearch handler={search}
+    <EventSearch handler={search} 
       onValueSelected={e => navigate(`/edit/${e.ID}`) }
     />
 
@@ -214,6 +230,7 @@ function Application() {
         />}
 
 
+{/* 
         <TextIcon icon="Code"  
           onClick={() => {
             events.send({
@@ -222,18 +239,22 @@ function Application() {
             value: !events.props.showJSON
           })
         }}
-          />
-    <DiagnosticsMenu machines={debuggableMachines} handler={events} value={events.props.active_machine} 
-      onChange={val => { 
-        events.send({
-          type: 'CHANGE',
-          key: 'active_machine',
-          value: val
-        })
-      }} />
+          /> */}
+
+
+          <ThemeMenu handler={events} />
+
+        <DiagnosticsMenu machines={debuggableMachines} handler={events} value={events.props.active_machine} 
+          onChange={val => { 
+            events.send({
+              type: 'CHANGE',
+              key: 'active_machine',
+              value: val
+            })
+          }} />
 
     </Flex>
-      <UserMenu handler={authenticator} profile={profile} />
+      <UserMenu handler={authenticator} profile={profile} app={events} />
  
     </Columns>
   

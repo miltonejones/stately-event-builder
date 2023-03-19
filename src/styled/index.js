@@ -1,3 +1,6 @@
+import Pill from './Pill';
+import reportItem from './ReportItem';
+import Warn from './Warn';
 import Tooltag from './Tooltag';
 import RotateButton from './RotateButton';
 import JsonCollapse from './JsonCollapse';
@@ -10,8 +13,7 @@ import TextIcon from './TextIcon';
 import Columns from './Columns';
 import ButtonCard from './ButtonCard';
 import SectionHead from './SectionHead';
-import PillMenu from './PillMenu';
-import Pill from './Pill'; 
+import PillMenu from './PillMenu'; 
 import BorderButton from './BorderButton';
 import Json from './Json';
 import TinyButton from './TinyButton';
@@ -41,7 +43,9 @@ export const typeIcons = {
 
 };
 
-export {
+export { 
+  reportItem,
+  Warn,
   Tooltag,
   RotateButton,
   JsonCollapse,

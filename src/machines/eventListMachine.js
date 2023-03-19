@@ -2,7 +2,8 @@ import React from 'react';
 import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
 import { engDate } from '../util/engDate';
-import { searchEvents, saveEvent, getRooms, getCalendars, getEvent, getCategories } from '../connector';
+import { searchEvents, getEventListCategories, saveEvent, getCognitoGroups,
+   getRooms, getCalendars, getEvent, getCategories } from '../connector';
 // import { scrubRoom } from '../util/scrubRoom';
 import moment from 'moment';
 import {  
@@ -17,45 +18,107 @@ export const VIEW = {
   FORM_OPTIONBAR: 4
 }
 
+
+const PERSIST_PROPS = [
+  "active_machine",
+  "format",
+  "informed",
+  "theme" 
+]
+
+const lookupItems = {
+  roomList: getRooms,
+  calendars: getCalendars,
+  categories: getCategories,
+  groups: getCognitoGroups
+}
+
+
 const apiDate = f => moment(f).format('YYYY-MM-DD')
 // add machine code
 const eventListMachine = createMachine({
   id: "event_list",
-  initial: "loaded",
+  initial: "init_lookup",
   states: {
-    loaded: {
-       entry: "setInitParams",
-      invoke: {
-        src: "findEvents",
-        onDone: [
-          {
-            target: "listing",
-            actions: "assignEvents",
-          },
-        ],
-        onError: [
-          {
-            target: "load_error",
-            actions: "assignProblem",
-          },
-        ],
-      },
-    },
 
-    load_error: {
-      on: {
-        RECOVER: {
-          target: "loaded",
+    init_lookup: {
+      entry: [
+        assign({ busy: true }),
+        assign({ lookup_index: 0 }),
+        "restoreProps", "setInitParams", 
+      ],
+      initial: "tick",
+      states: {
+        tick: {
+          after: {
+            "500": [
+              {
+                target: "#event_list.init_lookup.tock",
+                cond: "moreLookup", 
+              },
+              {
+                target: "#event_list.listing.searching",
+                actions: [assign({ busy: false })],  
+              },
+            ],
+          },
+        },
+        tock: {
+          invoke: {
+            src: "loadLookup",
+            onDone: [
+              {
+                target: "tick",
+                actions: "assignLookup",
+              },
+            ],
+          },
         },
       },
     },
 
+  
     listing: {
       initial: "ready",
       states: {
+
+
         ready: {
           description: "Ready state shows the list of selected events",
-          entry: ["statusListReady", "assignMessage", assign({ busy: false })],
+          entry: [
+            assign({ busy: false }),
+            "assignMessage",
+            assign({ ticks: 5 }),
+          ],
+          initial: "tik",
+          states: {
+            tik: {
+              after: {
+                "30000": {
+                  target: "#event_list.listing.ready.tok",
+                  actions: ["countdown"],
+                  internal: false,
+                },
+              },
+            },
+            tok: {
+              after: {
+                "30000": [
+                  {
+                    target: "#event_list.listing.ready.tik",
+                    cond: "moreTicks",
+                    actions: ["countdown"],
+                    internal: false,
+                  },
+                  {
+                    target: "#event_list.listing.searching",
+                    actions: [],
+                    internal: false,
+                  },
+                ],
+              },
+            },
+          },
           on: {
             CHANGE: {
               actions: "assignProp",
@@ -69,8 +132,45 @@ const eventListMachine = createMachine({
             },
             EDIT: {
               target: "#event_list.editing",
-              actions: "assignID"
+              actions: "assignID",
             },
+            CREATE: {
+              target: "#event_list.editing",
+              actions: "assigNew",
+            },
+          },
+        },
+        // ready: {
+        //   description: "Ready state shows the list of selected events",
+        //   entry: [ "assignMessage", assign({ busy: false })],
+        //   on: {
+        //     CHANGE: {
+        //       actions: "assignProp",
+        //     },
+        //     PARAM: {
+        //       actions: "assignParam",
+        //     },
+        //     FIND: {
+        //       target: "searching",
+        //       actions: "assignParams",
+        //     },
+        //     EDIT: {
+        //       target: "#event_list.editing",
+        //       actions: "assignID"
+        //     }, 
+        //   },
+        // },
+
+
+        list_received: {
+          invoke: {
+            src: "getListCategories",
+            onDone: [
+              {
+                target: "ready",
+                actions: "updateEvents",
+              },
+            ],
           },
         },
         searching: {
@@ -80,7 +180,7 @@ const eventListMachine = createMachine({
             src: "findEvents",
             onDone: [
               {
-                target: "ready",
+                target: "list_received",
                 actions: "assignEvents",
               },
             ],
@@ -90,7 +190,7 @@ const eventListMachine = createMachine({
     },
 
     editing: {
-      initial: "init",
+      initial: "load_event",
       states: {
         load_event: {
           entry: assign({ busy: true }),
@@ -196,6 +296,33 @@ const eventListMachine = createMachine({
           },
         },
 
+        reload: {
+          initial: "list",
+          states: {
+            list: {
+              invoke: {
+                src: "findEvents",
+                onDone: [
+                  {
+                    target: "folders",
+                    actions: "assignEvents",
+                  },
+                ],
+              },
+            },
+            folders: {
+              invoke: {
+                src: "getListCategories",
+                onDone: [
+                  {
+                    target: "#event_list.editing.load_event",
+                    actions: "updateEvents",
+                  },
+                ],
+              },
+            },
+          },
+        },
 
         form: {
           description: "Form state shows the event edit form",
@@ -206,9 +333,9 @@ const eventListMachine = createMachine({
             ATTR: {
               actions: ["assignEventProp", assign({ dirty: true })],
             },
-            SAVE: {
-              target: "#event_list.saving",
-            },
+            // SAVE: {
+            //   target: "#event_list.saving",
+            // },
             EDIT: {
               target: "#event_list.editing.leaving.edit",
               actions: "assignID",
@@ -221,6 +348,11 @@ const eventListMachine = createMachine({
               actions: "assignParams",
             },
           },
+        },
+      },
+      on: {
+        SAVE: {
+          target: "saving",
         },
       },
     },
@@ -250,7 +382,7 @@ const eventListMachine = createMachine({
             src: "commitEvent",
             onDone: [
               {
-                target: "#event_list.editing.load_event",
+                target: "#event_list.editing.reload",
                 actions: assign({ dirty: false, saving: false }),
               },
             ],
@@ -297,10 +429,12 @@ const eventListMachine = createMachine({
   context: {
     params: {}, 
     props: {
+      theme: 'secondary',
       format: 1
     },
     calendars: [],
     categories: [],
+    lookup_index: 0,
     logo: '/poweredby.gif'
   },
   predictableActionArguments: true,
@@ -308,27 +442,23 @@ const eventListMachine = createMachine({
 },
 {
   guards: {
-    isClean: context => !context.dirty
+    moreTicks: context => context.ticks > 0,
+    isClean: context => !context.dirty,
+    moreLookup: context => context.lookup_index < Object.keys(lookupItems).length
   },
   actions: {
-
-    statusListReady: assign((context) => ({
-      message: 'Event list is ready'
-    })),
+ 
 
 
     setInitParams: assign({
-      view: VIEW.FORM_OPTIONBAR + VIEW.FORM_SIDEBAR + VIEW.LIST_SIDEBAR
+      view: VIEW.FORM_OPTIONBAR + VIEW.FORM_SIDEBAR + VIEW.LIST_SIDEBAR,
+      busy: true
     }),
     
     toggleViewBit: assign((context, event) => ({
       view: context.view & event.bit 
         ? context.view - event.bit 
         : Number(context.view) + Number(event.bit)
-    })),
-    
-    assignRoomList: assign((_, event) => ({
-      roomList: event.data
     })),
     
     assignEventProp: assign((context, event) => {
@@ -347,12 +477,27 @@ const eventListMachine = createMachine({
         }
       }
     }),
+
+    assignLookup: assign((context, event) => {
+      const { lookup_index } = context;
+      const keys = Object.keys(lookupItems);
+      return {
+        [keys[lookup_index]]: event.data,
+        lookup_index: lookup_index + 1
+      }
+    }),
+    
+    assignRoomList: assign((_, event) => ({
+      roomList: event.data
+    })),
+
     assignCalendars: assign((_, event) => ({
       calendars: event.data
     })),
     assignCategories: assign((_, event) => ({
       categories: event.data
     })),
+
     assignEventProps: assign((_, event) => ({
       eventProp: event.data,
       pagename: "Edit", 
@@ -362,11 +507,16 @@ const eventListMachine = createMachine({
       ID: null,
       props: {
         active_machine: context.props.active_machine,
-        format: context.props.format
+        format: context.props.format,
+        informed: context.props.informed,
+        theme: context.props.theme
       }
     })),
     assignID: assign((_, event) => ({
       ID: event.ID
+    })),
+    countdown: assign((context) => ({
+      ticks: context.ticks - 1
     })),
     resetID: assign((context) => ({
       ID: context.eventProp.ID
@@ -420,12 +570,42 @@ const eventListMachine = createMachine({
         [event.key]: event.value
       }
     })),
-    assignProp: assign((context, event) => ({
-      props: {
+    updateEvents: assign((context, event) => {
+      const { eventList } = context;
+      const categories = event.data || [];
+
+      return {
+        eventList: eventList.map(f => ({
+          ...f,
+          categories: categories.filter(e => e.eventfk === f.ID)
+        }))
+      }
+    }),
+    restoreProps: assign(() => {
+      const memory = localStorage.getItem('eb-memory');
+      if (memory) {
+        return {
+          props: JSON.parse(memory)
+        }
+      }
+    }),
+    assignProp: assign((context, event) => {
+      const props = {
         ...context.props,
         [event.key]: event.value
+      };
+
+      const memory = PERSIST_PROPS.reduce((out, key) => {
+        out[key] = props[key];
+        return out;
+      }, {});
+
+      localStorage.setItem('eb-memory', JSON.stringify(memory))
+
+      return {
+        props 
       }
-    })),
+    }),
   }
 });
 
@@ -442,11 +622,26 @@ export const useEventList = () => {
         }
         return await searchEvents(context.params)
       },
+      getListCategories: async(context) => {
+        const { eventList } = context;
+        const ids = eventList.map(d => d.ID);
+        console.log ({ ids })
+        return await getEventListCategories(ids.join(','))
+      },
       commitEvent: async(context) => await saveEvent(context.eventProp),
       validateEvent: async() => true,
+
+      loadLookup: async(context) => {
+        const { lookup_index } = context;
+        const keys = Object.keys(lookupItems);
+        const get = lookupItems[keys[lookup_index]];
+        return await get();
+      },
+
       loadCalendars: async() => await getCalendars(),
       loadCategories: async() => await getCategories(),
       loadRoomList: async() => await getRooms(),
+
       loadEventDetail: async(context) => { 
         return await getEvent(context.ID)
       },
@@ -476,8 +671,7 @@ export const useEventList = () => {
       const params  = {}
       for (var i = 0; i < values.length; i +=2) {
         Object.assign(params, { [values[i]]: values[i + 1] })
-      }
-      // alert (JSON.stringify({event, params},0,2))
+      } 
       send({
         type: event.toUpperCase(),
         params

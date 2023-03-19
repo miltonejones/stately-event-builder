@@ -1,7 +1,8 @@
 import React from 'react';
-import { styled, Avatar, Box, TextField, Grid, Dialog } from '@mui/material';
+import { styled, Avatar, Box, Menu, MenuItem, TextField, Grid, Dialog } from '@mui/material';
 import { Nowrap, Btn, Flex, Spacer, TinyButton, JsonCollapse, Banner  } from "../../../styled";
 import { initials  } from "../../../util/initials";
+import { useMenu } from '../../../machines';
  
 const Layout = styled(Box)(({ theme }) => ({
  margin: theme.spacing(0)
@@ -20,11 +21,30 @@ const UserField = ({type, ...props}) => {
   return <TextField {...props}  />
 }
 
-
- 
-const UserMenu = ({ handler, profile }) => {
+const UserMenu = ({ handler, profile, app }) => {
+  const actions = [
+    () =>  handler.send('SIGNOUT'),
+    () => {
+      app.send({
+        type: 'CHANGE',
+        key: 'showJSON',
+        value: !app.props.showJSON
+      })
+    },
+    () => profile.send({
+      type: 'OPEN',
+      user: handler.user
+    })
+  ]
+  const menu = useMenu(index => {
+    const action = actions[index];
+    action && action ()
+  });
+  const open = Boolean(menu.anchorEl)
   if (!handler.user) return <i />
+
   const { image, FirstName, LastName, username } = handler.user;
+
   const handleChange = (event) => { 
     profile.send({
       type: 'CHANGE',
@@ -32,19 +52,17 @@ const UserMenu = ({ handler, profile }) => {
       value: event.target.value
     })
   }
- return (
-   <Layout data-testid="test-for-UserMenu">
-   <Flex spacing={1}>
+  return <Layout>
+  <Flex spacing={1}>
   <Spacer />
    <Nowrap variant="caption">
      Welcome back, {FirstName || username} 
     </Nowrap>
     <Btn variant="contained" onClick={() => handler.send('SIGNOUT')}>Sign Out</Btn> 
-    <Avatar onClick={() => profile.send({
-      type: 'OPEN',
-      user: handler.user
-    })} size="small" src={image} alt={FirstName}>{initials(`${FirstName} ${LastName}`)}</Avatar>
-   </Flex>
+    <Avatar onClick={menu.handleClick} size="small" src={image} alt={FirstName}>{initials(`${FirstName} ${LastName}`)}</Avatar>
+
+  </Flex>
+       
   {!!profile?.user && <Dialog onClose={() => profile.send('CLOSE')} open={profile.open}>
     <Banner>Edit Profile<Spacer />
     <TinyButton icon="Code" onClick={() => profile.send(profile.state.matches('json') ? 'EXIT' : 'JSON')} />
@@ -53,28 +71,39 @@ const UserMenu = ({ handler, profile }) => {
       <JsonCollapse object={profile.user} open={profile.state.matches('json')}>
     <Grid  sx={{maxWidth: '100%'}} container spacing={2}> 
 
-{config.map(conf => (
-  <Grid item xs={conf.xs || 12} key={conf.field}
-  ><UserField label={conf.label || conf.field} type={conf.type} 
-    name={conf.field} disabled={conf.readonly}
-    onChange={handleChange}
-    fullWidth size="small" value={profile.user[conf.field] || profile.user.attributes[conf.attribute]} /></Grid>
-))}
-</Grid>
-<Flex spacing={1} sx={{ p: 2 }}>
-  <Spacer />
-  <Btn onClick={() =>  profile.send('CLOSE')}>Cancel</Btn>
-  <Btn onClick={() =>  profile.send('SAVE')} variant="contained">Save</Btn>
-</Flex>
-</JsonCollapse>
-    </Box>
-      {/* <pre>
-        {JSON.stringify(profile.user.groups,0,2)}
-      </pre> */}
-   </Dialog>}
-   </Layout>
- );
+        {config.map(conf => (
+          <Grid item xs={conf.xs || 12} key={conf.field}
+          ><UserField label={conf.label || conf.field} type={conf.type} 
+            name={conf.field} disabled={conf.readonly}
+            onChange={handleChange}
+            fullWidth size="small" value={profile.user[conf.field] || profile.user.attributes[conf.attribute]} /></Grid>
+        ))}
+        </Grid>
+        <Flex spacing={1} sx={{ p: 2 }}>
+          <Spacer />
+          <Btn onClick={() =>  profile.send('CLOSE')}>Cancel</Btn>
+          <Btn onClick={() =>  profile.send('SAVE')} variant="contained">Save</Btn>
+        </Flex>
+        </JsonCollapse>
+            </Box>
+              {/* <pre>
+                {JSON.stringify(profile.user.groups,0,2)}
+              </pre> */}
+          </Dialog>}
+      <Menu 
+        anchorEl={menu.anchorEl}
+        open={open}
+        onClose={menu.handleClose()}
+      >
+        <MenuItem onClick={menu.handleClose(2)}>Profile</MenuItem>
+        <MenuItem onClick={menu.handleClose(0)}>Logout</MenuItem>
+        <MenuItem onClick={menu.handleClose(1)}>{app.showJSON ? "Hide" : "Show"} JSON output</MenuItem>
+      </Menu>
+  </Layout>
 }
+
+
+  
 UserMenu.defaultProps = {};
 export default UserMenu;
 

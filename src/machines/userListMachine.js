@@ -1,7 +1,7 @@
 
 import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
-import { getUsers , getUserByName, getCognitoGroups, commitUser} from '../connector';
+import { getUsers , getUserByName, getCognitoGroups, commitUser } from '../connector';
 
 
 // add machine code

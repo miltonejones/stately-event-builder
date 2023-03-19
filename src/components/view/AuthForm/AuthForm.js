@@ -21,7 +21,7 @@ import {
   IconTextField,
   Btn,
 } from '../../../styled';
-import { objectPath } from '../../../util/objectPath';
+// import { objectPath } from '../../../util/objectPath';
 
 const Layout = styled(Box)(({ theme }) => ({
   margin: theme.spacing(0),
@@ -480,7 +480,7 @@ const SignInForm = ({
 const AuthForm = ({ handler, demo }) => {
   return (
    <>
-   <Nowrap small muted>{objectPath(handler.state.value)}/{objectPath(demo.state.value)}</Nowrap> 
+   {/* <Nowrap small muted>{objectPath(handler.state.value)}/{objectPath(demo.state.value)}</Nowrap>  */}
     <Layout data-testid="test-for-AuthForm">
       {handler.is('start.error') && <InvalidUser {...handler} />}
       {handler.is(['signing_in', 'signing_up']) && (

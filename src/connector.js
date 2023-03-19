@@ -8,8 +8,44 @@ export const getEvents = async () => {
   return await response.json();
 };
 
+export const setCategory = async (options) => {
+  const requestOptions = {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(options),
+  };
+  const response = await fetch(API_ENDPOINT + '/categories', requestOptions );
+  return await response.json();
+};
+
+export const getEventListCategories = async (ids) => {
+  const response = await fetch(API_ENDPOINT + `/categories/${ids}`);
+  return await response.json();
+};
+
 export const getCategories = async () => {
   const response = await fetch(API_ENDPOINT + `/categories`);
+  return await response.json();
+};
+
+export const setReport = async (options) => {
+  const requestOptions = {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(options),
+  };
+  const response = await fetch(API_ENDPOINT + '/reports', requestOptions );
+  return await response.json();
+};
+
+
+export const getReports = async () =>  {
+  const response = await fetch(API_ENDPOINT + `/reports`);
+  return await response.json();
+};
+
+export const getAmenities = async () =>  {
+  const response = await fetch(API_ENDPOINT + `/amenities`);
   return await response.json();
 };
 

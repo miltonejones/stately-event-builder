@@ -12,12 +12,16 @@ import EventSearch from './lib/EventSearch/EventSearch';
 import PageTitle from './lib/PageTitle/PageTitle';
 import TimeInput from './lib/TimeInput/TimeInput';
 import DemoStepper from './lib/DemoStepper/DemoStepper';
+import AppsMenu from './lib/AppsMenu/AppsMenu';
 import DiagnosticsMenu from './lib/DiagnosticsMenu/DiagnosticsMenu';
 import Diagnostics from './lib/Diagnostics/Diagnostics';
+import Unsaved from './lib/Unsaved/Unsaved';
+import ThemeMenu from './lib/ThemeMenu/ThemeMenu';
 
 
 export {
   AuthForm,
+  AppsMenu,
   UserMenu,
   CalendarInput,
   DateInput,
@@ -32,5 +36,7 @@ export {
   DemoStepper,
   EventSearch,
   Diagnostics,
-  DiagnosticsMenu
+  DiagnosticsMenu,
+  ThemeMenu,
+  Unsaved
 }

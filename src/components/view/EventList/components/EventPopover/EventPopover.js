@@ -1,11 +1,11 @@
 import React from 'react';
 import { styled, Avatar, Popover, Switch, Stack, TextField, LinearProgress, Box } from '@mui/material';
-import { Flex, Spacer, Btn, TextIcon, Tooltag, TinyButton, Nowrap } from '../../../../../styled';
+import { Flex, Spacer, Btn, TextIcon, Warn, Tooltag, TinyButton, Nowrap } from '../../../../../styled';
 import { RoomSelect, DateInput } from '../../../..';
 import { timeToNum } from '../../../../../util/timeToNum';
 import { recurseText } from '../../../../../util/recurseText';
 import { useClipboard } from '../../../../../util/useClipboard';
-// import dayjs from 'dayjs';
+
 import moment from 'moment';
 import { 
   useNavigate
@@ -43,29 +43,7 @@ const TextInput = ({ date, room, eventfk, roomList, value, variant, type="text",
         {...props}
     />
 }
-
-const Warn = ({severity = "info", children, ...props})  => {
-  const icons = {
-    info: "Info",
-    warning: "WarningAmber",
-    error: "Error",
-    success: "CheckCircle"
-  }
-  return <Box sx={{
-    display: 'flex',
-    border: 1,
-    borderColor: t => t.palette[severity].dark,
-    color: t => t.palette[severity].dark,
-    width: '100%',
-    p: t  => t.spacing(0.5, 1),
-    borderRadius: 1,
-    gap: 1
-  }}>
-    <TinyButton color="inherit" icon={icons[severity]} />
-    {children}
-  </Box>
-}
-
+ 
 const RecurseDesc = ( { event }) => {
   if (!event?.RecurseEndDate) return <i />
   const caption = recurseText(event);
@@ -99,15 +77,37 @@ const EventPopover = ({ menu }) => {
   
 
 
+  const handleChange = (event) => {
+    menu.send({
+      type: 'change',
+      key: event.target.name, 
+      value: event.target.value
+    })
+  }
  
  return (
   <Popover anchorEl={menu.anchorEl}
   onClose={menu.handleClose()}  
   open={Boolean(menu.anchorEl) }
    >
-    {/* {JSON.stringify(creator)} */}
+    {/* {JSON.stringify(menu.state.value)} */}
     {!menu.state.matches('opened') && <Layout><LinearProgress />Loading event details...</Layout>}
-   {menu.state.matches('opened') && <Layout on={isEditMode}>
+    {menu.state.matches('opened.cancelling') && <Layout>
+      <Box sx={{ p: 2}}>
+        <Nowrap muted variant="body2">Confirm exit</Nowrap>
+      <Warn sx={{ mt: 1}} filled severity='warning'>You have unsaved changes</Warn>
+      Are you sure you want to leave without saving your changes?
+      <Flex spacing={1} sx={{ mt: 2}}>
+        <Btn variant="contained" onClick={() => menu.send('save')}>Save changes</Btn>
+        <Spacer />
+        <Btn  onClick={() => menu.send('exit')}>Cancel</Btn>
+        <Btn color="error" variant="contained" onClick={() => menu.send('ok')}>Discard changes</Btn>
+      </Flex>
+      </Box>
+      </Layout>}
+
+
+   {menu.state.matches('opened') && !menu.state.matches('opened.cancelling') && <Layout on={isEditMode}>
     <Box sx={{ p: 2}}>
 
 
@@ -118,6 +118,7 @@ const EventPopover = ({ menu }) => {
 
 
         {!!isEditMode && <Tooltag component={TinyButton} title="Save event" 
+          onClick={() => menu.send("save")}
           caption="Save the event details you entered"
            icon="Save" />}
 
@@ -140,7 +141,9 @@ const EventPopover = ({ menu }) => {
             editing={isEditMode}
             fullWidth
             value={menu.data.EventName} 
-            onChange={console.log}/> 
+            name="EventName"
+            onChange={handleChange}
+            /> 
         </Flex>
 
 
@@ -155,7 +158,8 @@ const EventPopover = ({ menu }) => {
 
             fullWidth
             value={ isEditMode ? menu.data.rooms : menu.data.rooms?.map(f => getRoomName(f.roomfk)).join(", ")} 
-            onChange={console.log}/> 
+            onChange={console.log}
+            /> 
         </Flex>
 
 
@@ -173,12 +177,16 @@ const EventPopover = ({ menu }) => {
 
           <TextInput
             label="Start Time"
+            name="EventStartTime"
+            onChange={handleChange}
           sx={{mt: isEditMode ? 1 : 0}} muted variant="body2" value={isEditMode ? menu.data.EventStartTime : timeof(menu.data.EventStartTime)} 
             type="time"  editing={isEditMode}/>
           <Box>to</Box>
 
           <TextInput
             label="End Time"
+            name="EventEndTime"
+            onChange={handleChange}
           sx={{mt: isEditMode ? 1 : 0}} muted variant="body2" value={isEditMode ? menu.data.EventEndTime : timeof(menu.data.EventEndTime)} 
             type="time"  editing={isEditMode}/>
                 

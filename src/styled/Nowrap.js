@@ -5,7 +5,7 @@ import { styled, Typography } from '@mui/material';
 
 const Nowrap = styled(Typography)(( { theme, selected, color, width, muted, small, thin, border, bold = false, hover } ) => {
   const obj = {
-    cursor:  'default',
+    cursor:  hover ? "pointer" : 'default',
     fontWeight:  bold || selected ? 600 : 400,
     // backgroundColor: odd ? blue[50] : theme.palette.common.white,
     whiteSpace: 'nowrap',

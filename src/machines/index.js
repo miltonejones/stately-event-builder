@@ -1,3 +1,4 @@
+import { useSimpleList } from './simpleListMachine';
 import { useEventPop } from './eventPopMachine';
 import { useMenu } from './menuMachine';
 import { useProfile } from './profileMachine';
@@ -9,6 +10,7 @@ import { useRoomList } from './roomListMachine';
 import { useEventList, VIEW } from './eventListMachine';
 
 export {
+  useSimpleList,
   useEventPop,
   useMenu,
   useProfile,

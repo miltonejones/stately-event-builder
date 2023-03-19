@@ -26,7 +26,8 @@ import {
   TinyButton,
   Columns,
   Spacer,
-  // Flex,
+  Pill,
+  Flex,
   Banner
   // Demotip
 } from "../../../styled";
@@ -123,14 +124,14 @@ const EventList = ({ handler, collapsed }) => {
                   <Spacer />
                
 
-                  <ToggleButtonGroup sx={{ color: "inherit"}} size="small" {...control} >
+                  {!collapsed && <ToggleButtonGroup sx={{ color: "inherit"}} size="small" {...control} >
                     <ToggleButton sx={{ color: "inherit"}} value={1} key="left">
                       <TextIcon icon="FormatListBulleted" />
                     </ToggleButton>,
                     <ToggleButton sx={{ color: "inherit"}}  value={2} key="center">
                       <TextIcon icon="CalendarMonth" />
                     </ToggleButton>
-                  </ToggleButtonGroup>
+                  </ToggleButtonGroup>}
 
                   {!collapsed && <Btn variant="contained" color="warning" endIcon={<TextIcon icon="Add" />}>
                     Create Event
@@ -173,6 +174,9 @@ const EventList = ({ handler, collapsed }) => {
                   }}
                 >
                   <LineItem direction={direction} collapsed={collapsed}>
+                    <Flex spacing={1}>
+                    {ev.categories?.map(c => <Pill  color={c.color}>{c.title}</Pill>)}
+                    </Flex>
                     <Nowrap
                       onClick={() => navigate(`/edit/${ev.ID}`)}
                       hover

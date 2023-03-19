@@ -43,9 +43,7 @@ const RoomSelect = ({ rooms, eventfk, onChange, value }) => {
 
 
 
-  const renderOption = (props, option) => {
-    
-   
+  const renderOption = (props, option) => { 
     return <Box {...props} sx={{ ml: option.indent  }}>
       {option.RoomName}  
     </Box>;

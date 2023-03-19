@@ -24,8 +24,8 @@ const CategoryList = ({ handler, value, handleChange }) => {
     <Banner disabled><Nowrap small bold><b>Categories</b></Nowrap></Banner>
     <Box sx={{ m: 1 }}>
     {handler.categories.map(cat => (
-      <Flex onClick={() => onChange(cat.id)} key={cat.id}>
-        <Switch checked={value.find(f => f.folderfk === cat.id)} /> 
+      <Flex onClick={() => onChange(cat.ID)} key={cat.ID}>
+        <Switch checked={value.find(f => f.folderfk === cat.ID)} /> 
         <Nowrap muted small>{cat.title}</Nowrap>
       </Flex>
     ))} 

@@ -13,7 +13,7 @@ import {
   Spacer, 
   TextIcon,
   Nowrap,
-  Columns,  
+  Columns,  Warn
 } from '../../../styled'; 
 import { formProps } from './config';
 import { useNavigate } from 'react-router-dom'; 
@@ -66,12 +66,13 @@ const EventForm = ({ handler, disabled }) => {
 
   if (handler.is('editing.leaving')) {
     return <Card sx={{p: 2, m: 2, maxWidth: 500}}><Stack>
-    <Nowrap>You have unsaved changes.</Nowrap>
-      <Nowrap>Are you sure you want to exit?</Nowrap>
-      <Flex spacing={1}>
+    <Warn filled severity="warning">You have unsaved changes.</Warn>
+      <Nowrap sx={{ mt: 1 }}>Are you sure you want to exit?</Nowrap>
+      <Flex sx={{ mt: 1 }} spacing={1}>
+        <Btn variant="contained" onClick={() => handler.send('SAVE')}>Save Changes</Btn>
         <Spacer />
         <Btn onClick={() => handler.send('CANCEL')}>Cancel</Btn>
-        <Btn variant="contained" onClick={() => handler.send('OK')}>Leave</Btn>
+        <Btn variant="contained" color="error" onClick={() => handler.send('OK')}>Discard Changes</Btn>
       </Flex>
     </Stack></Card>
   }

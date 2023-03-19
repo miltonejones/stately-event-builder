@@ -1,20 +1,14 @@
 
-// import React from 'react';
-import { styled, Box } from '@mui/material';
+ 
+import { styled, Card } from '@mui/material';
+import {  opposite } from '../colors';
 
-const Pill = styled(Box)(({ theme, bold }) => ({
-  cursor: 'pointer',
-  borderRadius: 4,
-  whiteSpace: "nowrap",
-  padding: theme.spacing(0.5, 1),
-  margin: theme.spacing(0.2),
-  fontWeight: bold ? 600 : 400,
-  outline: bold ? `solid 1px ${theme.palette.grey[500]}` : "none",
-  backgroundColor: theme.palette.grey[200],
-  fontSize: '0.7rem',
-  '&:hover': {
-    backgroundColor: theme.palette.grey[500],
-  }
+const Pill = styled(Card)(({ color, thin, theme }) => ({
+  backgroundColor: color,
+  color: opposite(color),
+  fontSize: '0.75rem',
+  padding: thin ? 0 : theme.spacing(0.4, 1),
+
 }))
 
 export default Pill;
