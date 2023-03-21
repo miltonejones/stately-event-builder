@@ -31,7 +31,7 @@ const ConfirmPop =  ({ children,
         <Stack sx={{ p: 2, minWidth: 400 , maxWidth: 500 }} spacing={2}>
           <Flex sx={{ mb: 0 }} spacing={1}>
             <TinyButton icon="CheckCircle" />
-            <Nowrap small muted>
+            <Nowrap bold small muted>
               {label}
             </Nowrap>
             <Spacer />

@@ -79,6 +79,9 @@ function Application() {
       primary: themeType,
       secondary: defaultTheme.palette[['default','primary'].some(f => events.props.theme === f) ? 'secondary' :  'primary']
     },
+    button:{
+      textTransform: "capitalize"
+    },
     typography: {
       lineHeight: '.1rem',
       letterSpacing: '0.025rem', 
@@ -274,8 +277,7 @@ function Application() {
 
 {/* <pre>
 
-[{JSON.stringify(authenticator.state.value,0,2)}]
-[{JSON.stringify(authenticator.user,0,2)}]
+[{JSON.stringify(defaultTheme,0,2)}]
 </pre> */}
       <Columns 
         sx={{alignItems: 'flex-start'}} 

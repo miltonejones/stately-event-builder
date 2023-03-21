@@ -69,7 +69,7 @@ const AppsHeader = ({ handler, icon, title, labelfield, label, color, singular, 
       {!!handler && handler.state.matches('idle') && <IconTextField 
         prompt 
         button={<IconButton><TextIcon  icon="Add" /></IconButton>}
-
+        icon={icon}
         onChange={e => { 
           handler.send ({
             type: 'CREATE',
@@ -83,7 +83,7 @@ const AppsHeader = ({ handler, icon, title, labelfield, label, color, singular, 
 
         label={`Add ${singular}`}
         name={singular}
-        description={`Enter a new  ${singular} title`}
+        description={`Enter a new  ${singular} title.`}
         placeholder={`Type or paste a ${singular} title`}
         okayText={`Add ${singular}`}
         />}

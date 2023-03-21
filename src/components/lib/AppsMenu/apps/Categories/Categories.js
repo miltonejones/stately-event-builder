@@ -11,23 +11,12 @@ const Layout = styled(Box)(({ theme }) => ({
 }));
  
 const Categories = ({ handler, children }) => { 
-  const handleDrop = (ID) => {
-    handler.send({
-      type: 'DROP',
-      ID 
-    })
-  }
-  const handleChange = (event, value) => {
-    handler.send({
-      type: 'CHANGE',
-      key: event.target.name,
-      value: event.target.value
-    })
-  }
+  const { handleChange, handleDrop } = handler;
+  
  return (
    <Layout data-testid="test-for-Categories">
     {/* {JSON.stringify(handler.state.value)} */}
-    <Collapse in={handler.state.matches('idle')}> 
+    <Collapse in={handler.is('idle')}> 
     <Box>
       <Columns columns="20px 200px 1fr" sx={{ m: 1 }}>
         <Spacer />
@@ -39,7 +28,7 @@ const Categories = ({ handler, children }) => {
       <ConfirmPop 
         label="Confirm delete"
         message={<>Are you sure you want to delete category <b>{item.title}</b>?</>} onChange={ok => {
-          handleDrop(item.ID)
+         !!ok && handleDrop(item.ID)
       }}><TinyButton icon="Delete" /></ConfirmPop>
 
       <Nowrap  hover onClick={() => {
@@ -60,11 +49,11 @@ const Categories = ({ handler, children }) => {
     </Box>
     </Collapse>
 {/* 
-    <Collapse in={handler.state.matches('confirm_close')}> 
+    <Collapse in={handler.is('confirm_close')}> 
       <Unsaved handler={handler} save="UPDATE" />
     </Collapse> */}
 
-    <Collapse in={handler.state.matches('editing')}> 
+    <Collapse in={handler.is('editing')}> 
     {!!handler.item &&  <Stack spacing={1}>
         
         <Nowrap>Title</Nowrap>

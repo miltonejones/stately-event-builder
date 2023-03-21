@@ -240,11 +240,38 @@ export const useSimpleList = () => {
   const is = (val) => Array.isArray(val)
     ? val.some(state.matches)
     : state.matches(val);
+ 
+
+  const handleEdit = (ID, title) => {
+    send({
+      type: 'EDIT',
+      ID ,
+      title 
+    })
+  }
+
+  const handleDrop = (ID) => {
+    send({
+      type: 'DROP',
+      ID 
+    })
+  }
+    
+  const handleChange = (event, value) => {
+    send({
+      type: 'CHANGE',
+      key: event.target.name,
+      value: event.target.value
+    })
+  }
 
   return {
     state,
     send, 
     is,
+    handleDrop,
+    handleChange,
+    handleEdit,
     ...state.context
   };
 }

@@ -48,7 +48,7 @@ const DayRow = ({ time, date, factor, events, onChange, handler }) => {
   // find any events whose start time is 30 minutes ahead of the selected time
   const bottomHalfBlock = events.find((f) => divideInHalf && blockMatches(time + (1800 * 1000), f.EventStartTime));
  
-  // find any events whose start time is 30 minutes ahead of the selected time
+  // find any events whose end time is 30 minutes ahead of the selected time
   const topHalfBlock = events.find((f) => divideInHalf && blockMatches(time + (1800 * 1000), f.EventEndTime));
  
   // find any events for which this time is between their start and end time
@@ -169,7 +169,7 @@ const DayRow = ({ time, date, factor, events, onChange, handler }) => {
         color: bottomConflict ? "error.main" : bottomHalfBlock ? 'primary.dark' : "white",
         backgroundColor: !!handler.props.hover && handler.props.hover === bottomHalfBlock?.ID 
             ? "#ffffcc" 
-            : bottomHalfBlock && !topHalfBlock 
+            : bottomHalfBlock 
               ? "aliceblue" 
               : 'white',
         borderTop: t => 'dotted 1px ' + t.palette.primary.light,
@@ -201,8 +201,10 @@ const Daytimer = ({ handler }) => {
     : 1800
  
   const sunday = moment().startOf('week').format('YYYY-MM-DD');
+  
   const yesterday = moment(new Date(params.start_date || null)).format('YYYY-MM-DD');
   const tomorrow = moment(new Date(params.start_date || null)).add(2, 'days').format('YYYY-MM-DD');
+
   const monday = moment().startOf('week').add(1, 'days').format('YYYY-MM-DD');
   const friday = moment().startOf('week').add(5, 'days').format('YYYY-MM-DD');
   const saturday = moment().startOf('week').add(6, 'days').format('YYYY-MM-DD');

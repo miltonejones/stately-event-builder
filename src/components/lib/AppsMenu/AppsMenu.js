@@ -20,6 +20,7 @@ import AppsFooter from './components/AppsFooter/AppsFooter';
 import AppsHeader from './components/AppsHeader/AppsHeader';
 import Rooms from './apps/Rooms/Rooms';
 import Categories from './apps/Categories/Categories';
+import Calendars from './apps/Calendars/Calendars';
 import Reports from './apps/Reports/Reports';
 import Amenities from './apps/Amenities/Amenities';
 import Users from './apps/Users/Users';
@@ -68,7 +69,10 @@ const AppsMenu = ({ handler, samples, groups }) => {
       label: 'Calendars',
       icon: 'CalendarMonth',
       color: 'info',
-      singular: 'event calendar'
+      anchor: 'left', 
+      component: Calendars,
+      singular: 'event calendar',
+      labelfield: 'calendar_name'
     },
     {
       label: 'Amenities',

@@ -15,6 +15,7 @@ const TextPopover = ({
   description,
   onChange,
   okayText = 'Okay',
+  icon="BorderColor",
   ...props
 }) => {
   const menu = useMenu((val) => {
@@ -34,22 +35,23 @@ const TextPopover = ({
       <Box onClick={(e) => menu.handleClick(e, { [props.name]: value })}>
         {button}
       </Box>
-
+      
       <Popover
         anchorEl={menu.anchorEl}
-        onClose={menu.handleClose()}
+        onClose={error ? () => menu.send('ok') : menu.handleClose()}
         open={Boolean(menu.anchorEl)}
       >
         <Stack sx={{ backgroundColor: 'white' }}>
           <Stack sx={{ p: 2, minWidth: 400 }} spacing={2}>
             <Flex sx={{ mb: 0 }} spacing={1}>
-              <Nowrap small muted>
-                {props.label}
+              <TinyButton icon={icon} />
+              <Nowrap bold small muted>
+                {props.label}{menu.dirty && <>*</>}
               </Nowrap>
               <Spacer />
               {!!menu.data && (
                 <TinyButton
-                  disabled={!menu.dirty}
+                  disabled={!menu.dirty || error}
                   color="primary"
                   icon="Save"
                   onClick={menu.handleClose(menu.data[props.name])}
@@ -92,7 +94,7 @@ const TextPopover = ({
             <Spacer />
             <Collapse orientation="horizontal" in={error}>
               <Flex spacing={1}>
-                <Btn onClick={() => menu.send('cancel')} variant="contained">
+                <Btn onClick={() => menu.send('cancel')}>
                   cancel
                 </Btn>
                 <Btn

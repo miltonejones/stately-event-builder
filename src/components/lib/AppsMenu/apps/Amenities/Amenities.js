@@ -1,7 +1,7 @@
 import React from 'react';
 import { styled, Box, Autocomplete, TextField , Collapse, MenuItem} from '@mui/material';
 import {
-  // Flex,
+  Flex,
   Nowrap,
   // Btn,
   // reportItem,
@@ -127,17 +127,14 @@ const Amenities = ({ handler, children }) => {
           />
       </Columns>)}
 
-{/* 
+
       <Flex sx={{mt: 2}} spacing={1}>
          
-        <Spacer />
-        <Btn onClick={() => handler.send('EXIT')}>Cancel</Btn>
-        <Btn onClick={() => handler.send('UPDATE')} variant="contained" disabled={!handler.dirty}>Save</Btn>
-      </Flex> */}
+    {children} 
+      </Flex>
 
     </Collapse>
 
-    {children}
 
      {/* <pre>
       {JSON.stringify(handler.items,0,2)}
