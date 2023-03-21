@@ -1,4 +1,4 @@
-import { useSimpleList } from './simpleListMachine';
+import { useSimpleList, APPTYPE } from './simpleListMachine';
 import { useEventPop } from './eventPopMachine';
 import { useMenu } from './menuMachine';
 import { useProfile } from './profileMachine';
@@ -20,5 +20,6 @@ export {
   useDemo,
   useRoomList,
   useEventList,
-  VIEW
+  VIEW,
+  APPTYPE
 }

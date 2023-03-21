@@ -1,9 +1,13 @@
 import React from 'react';
-import { styled, Box, Stack } from '@mui/material';
-import { Columns, Spacer, Flex, Btn,   TinyButton, TextIcon, Tooltag, Nowrap } from '../../../../../styled';
+import { styled, Box, Stack, IconButton } from '@mui/material';
+import { Columns, Spacer, Flex, Btn, TinyButton, TextIcon, Tooltag, Nowrap } from '../../../../../styled';
 import { useEventPop } from '../../../../../machines';
 import DaytimerMenu from '../DaytimerMenu/DaytimerMenu';
 import EventPopover from '../EventPopover/EventPopover';
+import { 
+  useNavigate
+} from "react-router-dom";
+
 
 import moment from 'moment';
 
@@ -19,44 +23,74 @@ const eventTime = (f) => {
 
 const thirtyOf = num => Math.floor(num / 30);
  
+// true when the block matches the current time
 const blockIsNow = (day1, halfs, date) =>
   date === moment(new Date()).format('MM-DD-YYYY') && 
   moment.utc(day1).format('HH')  === moment(new Date()).format('HH') && 
     (!halfs || (thirtyOf( moment.utc(day1).format('mm'))  === thirtyOf(moment(new Date()).format('mm') )));
+
+// true when block is between event start and end time
 const blockIsBetween = (day1, start, end) =>
   day1 > eventTime(start) && day1 < eventTime(end);
-const blockMatches = (day1, end) => day1 === eventTime(end);
+
+// selected time matches the selected block
+const blockMatches = (day1, time) => day1 === eventTime(time);
 
 const DayRow = ({ time, date, factor, events, onChange, handler }) => {
   const thirty = factor * 1000;
 
+  // no 30 minute markers in sidebar
   const divideInHalf = factor === 3600;
 
+  // find any events whose start time matches the selected time
+  const firstBlock = events.find((f) => blockMatches(time, f.EventStartTime) );
 
-
-  const firstBlock = events.find((f) => blockMatches(time, f.EventStartTime) || 
-    (divideInHalf && blockMatches(time - 1800, f.EventStartTime)));
+  // find any events whose start time is 30 minutes ahead of the selected time
+  const bottomHalfBlock = events.find((f) => divideInHalf && blockMatches(time + (1800 * 1000), f.EventStartTime));
  
+  // find any events whose start time is 30 minutes ahead of the selected time
+  const topHalfBlock = events.find((f) => divideInHalf && blockMatches(time + (1800 * 1000), f.EventEndTime));
+ 
+  // find any events for which this time is between their start and end time
   const duringBlocks = events.filter((f) =>
     blockIsBetween(time, f.EventStartTime, f.EventEndTime)
   );
 
-  const duringBlock = duringBlocks[0]
+  const duringBlock = duringBlocks[0];
+
+  // true when this block matches the current time
   const nowBlock = blockIsNow(time + thirty, factor === 1800, date);
-  const secondBlock = events.find((f) => blockMatches(time - thirty, f.EventStartTime));
-  const lastBlock = events.some((f) => blockMatches(time + thirty, f.EventEndTime));
+
+
+  // block is second in a group when the start time matches the time of the previous block
+  const secondBlock = events.find((f) => duringBlocks.find(e => e.ID === f.ID) && blockMatches(time - thirty, f.EventStartTime));
+  
+  // block is last in a group when the end time matches the time of the following block
+  const lastBlock = !firstBlock && events.some((f) => blockMatches(time + thirty, f.EventEndTime));
 
 
   const nextBlock = events.some((f) => blockMatches(time + thirty, f.EventStartTime));
 
+  // hour markers at any block evenly divisible by 3600
   const even = (time / 1000) % 3600 !== 0;
-  const borderBottomStyle = even || nowBlock || divideInHalf ? 'solid' : 'dotted';
 
-  const conflict = !!firstBlock && duringBlocks.find(f => f.ID !== firstBlock?.ID)
 
+  const borderBottomStyle = even || nowBlock || divideInHalf 
+    ? 'solid' 
+    // dotted lines for 1/2 hour markers
+    : 'dotted';
+
+  // event is in conflict if any other events occur during this block
+  const conflict = (!!firstBlock && duringBlocks.find(f => f.ID !== firstBlock?.ID)) ;
+  
+  const bottomConflict =  (!!bottomHalfBlock && duringBlocks.find(f => f.ID !== bottomHalfBlock?.ID))
+
+  
+  // no border for any blocks during the event 
   const hideBorder = !(lastBlock || nextBlock) && (firstBlock || duringBlock);
 
   const hoverBlock = firstBlock || secondBlock || duringBlock;
+
   const defaultBgColor = 'aliceblue'
 
   const hoveredBackgroundColor = handler.props.hover === hoverBlock?.ID ? '#ffffcc' : defaultBgColor;
@@ -64,11 +98,12 @@ const DayRow = ({ time, date, factor, events, onChange, handler }) => {
   const backcolor = hoverBlock ? hoveredBackgroundColor : 'white';
   const forecolor = secondBlock ? "#777" :  firstBlock ? 'primary.dark' : duringBlock ? hoveredBackgroundColor : 'white';
 
-  const borderWidth = nowBlock ? "3px" : "1px"; 
+  const borderWidth = nowBlock ? "2px" : "1px"; 
 
 
   const setHover = id => {
-    !divideInHalf && handler.send({
+    // if(divideInHalf) return;
+    handler.send({
       type: "CHANGE",
       key: 'hover',
       value: id
@@ -86,17 +121,23 @@ const DayRow = ({ time, date, factor, events, onChange, handler }) => {
       bold={!!firstBlock?.RecurseEndDate}
 
       sx={{
+        transition: 'all 0.2s linear',
         position: 'relative',
         backgroundColor: backcolor,
         color: conflict ? "error.main" : forecolor,
-        pl: divideInHalf ? 0 : 0.4,
+        pl: divideInHalf && !hoverBlock ? 0 : 0.4,
         pt: 0.5,
         pb: 0.5, 
         overflow: "hidden",
         borderBottom: (t) =>
-          `${borderBottomStyle} ${borderWidth} ${hideBorder && !nowBlock ? hoveredBackgroundColor : t.palette[nowBlock ? "secondary" : "primary"].light}`,
+          `${borderBottomStyle} ${borderWidth} ${
+            ((hideBorder && !nowBlock) || 
+             bottomHalfBlock ) && 
+             !topHalfBlock
+              ? hoveredBackgroundColor 
+              : t.palette[nowBlock ? "secondary" : "primary"].light }`,
         '&:hover': {
-          backgroundColor: t => (firstBlock || duringBlock) ? backcolor : t.palette.primary.dark
+          backgroundColor: t => (divideInHalf || firstBlock || duringBlock) ? backcolor : t.palette.primary.dark
         }
       }}
     >
@@ -106,21 +147,38 @@ const DayRow = ({ time, date, factor, events, onChange, handler }) => {
 
       {!!secondBlock && <>{secondBlock.FullName}</>}
 
+
       {!secondBlock && <>{!firstBlock 
-        ? !hoverBlock
+        ? !hoverBlock && !divideInHalf
           ? <Flex sx={{zIndex: 0}}><TinyButton icon="Add" color="inherit" /> create event</Flex>
-          : JSON.stringify(lastBlock)
+          : `${JSON.stringify(Boolean(bottomHalfBlock))}/${JSON.stringify(Boolean(topHalfBlock))}`
         : hoverBlock.EventName}</>}
 
-      {!(hoverBlock || duringBlock) && divideInHalf && <Box sx={{
+
+
+      {(topHalfBlock || bottomHalfBlock || !(hoverBlock || duringBlock)) && divideInHalf && <Box sx={{
         position: 'absolute',
-        top: '50%',
+        top: !!handler.props.hover && handler.props.hover === bottomHalfBlock?.ID 
+          ? 0 
+          : !!handler.props.hover && handler.props.hover === topHalfBlock?.ID 
+            ? '100%' 
+            : '50%',
         width: '100%',
-        backgroundColor: 'white',
+        height: '100%',
+        pl: 0.4,
+        color: bottomConflict ? "error.main" : bottomHalfBlock ? 'primary.dark' : "white",
+        backgroundColor: !!handler.props.hover && handler.props.hover === bottomHalfBlock?.ID 
+            ? "#ffffcc" 
+            : bottomHalfBlock && !topHalfBlock 
+              ? "aliceblue" 
+              : 'white',
         borderTop: t => 'dotted 1px ' + t.palette.primary.light,
-        zIndex: 1
+        transition: 'top 0.2s linear', 
+        '&:hover': {
+          top: topHalfBlock ? '100%' : bottomHalfBlock ? 0 : '50%'
+        }
       }}>
-        {firstBlock?.EventName}
+        {bottomHalfBlock?.EventName}{" "}
         </Box> } 
     </Nowrap> 
   );
@@ -128,6 +186,7 @@ const DayRow = ({ time, date, factor, events, onChange, handler }) => {
 
 const Daytimer = ({ handler }) => {
 
+  const navigate = useNavigate();
   const { eventList, params } = handler;
   const collated = eventList.reduce((out, ev) => {
     if (!out[ev.CustomDate]) {
@@ -142,9 +201,20 @@ const Daytimer = ({ handler }) => {
     : 1800
  
   const sunday = moment().startOf('week').format('YYYY-MM-DD');
+  const yesterday = moment(new Date(params.start_date || null)).format('YYYY-MM-DD');
+  const tomorrow = moment(new Date(params.start_date || null)).add(2, 'days').format('YYYY-MM-DD');
   const monday = moment().startOf('week').add(1, 'days').format('YYYY-MM-DD');
   const friday = moment().startOf('week').add(5, 'days').format('YYYY-MM-DD');
   const saturday = moment().startOf('week').add(6, 'days').format('YYYY-MM-DD');
+
+
+  const goto = params => {
+    const pieces = Object.keys(params).reduce((out, key) => {
+      return out.concat(key, params[key])
+    }, []).join('/');
+    navigate(`/find/${pieces}`);
+  }
+
   const buttons = {
     today: {
       icon: "Today",
@@ -174,7 +244,25 @@ const Daytimer = ({ handler }) => {
  
       {Object.keys(collated).map((key, i) => (<Box key={key}>
         <Flex>
-        <Nowrap sx={{m: 1}}> {moment(new Date(key)).format('dddd MMM Do, YYYY')}</Nowrap>
+
+        {i === 0 && <IconButton onClick={() =>goto( {
+                start_date: yesterday
+              })}>
+
+          <TextIcon icon="KeyboardArrowLeft" />
+        </IconButton>}
+ 
+        <Nowrap hover onClick={() => goto({
+                start_date: moment(new Date(key)).format('YYYY-MM-DD')
+              })} sx={{m: 1}}> {moment(new Date(key)).format('dddd MMM Do, YYYY')}</Nowrap>
+
+        {i === 0 && <IconButton onClick={() => goto({
+                start_date: tomorrow
+              })}>
+
+          <TextIcon icon="KeyboardArrowRight" />
+        </IconButton>}
+ 
         <Spacer />
         {i === 0 && <Flex sx={{m: 1}} spacing={1}>
             {Object.keys(buttons).map(btn => <Btn key={btn}
@@ -182,12 +270,7 @@ const Daytimer = ({ handler }) => {
               size="small"
               variant={(params.start_date === buttons[btn].params.start_date && params.end_date === buttons[btn].params.end_date) || 
                 (!params.start_date && !buttons[btn].params.end_date) ? "contained" : "outlined"}
-              onClick={() => {
-                handler.send({
-                  type: 'FIND',
-                  params:  buttons[btn].params
-                })
-              }}
+              onClick={() => goto(buttons[btn].params)}
               >{btn}</Btn>)}
           </Flex>}
         </Flex>

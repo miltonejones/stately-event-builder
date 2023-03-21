@@ -80,6 +80,7 @@ const RoomList = ({ handler, disabled }) => {
           }} rooms={handler.roomList} filter={handler.filter} />
         </Columns>
       </Box>
+      
         {!!handler.room && <Stack spacing={1} sx={{p: 2}}>
           <TextField label="Room Name" fullWidth size="small" value={handler.room.RoomName} />
           <TextField label="Directions" fullWidth 
@@ -92,10 +93,7 @@ const RoomList = ({ handler, disabled }) => {
               <Spacer />
               <Btn onClick={() => handler.send('CLOSE')}>Cancel</Btn>
               <Btn disabled={disabled} variant="contained">Save</Btn>
-            </Flex>
-          {/* <pre>
-            {JSON.stringify(handler.room.ID,0,2)}
-          </pre> */}
+            </Flex> 
         </Stack>}
     </Columns>
       {/* {JSON.stringify(handler.state.value,0,2)} */}

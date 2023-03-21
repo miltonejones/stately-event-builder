@@ -4,8 +4,11 @@ import { useMachine } from "@xstate/react";
 
 // add machine code
 const menuMachine = createMachine({
-  id: 'menu_controller',
+  id: 'simple_menu',
   initial: 'closed',
+  context: {
+    data: {}
+  },
   states: {
     closed: {
       on: {
@@ -26,22 +29,49 @@ const menuMachine = createMachine({
       },
     },
     opened: {
+      initial: "ready",
+      states: {
+        ready: {
+          on: {
+            close: [
+              {
+                target: "#simple_menu.closing",
+                cond: "isClean",
+                actions: "assignClose",
+              },
+              {
+                target: "confirm",
+              },
+            ],
+          },
+        },
+        confirm: {
+          on: {
+            cancel: {
+              target: "ready",
+            },
+            ok: {
+              target: "#simple_menu.closing",
+              actions: "assignClose",
+            },
+          },
+        },
+      },
       on: {
         change: {
-          actions: "applyChanges"
-        },  
+          actions: "applyChanges",
+        },
         prop: {
-          actions: "assignProp"
-        },  
-        close: {
-          target: 'closing',
-          actions: "assignClose",
+          actions: "assignProp",
         },
       },
     },
   },
 },
 {
+  guards: {
+    isClean: (context, event) => !context.dirty || !!event.value
+  },
   actions: {
     assignClose: assign((_, event) => ({
       anchorEl: null,
@@ -49,10 +79,12 @@ const menuMachine = createMachine({
       data: null
     })),
     assignOpen: assign((_, event) => ({
+      dirty: false,
       anchorEl: event.anchorEl,
       data: event.data
     })),
     applyChanges: assign((context, event) => ({
+      dirty: 1,
       data: {
         ...context.data,
         [event.key]: event.value

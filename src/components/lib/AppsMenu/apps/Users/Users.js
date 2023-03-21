@@ -1,6 +1,6 @@
 import React from 'react';
-import { styled, Grid, Avatar, TextField, Box } from '@mui/material';
-import {   Columns, TextIcon, TinyButton, Nowrap } from '../../../../../styled';
+import { styled, Grid, Avatar, Box } from '@mui/material';
+import {  IconTextField, Columns, TextIcon, Flex, TinyButton, Nowrap } from '../../../../../styled';
  
 const Layout = styled(Box)(({ theme }) => ({
  margin: theme.spacing(1),
@@ -74,21 +74,42 @@ const Users = ({ handler, groups }) => {
 Users.defaultProps = {};
 export default Users;
 
-const UserField = ({type, ...props}) => {
-  if (type === 'avatar') {
-    return <Avatar src={props.value} alt="user avatar" size="small" sx={{ width: 32, height: 32 }}
-      onClick={() => {
+/** onClick={() => {
         const value = window.prompt("Enter a path to the user image", props.value);
         !!value && props.onChange({ target: { value, name: props.name }}); 
       }}
-    ><TextIcon icon="Person" /></Avatar>
-  } 
-  return <TextField {...props}  />
+    */
+
+
+const UserField = ({type, ...props}) => {
+  // if (type === 'avatar') {
+  //   return <Avatar src={props.value} alt="user avatar" size="small" sx={{ width: 32, height: 32 }}
+  //     ><TextIcon icon="Person" /></Avatar>
+  // } 
+
+  return <IconTextField 
+  
+    prompt={type === 'avatar'} 
+    button={ 
+      <Avatar src={props.value} alt="user avatar" 
+      size="small" sx={{ cursor: 'pointer', width: 32, height: 32 }}
+      ><TextIcon icon="Person" /></Avatar>
+      } 
+      description={<Flex sx={{mb: 1}} spacing={1}>
+        <Avatar src={props.value} alt="value" />
+        Edit the image that is displayed in the user profile.</Flex>}
+      placeholder={`Type or paste the URL to a JPG or PNG image`}
+      okayText={`Save image`}
+
+
+    {...props} 
+     />
 }
 
 const config = [
   {
     field: "image",
+    label: "Set user image",
     type: 'avatar',
     xs: 1,
   },

@@ -27,7 +27,7 @@ import { themeTypes } from './colors';
  
 import { DiagnosticsMenu, AppsMenu, Diagnostics, EventForm, UserMenu, PageTitle, RoomList, DemoStepper, 
   UserList, EventList, AuthForm, EventSearch, ThemeMenu } from './components';
-import { VIEW, useAmplify, useProfile, useEventList, useUserList, useDemo, useRoomList, useEventSearch } from './machines';
+import { APPTYPE, VIEW, useAmplify, useProfile, useEventList, useUserList, useSimpleList, useDemo, useRoomList, useEventSearch } from './machines';
 // import { objectPath } from './util/objectPath';
 import {  BacklessDrawer, Columns, Nowrap, Btn, TinyButton, TextIcon, Warn, Flex } from './styled'; 
   
@@ -57,12 +57,13 @@ function Application() {
     user
   }))
    const defaultTheme = useTheme();
+   const appslist = useSimpleList();
   const navigate = useNavigate();
   const users = useUserList() ;
   const rooms = useRoomList() ;
   const events = useEventList() ;
   const search = useEventSearch()
-  const demo = useDemo(events, rooms.send, search.send, authenticator.send)
+  const demo = useDemo(events, appslist, search.send, authenticator.send)
 
   const debuggableMachines = [events, demo, authenticator];
   const themeType = themeTypes[events.props.theme];
@@ -122,19 +123,25 @@ function Application() {
     {
       label: 'Rooms',
       active: rooms.open,
-      action: () => rooms.send('OPEN'),
+      action: () => appslist.send({
+        type: 'LOAD',
+        choice: APPTYPE.ROOM
+      }), // rooms.send('OPEN'),
       icon: 'MeetingRoom'
     },
     {
       label: 'Users',
       active: users.open,
-      action: () => users.send('OPEN'),
+      action: () => appslist.send({
+        type: 'LOAD',
+        choice: APPTYPE.USER
+      }), // users.send('OPEN'),
       icon: 'Group'
     },
-    {
-      label: 'Calendars', 
-      icon: 'CalendarMonth'
-    },
+    // {
+    //   label: 'Calendars', 
+    //   icon: 'CalendarMonth'
+    // },
   ]
   const controls = [
     {
@@ -191,13 +198,18 @@ function Application() {
 
 
     <Columns 
-    columns={events.is(['editing', 'saving']) ? `80px var(--sidebar-width) 1fr ${spacer} 360px` : `80px 310px 1fr ${spacer} 360px`} 
+    columns={events.is(['editing', 'saving']) ? `80px var(--sidebar-width) 1fr ${spacer} 180px` : `80px 310px 1fr ${spacer} 180px`} 
       sx={{
       p: 1, backgroundColor: t => t.palette.primary.dark,  
       color: t=> t.palette.common.white
       }} spacing={1}>
 
-    <Box sx={{ width: 64, textAlign: 'center'}}>   <AppsMenu groups={events.groups} samples={events.eventList} /> </Box>
+    <Box sx={{ width: 64, textAlign: 'center'}}>   <AppsMenu 
+        handler={appslist}
+        groups={events.groups} 
+        samples={events.eventList} 
+    
+    /> </Box>
 
       <Typography variant="body1">
       <b>EventBuilder 8 <sup>beta</sup></b>

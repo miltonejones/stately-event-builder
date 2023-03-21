@@ -1,6 +1,7 @@
 import React from 'react';
 import { IconButton, Box, Breadcrumbs, Typography, Link, styled } from '@mui/material';
-import { Flex, Tooltag, Spacer, TextIcon, Nowrap } from '../../../../../styled';
+import { Flex, Tooltag, Spacer, TextIcon, 
+  IconTextField, Nowrap } from '../../../../../styled';
 import AppsFooter from '../AppsFooter/AppsFooter';
 
 
@@ -12,7 +13,7 @@ const Hand = styled(({ className, ...props }) => (
 }));
 
 
-const AppsHeader = ({ handler, icon, title, label, color, caption, anchor = 'bottom', handleClose }) => {
+const AppsHeader = ({ handler, icon, title, labelfield, label, color, singular, caption, anchor = 'bottom', handleClose }) => {
 
   const suffix = !handler?.title 
     ? [
@@ -47,11 +48,13 @@ const AppsHeader = ({ handler, icon, title, label, color, caption, anchor = 'bot
       <Box sx={{ width: 64, textAlign: 'center' }}>
         <Tooltag
           color={color}
-          component={TextIcon}
+          component={IconButton}
           title={label}
           caption={caption}
-          icon={icon}
-        />
+         
+        >
+          <TextIcon  icon={icon}/>
+        </Tooltag>
       </Box>
       {!!handler && <Breadcrumbs separator="›">{breadcrumbs}</Breadcrumbs>}
 
@@ -62,7 +65,29 @@ const AppsHeader = ({ handler, icon, title, label, color, caption, anchor = 'bot
       <Spacer />
 
       {anchor === 'bottom' && <AppsFooter handler={handler} anchor={anchor} />}
- 
+      
+      {!!handler && handler.state.matches('idle') && <IconTextField 
+        prompt 
+        button={<IconButton><TextIcon  icon="Add" /></IconButton>}
+
+        onChange={e => { 
+          handler.send ({
+            type: 'CREATE',
+            title: `Create ${singular}`,
+            item: {
+                  [labelfield]: e.target.value
+              },
+            })
+
+        }}
+
+        label={`Add ${singular}`}
+        name={singular}
+        description={`Enter a new  ${singular} title`}
+        placeholder={`Type or paste a ${singular} title`}
+        okayText={`Add ${singular}`}
+        />}
+
       <IconButton>
         <TextIcon icon="Close" onClick={handleClose} />
       </IconButton>

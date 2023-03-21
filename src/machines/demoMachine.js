@@ -2,6 +2,7 @@
 import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
 import { apiDate } from "../util/apiDate";
+import { daytimerOptions } from "../util/daytimerOptions";
 import { shuffle } from "../util/shuffle";
 import { translateText } from "../translate";
 import { demoMessages, demoLanguages } from './demo';
@@ -66,7 +67,7 @@ const demoMachine = createMachine({
           on: {
             START: {
               target: "#narrator.welcome",
-              // target: "#narrator.demo_daytimer",
+             //  target: "#narrator.demo_daytimer",
             },
             LOGIN: {
               target: "#narrator.logging_in",
@@ -1067,9 +1068,54 @@ const demoMachine = createMachine({
                 src: "closeColumnMenu",
                 onDone: [
                   {
-                    target: "#narrator.demo_daytimer.finish",
+                    target: "#narrator.demo_daytimer.show_views",
                   },
                 ],
+              },
+            },
+          },
+        },
+        
+        show_views: {
+          entry: ["setMessageShowViews", "say"],
+          initial: "show_weekday",
+          states: {
+            show_weekday: {
+              invoke: {
+                src: "viewWeekday",
+                onDone: [
+                  {
+                    target: "pause_weekday",
+                  },
+                ],
+              },
+            },
+            pause_weekday: {
+              after: {
+                "3500": {
+                  target: "#narrator.demo_daytimer.show_views.show_week",
+                  actions: [],
+                  internal: false,
+                },
+              },
+            },
+            show_week: {
+              invoke: {
+                src: "viewWeek",
+                onDone: [
+                  {
+                    target: "pause_week",
+                  },
+                ],
+              },
+            },
+            pause_week: {
+              after: {
+                "3500": {
+                  target: "#narrator.demo_daytimer.finish",
+                  actions: [],
+                  internal: false,
+                },
               },
             },
           },
@@ -1102,8 +1148,8 @@ const demoMachine = createMachine({
     },
   },
   on: {
-    QUIT: {
-      target: ".init.dormant",
+    QUIT: {    
+      target: ".demo_complete",
       actions: [assign({ open: false }), assign({ drawer: false })],
     },
   },
@@ -1229,7 +1275,8 @@ const demoMachine = createMachine({
     setDrawerSearch: assign(context => ({ text: context.messages.drawerSearch, ticks: 4, drawer: true })),
     closeDrawer: assign({ drawer: false }),
 
-
+    
+    setMessageShowViews: assign(context => ({message: context.messages.messageShowViews})),
     setMessageDaytimerShowing: assign(context => ({message: context.messages.messageDaytimerShowing})),
     setMessageColumnMenu: assign(context => ({message: context.messages.messageColumnMenu})),
     setMessageDaytimer: assign(context => ({message: context.messages.messageDaytimer})),
@@ -1259,7 +1306,7 @@ const demoMachine = createMachine({
   }
 });
 
-export const useDemo = (events, room, find, auth) => {
+export const useDemo = (events, apps, find, auth) => {
   const chat = events.send;
   const [state, send] = useMachine(demoMachine, {
     services: { 
@@ -1269,6 +1316,18 @@ export const useDemo = (events, room, find, auth) => {
           params: {
             start_date: apiDate(new Date(context.date))
           }
+        })
+      },
+      viewWeek: async(context) => {
+        const { week } = daytimerOptions();  chat({
+          type: 'FIND',
+          ...week
+        })
+      },
+      viewWeekday: async(context) => {
+        const { weekdays } = daytimerOptions();  chat({
+          type: 'FIND',
+          ...weekdays
         })
       },
       translateBegin: async(context) => {
@@ -1315,16 +1374,19 @@ export const useDemo = (events, room, find, auth) => {
         })
       },
       closeForm: async (context) => {
-        room('CLOSE')
+        apps.send('CLOSE')
       },
       selectRoom: async (context) => {
-        room({
+        apps.send({
           type: 'EDIT',
           ID: context.room
         })
       },
       openRoomPanel: async (context) => {
-        room('OPEN')
+        apps.send({
+          type: 'LOAD',
+          choice: 5
+        })
       },
       changeEvent: async (context) => {
         chat({

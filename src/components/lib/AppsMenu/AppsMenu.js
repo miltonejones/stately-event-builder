@@ -5,9 +5,9 @@ import {
   LinearProgress,
   Drawer,
   IconButton,
-  Box, 
+  Box,  
 } from '@mui/material';
-import { useMenu, useSimpleList } from '../../../machines';
+import { useMenu } from '../../../machines';
 import {
   Tooltag,
   Columns,
@@ -18,12 +18,15 @@ import {
 
 import AppsFooter from './components/AppsFooter/AppsFooter';
 import AppsHeader from './components/AppsHeader/AppsHeader';
+import Rooms from './apps/Rooms/Rooms';
 import Categories from './apps/Categories/Categories';
 import Reports from './apps/Reports/Reports';
 import Amenities from './apps/Amenities/Amenities';
 import Users from './apps/Users/Users';
 
-
+const AppButton = styled(IconButton)(({ theme, color, dark }) => ({
+  color: theme.palette[color][dark ? 'dark' : 'main']
+}))
 
 const Layout = styled(Box)(({ theme }) => ({
   margin: theme.spacing(0),
@@ -33,12 +36,11 @@ const Layout = styled(Box)(({ theme }) => ({
 
  
 
-const AppsMenu = ({ samples, groups }) => {
-  const list = useSimpleList();
+const AppsMenu = ({ handler, samples, groups }) => { 
 
   const menu = useMenu((choice) => {
     choice !== undefined &&
-      list.send({
+      handler.send({
         type: 'LOAD',
         choice,
       });
@@ -50,43 +52,60 @@ const AppsMenu = ({ samples, groups }) => {
       icon: 'Class',
       color: 'warning',
       component: Categories,
-      anchor: 'left'
+      anchor: 'left',
+      singular: 'category',
+      labelfield: 'title'
     },
     {
       label: 'Reports',
       icon: 'Summarize',
       color: 'success',
-      component: Reports
+      component: Reports,
+      singular: 'report',
+      labelfield: 'title'
     },
     {
       label: 'Calendars',
       icon: 'CalendarMonth',
       color: 'info',
+      singular: 'event calendar'
     },
     {
       label: 'Amenities',
       icon: 'Tune',
       color: 'error',
       component: Amenities,
-      anchor: 'left'
+      anchor: 'left',
+      singular: 'amenity'
     },
     {
       label: 'Users',
       icon: 'Person',
-      color: 'success',
+      color: 'warning',
       dark: true, 
-      component: Users
+      component: Users,
+      singular: 'user',
+      labelfield: 'FirstName'
+    },
+    {
+      label: 'Rooms',
+      icon: 'MeetingRoom',
+      color: 'info',
+      dark: true, 
+      component: Rooms,
+      singular: 'room',
+      labelfield: 'RoomName'
     },
   ];
   return (
     <>
       <Tooltag
-        component={TextIcon}
+        component={IconButton}
         title="Open apps menu"
         caption="Show EventBuilder applications"
-        icon="Apps"
+        color="inherit"
         onClick={menu.handleClick}
-      />
+      ><TextIcon  icon="Apps" /></Tooltag>
 
       {/* application containers */}
       {apps.map((app, i) => {
@@ -94,27 +113,27 @@ const AppsMenu = ({ samples, groups }) => {
         return (
           <Drawer
             key={i}
-            open={list.choice === i}
-            onClose={() => list.send('CLOSE')}
+            open={handler.choice === i}
+            onClose={() => handler.send('CLOSE')}
             anchor={app.anchor || "bottom"}
           >
             <AppsHeader
               {...app}
-              handler={list}
+              handler={handler}
               handleClose={(e) => {
-                list.send('CLOSE');
+                handler.send('CLOSE');
                 menu.handleClick(e)
               }}
               />
 
-            {list.busy && <LinearProgress />}
+            {handler.busy && <LinearProgress />}
  
          
-              {!!Component && <Component handler={list} samples={samples} groups={groups} >
-              <AppsFooter handler={list} anchor={app.anchor} />
+              {!!Component && <Component handler={handler} samples={samples} groups={groups} >
+              <AppsFooter handler={handler} anchor={app.anchor} />
                 </Component>}
               
-             {!Component && <pre> {JSON.stringify(list.items,0,2)}</pre>}
+             {!Component && <pre> {JSON.stringify(handler.items,0,2)}</pre>}
               
           
           </Drawer>
@@ -136,7 +155,7 @@ const AppsMenu = ({ samples, groups }) => {
  
           <Stack sx={{ p: (t) => t.spacing(2) }} spacing={1}>
             <Nowrap variant="h6">Apps</Nowrap>
-            <Columns>
+            <Columns spacing={2}>
               {apps.map((app, i) => (
                 <Flex
                   spacing={1}
@@ -151,9 +170,9 @@ const AppsMenu = ({ samples, groups }) => {
                   }}
                   onClick={menu.handleClose(i)}
                 >
-                  <IconButton color={app.color}>
+                  <AppButton color={app.color} dark={app.dark}>
                     <TextIcon icon={app.icon} />
-                  </IconButton>
+                  </AppButton>
                   <Nowrap variant="body2" hover>
                     {app.label}
                   </Nowrap>

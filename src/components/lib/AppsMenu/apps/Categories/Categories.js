@@ -1,6 +1,6 @@
 import React from 'react';
 import { styled, Stack, Collapse, Autocomplete, TextField, Box } from '@mui/material';
-import { Flex, Columns,  Spacer, IconTextField, TinyButton, Pill,  Nowrap } from '../../../../../styled';
+import { Flex, Columns,  Spacer, IconTextField, ConfirmPop, TinyButton, Pill,  Nowrap } from '../../../../../styled';
 import { htmlColors, opposite } from '../../../../../colors';
 // import { Unsaved } from '../../../..';
 
@@ -11,6 +11,12 @@ const Layout = styled(Box)(({ theme }) => ({
 }));
  
 const Categories = ({ handler, children }) => { 
+  const handleDrop = (ID) => {
+    handler.send({
+      type: 'DROP',
+      ID 
+    })
+  }
   const handleChange = (event, value) => {
     handler.send({
       type: 'CHANGE',
@@ -29,7 +35,13 @@ const Categories = ({ handler, children }) => {
         <Nowrap bold>Color</Nowrap>
       </Columns>
     {handler.items.map(item => <Columns columns="20px 200px 1fr" sx={{ m: 1 }} key={item.ID} >
-      <TinyButton icon="Delete" />
+      
+      <ConfirmPop 
+        label="Confirm delete"
+        message={<>Are you sure you want to delete category <b>{item.title}</b>?</>} onChange={ok => {
+          handleDrop(item.ID)
+      }}><TinyButton icon="Delete" /></ConfirmPop>
+
       <Nowrap  hover onClick={() => {
         handler.send({
           type: 'EDIT',

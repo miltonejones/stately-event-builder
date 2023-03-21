@@ -2,6 +2,7 @@
 
 export const demoMessages = {
   messageLogin: "Logging in as guest",
+  messageShowViews: "The daytimer view can be switched between day, weekday and full week modes using the buttons at the top left of the calendar.",
   messageBegin: "The automated demo will begin in a few seconds",
   messageReady: "This will begin an automated walk-through. Please avoid using your mouse or keyboard during the demo. Click Next when ready.",
   messageComplete: "This completes the demo. More information will be added as development continues. Thank you for your attention.",

@@ -300,7 +300,9 @@ export const htmlColorsToRGB = {
       "YellowGreen": "154,205,50" 
     
 }
-
+// main: 6264a7
+// dark: 444891 
+// light: dce1fa
 export const themeTypes = {
   primary: {
     main: '#1976d2',
@@ -327,9 +329,9 @@ export const themeTypes = {
     contrastText: '#fff',
   },
   info: {
-    main: '#0288d1',
-    light: '#03a9f4',
-    dark: '#01579b',
+    main: '#6264a7',
+    light: '#dce1fa',
+    dark: '#444891',
     contrastText: '#fff',
   },
   success: {

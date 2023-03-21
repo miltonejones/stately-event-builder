@@ -173,15 +173,30 @@ const eventListMachine = createMachine({
             ],
           },
         },
+        search_error: {
+          after: {
+            "30000": {
+              target: "#event_list.listing.ready",
+              actions: [],
+              internal: false,
+            },
+          },
+        },
         searching: {
           description: "Connect to search api with requested params",
-          entry: assign({ busy: true }),
+          // entry: assign({ busy: true }),
           invoke: {
             src: "findEvents",
             onDone: [
               {
                 target: "list_received",
                 actions: "assignEvents",
+              },
+            ],
+            onError: [
+              {
+                target: "search_error",
+                actions: "assignProblem",
               },
             ],
           },
@@ -528,6 +543,7 @@ const eventListMachine = createMachine({
     assignEvents: assign((context, event) => ({
       eventList: event.data,
       dirty: false ,
+      busy: true
     })),
     assignMessage: assign(context => {
       const { params } = context;
@@ -561,7 +577,7 @@ const eventListMachine = createMachine({
     assignParams: assign((context, event) => ({
       ID: null,
       params: event.params,
-      dirty: 1,
+      busy: 1
     })),
     assignParam: assign((context, event) => ({
       dirty: 1,

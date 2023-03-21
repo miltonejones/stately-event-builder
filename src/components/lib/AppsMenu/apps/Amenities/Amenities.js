@@ -48,7 +48,7 @@ const Specimen = ({ item, children, ...props }) => {
 
  
 const Amenities = ({ handler, children }) => {
-  const columns = "150px 150px 360px";
+  const columns = "22px 150px 150px 360px";
   const fields = [
     {
       label: 'Name',
@@ -67,11 +67,13 @@ const Amenities = ({ handler, children }) => {
    <Layout data-testid="test-for-Amenities">
     <Collapse in={handler.state.matches('idle')}>
       <Columns sx={{ mb: 2 }} spacing={1} columns={columns}>
+        <Box />
         <Nowrap bold>Name</Nowrap>
         <Nowrap bold>Type</Nowrap>
         <Nowrap bold>Specimen</Nowrap>
       </Columns>
       {handler.items.map(item => <Columns sx={{ mb: 1 }} spacing={1} columns={columns}>
+        <TinyButton icon="Delete" />
           <Nowrap hover onClick={() => handler.send({
             type: 'EDIT',
             ID: item.ID,

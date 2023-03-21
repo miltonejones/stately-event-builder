@@ -123,8 +123,9 @@ const EventList = ({ handler, collapsed }) => {
                   </Typography>
                   <Spacer />
                
-
-                  {!collapsed && <ToggleButtonGroup sx={{ color: "inherit"}} size="small" {...control} >
+                
+                  {!collapsed && <ToggleButtonGroup sx={{ color: "inherit", 
+                  '& .Mui-selected': { backgroundColor: 'white !important', color: t => t.palette.primary.main } }} size="small" {...control} >
                     <ToggleButton sx={{ color: "inherit"}} value={1} key="left">
                       <TextIcon icon="FormatListBulleted" />
                     </ToggleButton>,

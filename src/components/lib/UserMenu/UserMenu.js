@@ -58,7 +58,7 @@ const UserMenu = ({ handler, profile, app }) => {
    <Nowrap variant="caption">
      Welcome back, {FirstName || username} 
     </Nowrap>
-    <Btn variant="contained" onClick={() => handler.send('SIGNOUT')}>Sign Out</Btn> 
+    {/* <Btn variant="contained" onClick={() => handler.send('SIGNOUT')}>Sign Out</Btn>  */}
     <Avatar onClick={menu.handleClick} size="small" src={image} alt={FirstName}>{initials(`${FirstName} ${LastName}`)}</Avatar>
 
   </Flex>

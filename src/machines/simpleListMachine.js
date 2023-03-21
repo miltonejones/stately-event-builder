@@ -4,39 +4,46 @@ import { useMachine } from "@xstate/react";
 import { 
   getReports, setReport,
   getAmenities, 
-  getCategories, setCategory, 
+  getCategories, setCategory, dropCategory,
   getCalendars ,
-  getUsers, commitUser
+  getUsers, commitUser,
+  getRooms, setRoom
 } from '../connector';
 
 
-const LISTYPE = {
+export const APPTYPE = {
   CATEGORY: 0,
   REPORT: 1,
   CALENDAR: 2,
   AMENITY: 3,
-  USER: 4
+  USER: 4,
+  ROOM: 5
 };
 
 
 const connectors = {
-  [LISTYPE.CATEGORY]: {
+  [APPTYPE.CATEGORY]: {
     get: getCategories,
-    put: setCategory
+    put: setCategory,
+    drop: dropCategory
   },
-  [LISTYPE.REPORT]: {
+  [APPTYPE.REPORT]: {
     get: getReports,
     put: setReport
   },
-  [LISTYPE.CALENDAR]: {
+  [APPTYPE.CALENDAR]: {
     get: getCalendars
   },
-  [LISTYPE.AMENITY]: {
+  [APPTYPE.AMENITY]: {
     get: getAmenities
   },
-  [LISTYPE.USER]: {
+  [APPTYPE.USER]: {
     get: getUsers,
     put: commitUser
+  },
+  [APPTYPE.ROOM]: {
+    get: getRooms,
+    put: setRoom
   },
 };
 
@@ -86,32 +93,17 @@ const simpleListMachine = createMachine({
     deleting: {
       description: "Delete selected item and reload list",
       entry: assign({ busy: true }),
-      initial: "confirm",
-      states: {
-        confirm: {
-          on: {
-            YES: {
-              target: "drop",
-            },
-            NO: {
-              target: "#simple_list.idle",
-              actions: "clearID",
-            },
+      invoke: {
+        src: "dropItem",
+        onDone: [
+          {
+            target: "loading",
           },
-        },
-        drop: {
-          invoke: {
-            src: "dropItem",
-            onDone: [
-              {
-                target: "#simple_list.loading",
-                actions: "clearID",
-              },
-            ],
-          },
-        },
+        ],
       },
     },
+
+
     loading: {
       description:
         "load initial dataset of Items from server before displaying list",
@@ -155,7 +147,7 @@ const simpleListMachine = createMachine({
     },
     CREATE: {
       target: ".editing",
-      actions: "clearID",
+      actions: "assignNew",
     },
     UPDATE: {
       target: ".saving",
@@ -167,6 +159,9 @@ const simpleListMachine = createMachine({
     CLOSE: {
       target: ".inert",
       actions: "clearItems",
+    },
+    PROP: {
+      actions: "applyProps",
     },
   },
   context: { items: [], dirty: false, busy: false, choice: -1, ID: null, item: null },
@@ -200,6 +195,18 @@ const simpleListMachine = createMachine({
       item: context.items.find(f => f.ID === event.ID),
       title: event.title
     })),
+    assignNew: assign((context, event) => ({
+      ID: null, 
+      dirty: false,
+      busy: false,
+      item: {
+        ...event.item
+      },
+      title: "New item" || event.title
+    })),
+    applyProps: assign((context, event) => ({
+      [event.key]: event.value
+    })),
     applyChanges: assign((context, event) => ({
       item: {
         ...context.item,
@@ -220,7 +227,7 @@ export const useSimpleList = () => {
         return await put(context.item)
       },
       dropItem: async(context) => {
-        const { drop } = connectors[context.choice];
+        const { drop } = connectors[context.choice]; 
         return await drop(context.ID)
       },
       loadItems: async(context) => { 

@@ -132,7 +132,9 @@ const EventPopover = ({ menu }) => {
           onClick={openEvent} icon="OpenInFull" />
       </Flex>
 
-      <Stack spacing={isEditMode ? 1 : 0} sx={{ pt: isEditMode ? 2 : 0}}>
+      <Stack spacing={isEditMode ? 2 : 0} sx={{ 
+        transition: 'all 0.2s linear',
+        pt: isEditMode ? 2 : 0}}>
         <Flex sx={{ mt: 1 }}> 
           <TextInput 
             label="Event Name"
@@ -192,9 +194,9 @@ const EventPopover = ({ menu }) => {
                 
         </Flex>
 
-        <Flex>
+        {!!isEditMode && <Flex>
           <RecurseDesc event={menu.data} />
-        </Flex>
+        </Flex>}
 
       {!!isEditMode && <Flex spacing={1}> 
         <Switch checked />  

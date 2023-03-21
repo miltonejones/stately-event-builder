@@ -1,3 +1,5 @@
+import ConfirmPop from './ConfirmPop';
+import PopoverModal from './PopoverModal';
 import Pill from './Pill';
 import reportItem from './ReportItem';
 import Warn from './Warn';
@@ -43,7 +45,9 @@ export const typeIcons = {
 
 };
 
-export { 
+export {
+  ConfirmPop,
+  PopoverModal,
   reportItem,
   Warn,
   Tooltag,

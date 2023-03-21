@@ -17,6 +17,16 @@ export const setCategory = async (options) => {
   const response = await fetch(API_ENDPOINT + '/categories', requestOptions );
   return await response.json();
 };
+ 
+export const dropCategory = async (id) => {
+  const requestOptions = {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id }),
+  };
+  const response =  await fetch(API_ENDPOINT + '/categories/' + id, requestOptions ); 
+  return await response.json(); 
+};
 
 export const getEventListCategories = async (ids) => {
   const response = await fetch(API_ENDPOINT + `/categories/${ids}`);
@@ -83,6 +93,16 @@ export const commitUser = async (options) => {
   };
   const response = await fetch(API_ENDPOINT + '/cognito', requestOptions );
   return await response.json();
+};
+ 
+export const setRoom = async (options) => {
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(options),
+  };
+  const response =  await fetch(API_ENDPOINT + '/rooms', requestOptions ); 
+  return await response.json(); 
 };
  
 export const getRooms = async () => {
