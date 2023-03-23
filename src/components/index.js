@@ -17,9 +17,11 @@ import DiagnosticsMenu from './lib/DiagnosticsMenu/DiagnosticsMenu';
 import Diagnostics from './lib/Diagnostics/Diagnostics';
 import Unsaved from './lib/Unsaved/Unsaved';
 import ThemeMenu from './lib/ThemeMenu/ThemeMenu';
+import ActionsMenu from './lib/ActionsMenu/ActionsMenu';
 
 
 export {
+  ActionsMenu,
   AuthForm,
   AppsMenu,
   UserMenu,

@@ -114,7 +114,7 @@ export const useMenu = (onChange) => {
   const handleClick = (event, data) => {  
     send({
       type: "open",
-      anchorEl: event.currentTarget,
+      anchorEl: event?.currentTarget,
       data
     });
   };

@@ -27,7 +27,7 @@ import { themeTypes } from './colors';
  
 import { DiagnosticsMenu, AppsMenu, Diagnostics, EventForm, UserMenu, PageTitle, RoomList, DemoStepper, 
   UserList, EventList, AuthForm, EventSearch, ThemeMenu } from './components';
-import { APPTYPE, VIEW, useAmplify, useProfile, useEventList, useUserList, useSimpleList, useDemo, useRoomList, useEventSearch } from './machines';
+import { APPTYPE, VIEW, useMenu, useAmplify, useProfile, useEventList, useUserList, useSimpleList, useDemo, useRoomList, useEventSearch } from './machines';
 // import { objectPath } from './util/objectPath';
 import {  BacklessDrawer, Columns, Nowrap, Btn, TinyButton, TextIcon, Warn, Flex } from './styled'; 
   
@@ -56,13 +56,25 @@ function Application() {
     type: 'UPDATE',
     user
   }))
-   const defaultTheme = useTheme();
-   const appslist = useSimpleList();
+  const defaultTheme = useTheme();
+  const appslist = useSimpleList();
   const navigate = useNavigate();
   const users = useUserList() ;
   const rooms = useRoomList() ;
   const events = useEventList() ;
-  const search = useEventSearch()
+  const search = useEventSearch(); 
+  const palette = useMenu(val => !!val && events.send({
+    type: 'CHANGE',
+    key: 'theme',
+    value: val
+  }));
+  const diagnosis =  useMenu(val => events.send({
+    type: 'CHANGE',
+    key: 'active_machine',
+    value: val
+  }));
+
+
   const demo = useDemo(events, appslist, search.send, authenticator.send)
 
   const debuggableMachines = [events, demo, authenticator];
@@ -120,31 +132,28 @@ function Application() {
   const buttons = [
     {
       label: 'Events',
-      active: !(rooms.open || users.open),
+      active: ![APPTYPE.ROOM, APPTYPE.USER].some(f => appslist.choice === f),
       icon: 'Bolt'
     },
     {
       label: 'Rooms',
-      active: rooms.open,
+      active: appslist.choice === APPTYPE.ROOM,
       action: () => appslist.send({
         type: 'LOAD',
         choice: APPTYPE.ROOM
-      }), // rooms.send('OPEN'),
+      }),  
       icon: 'MeetingRoom'
     },
     {
       label: 'Users',
-      active: users.open,
+      active: appslist.choice === APPTYPE.USER,
       action: () => appslist.send({
         type: 'LOAD',
         choice: APPTYPE.USER
-      }), // users.send('OPEN'),
+      }), 
       icon: 'Group'
-    },
-    // {
-    //   label: 'Calendars', 
-    //   icon: 'CalendarMonth'
-    // },
+    }, 
+
   ]
   const controls = [
     {
@@ -167,7 +176,7 @@ function Application() {
 
   const opened = Boolean(events.view & VIEW.FORM_SIDEBAR) && events.props.format === 1;
   const expandedCols = opened ? "80px var(--sidebar-width) 1fr" : "80px 24px 1fr";
-  const spacer = ['init.dormant'].some(demo.state.matches) ? "120px" : "90px";
+  const spacer = !(events.props.format === 1 && Boolean(events.view & VIEW.LIST_SIDEBAR)) ? "180px" : "310px";
 
   
 
@@ -201,7 +210,7 @@ function Application() {
 
 
     <Columns 
-    columns={events.is(['editing', 'saving']) ? `80px var(--sidebar-width) 1fr ${spacer} 180px` : `80px 310px 1fr ${spacer} 180px`} 
+    columns={events.is(['editing', 'saving']) ? `80px var(--sidebar-width) 1fr 64px` : `80px ${spacer} 1fr  64px`} 
       sx={{
       p: 1, backgroundColor: t => t.palette.primary.dark,  
       color: t=> t.palette.common.white
@@ -220,7 +229,7 @@ function Application() {
 
 
     <EventSearch handler={search} 
-      onValueSelected={e => navigate(`/edit/${e.ID}`) }
+      onValueSelected={e => !!e && navigate(`/edit/${e.ID}`) }
     />
 
   
@@ -236,43 +245,20 @@ function Application() {
 
 
 {objectPath(events.state.value)} */}
-
-    <Flex sx={{ justifyContent: 'flex-end'}} spacing={1}>
-
-
-      { ['init.dormant'].some(demo.state.matches) &&  <TextIcon icon="Help"  
-        onClick={() => demo.send('START')}
-        />}
-
-
-{/* 
-        <TextIcon icon="Code"  
-          onClick={() => {
-            events.send({
-            type: 'CHANGE',
-            key: 'showJSON',
-            value: !events.props.showJSON
-          })
-        }}
-          /> */}
-
-
-          <ThemeMenu handler={events} />
-
-        <DiagnosticsMenu machines={debuggableMachines} handler={events} value={events.props.active_machine} 
-          onChange={val => { 
-            events.send({
-              type: 'CHANGE',
-              key: 'active_machine',
-              value: val
-            })
-          }} />
-
-    </Flex>
-      <UserMenu handler={authenticator} profile={profile} app={events} />
+ 
+      <UserMenu diagnosis={diagnosis} handler={authenticator} profile={profile} palette={palette} app={events} />
  
     </Columns>
   
+          <ThemeMenu handler={palette} />
+
+        <DiagnosticsMenu 
+          menu={diagnosis} 
+          machines={debuggableMachines} 
+          handler={events} 
+          value={events.props.active_machine}  
+          />
+
     {events.busy && <LinearProgress variant="indeterminate" />}
 
 {/* <pre>
@@ -281,27 +267,41 @@ function Application() {
 </pre> */}
       <Columns 
         sx={{alignItems: 'flex-start'}} 
-        columns={events.is(['editing', 'saving']) ? expandedCols : "80px 100vw"}>
-        <Stack sx={{ borderRight: 1, borderColor: 'divider', height: '100%', backgroundColor: t => t.palette.grey[5]}}>
+        columns={events.is(['editing', 'saving']) ? expandedCols : "72px 100vw"}>
+
+
+        <Stack sx={{ pb: 2, borderRight: 1, borderColor: 'divider', height: '100%', backgroundColor: t => t.palette.grey[200]}}>
           {navigation.map(btn => (
-            <Ctrl raised={btn.active} elevation={btn.active ? 2 : 0} key={btn.label}    sx={{m: 1}} 
+            <Ctrl raised={btn.active} elevation={btn.active ? 1 : 0} key={btn.label} active={btn.active}  
             onClick={() => btn.action && btn.action()}>
             <Stack sx={{ alignItems: 'center'}}>
-            <IconButton sx={{ color: theme => btn.active ? theme.palette.primary.dark : theme.palette.text.primary}}>
+            <IconButton 
+              size="small"
+              sx={{ color: theme => btn.active ? theme.palette.primary.dark : theme.palette.text.primary}}
+              >
               <TextIcon icon={btn.icon}  />
             </IconButton>
               <Nowrap color={
                 btn.active ? "primary.dark" : "text.primary"
-              } bold={btn.active  || btn.warning} sx={{fontSize: '0.8rem'}} variant="caption">{btn.label}</Nowrap>
+              }  variant="caption">{btn.label}</Nowrap>
           </Stack>
             </Ctrl>
           ))}
+          <Box  sx={{flexGrow: 1}}/>
+         {['init.dormant'].some(demo.state.matches) &&  <Ctrl elevation={0} sx={{ m: 1}}>
+          <Stack sx={{ alignItems: 'center'}}>
+            <IconButton  >
+              <TextIcon icon="Help"  />
+            </IconButton>
+            <Nowrap variant="caption">Demo</Nowrap>
+          </Stack>
+          </Ctrl> }
         </Stack>
 
 
     {['listing', 'searching', 'editing', 'saving'].some(events.state.matches) && 
       !(!opened && events.is(['editing', 'saving'])) && 
-        <EventList collapsed={events.is(['editing', 'saving'])} handler={events} /> }
+        <EventList search={search} appslist={appslist} reports={events.reports} collapsed={events.is(['editing', 'saving'])} handler={events} /> }
 
     {(!opened && events.is(['editing', 'saving'])) && <Flex sx={{m: 1}}>
     <TinyButton icon="KeyboardArrowRight" onClick={() => {
@@ -331,6 +331,7 @@ function Application() {
           </Flex>
         </Box>
       </BacklessDrawer>
+      
     <RoomList handler={rooms} disabled={!authenticator.admin} />
     <UserList handler={users} disabled={!authenticator.admin} />
 
@@ -346,11 +347,15 @@ function Application() {
 }
 
 const Ctrl = styled(Card)(({ theme, warning, active }) => ({
-  backgroundColor: active ? theme.palette.primary.main : (warning ? theme.palette.warning.main : theme.palette.common.white),
+  backgroundColor: active ? theme.palette.common.white : (warning ? theme.palette.warning.main : theme.palette.grey[200]),
   color: active || warning ? theme.palette.common.white : theme.palette.text.main,
+  margin: theme.spacing(1),
+  cursor: 'pointer',
+  transition: 'all 0.1s linear',
   // outline: active ? "solid 2px red" : "",
   '&:hover': {
-    outline: active ? "" : 'solid 2px ' + theme.palette.primary.dark
+    outline: active ? "" : 'solid 2px ' + theme.palette.primary.dark,
+    outlineOffset: 2
   }
 }))
 

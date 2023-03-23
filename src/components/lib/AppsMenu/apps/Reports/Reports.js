@@ -13,9 +13,9 @@ import {
 import { Unsaved } from '../../../..';
 import ReactQuill from 'doc-editor'; // ES6
 
-const Layout = styled(Box)(({ theme, small, tall }) => ({
-  margin: theme.spacing(4),
-  height: small ? "5vh" : tall ? '60vh' : '25vh',
+const Layout = styled(Box)(({ theme, taller, small, tall }) => ({
+  margin: theme.spacing(1),
+  height: taller ? "75vh" :  small ? "5vh" : tall ? '60vh' : '25vh',
   transition: 'height  0.3s ease-in'
 }));
 
@@ -54,15 +54,23 @@ const EditToolbar = () =>  {
 
 }
 //
-const CustomToolbar = () => (
+const CustomToolbar = ({ working, title }) => (
   <div style={{ display: 'flex' }} id="preview-toolbar">
-    <Box>Preview Pane</Box> 
-    <IconButton className="ql-handleClose">
-      <TextIcon icon="ArrowBack" />
+    <Box>{working ? title : "Preview Pane"}</Box> 
+ 
+
+   {!working && <>
+   <IconButton className="ql-handleEdit">
+      <TextIcon icon="Edit" />
     </IconButton>
-    <IconButton className="ql-handleSave">
-      <TextIcon icon="Save" />
-    </IconButton>
+      <IconButton className="ql-handleClose">
+        <TextIcon icon="ArrowBack" />
+      </IconButton>
+      <IconButton className="ql-handleSave">
+        <TextIcon icon="Save" />
+      </IconButton>
+    </>}
+ 
     <IconButton className="ql-handlePrint">
       <TextIcon icon="Print" />
     </IconButton>
@@ -89,6 +97,7 @@ const Reports = ({ handler, samples }) => {
         handlePrint: handlePrint,
         handleClose: () => handler.send('EXIT'),
         handleSave: () => handler.send('UPDATE'),
+        handleEdit: () => handler.send('WRITE'),
       },
     },
   };
@@ -100,11 +109,25 @@ const Reports = ({ handler, samples }) => {
       },
     },
   };
+
+  let selectedReport = handler.item;
+  const working = handler.is('editing.work');
+
+  if (working) {
+    const it = handler.items.find(n => n.ID === handler.ID)
+
+    if (it) {
+      selectedReport = it;
+    }
+
+  }
+
   return (
     <Layout
       data-testid="test-for-Reports"
       small={handler.busy}
       tall={handler.state.matches('editing')}
+      taller={working}
     >
       {/* {JSON.stringify(handler.state.value)} */}
       <Columns
@@ -158,17 +181,19 @@ const Reports = ({ handler, samples }) => {
 
         {handler.state.matches('editing') && (
           <Box>
-            {!!handler.item && (
+            {!!selectedReport && !working && (
               <Stack sx={{ mb: 3 }}>
                 <Flex spacing={1}>
                   <Nowrap muted>Edit Report</Nowrap> 
                 </Flex>
-                <Nowrap variant="h6">{handler.item.title}</Nowrap> 
+                <Nowrap variant="h6">{selectedReport.title}</Nowrap> 
               </Stack>
             )}
-            {!!handler.item && (
-              <Columns sx={{ alignItems: 'flex-start' }}>
-                <Box> 
+            {!!selectedReport && (
+              <Columns columns={working ? "0 1fr" : "50% 50%"} sx={{ alignItems: 'flex-start' }}>
+
+                {/* edit pane */}
+                <Box sx={{ overflow: 'hidden'}}> 
 
                   <EditToolbar />
 
@@ -189,13 +214,14 @@ const Reports = ({ handler, samples }) => {
                         value: content,
                       });
                     }} 
-                    value={handler.item.templatebody}
+                    value={selectedReport.templatebody}
                   />
                 </Box>
 
+                {/* view pane */}
                 <Box>
                   
-                  <CustomToolbar />
+                  <CustomToolbar working={working} title={selectedReport.title} />
 
                   {!!samples && (
                     <ReactQuill
@@ -203,12 +229,12 @@ const Reports = ({ handler, samples }) => {
                       modules={previewMods}
                       ref={editorRef}
                       style={{
-                        height: `calc(60vh - 120px)`,
+                        height: `calc(${working ? "75vh" : "60vh"} - ${working ? "40px" : "120px"})`,
                       }}
                       value={samples
                         .map((f) =>
                           reportItem({
-                            value: handler.item.templatebody,
+                            value: selectedReport.templatebody,
                             source: f,
                           })
                         )
@@ -216,11 +242,16 @@ const Reports = ({ handler, samples }) => {
                     />
                   )}
                 </Box>
+
+
               </Columns>
             )}
           </Box>
         )}
       </Columns>
+      {/* <pre>
+        {JSON.stringify(handler.item?.templatebody,0,2)}
+      </pre> */}
     </Layout>
   );
 };

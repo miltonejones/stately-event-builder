@@ -150,12 +150,18 @@ const eventPopMachine = createMachine({
         onDone: [
           {
             target: "opened",
+            cond: "isReadMode",
+            actions: "assignEvent",
+          },
+          {
+            target: "#menu_controller.opened.editing",
             actions: "assignEvent",
           },
         ],
       },
     },
-     
+
+
     saving: {
       entry: assign({ busy: true }),
       initial: "save",
@@ -190,7 +196,8 @@ const eventPopMachine = createMachine({
 
 {
   guards: {
-    isClean: context => !context.dirty
+    isClean: context => !context.dirty,
+    isReadMode: context => !context.auto
   },
   actions: {
     assignClean: assign({ dirty: false }),
@@ -199,12 +206,14 @@ const eventPopMachine = createMachine({
       value: event.value,
       data: null,
       editing: false ,
+      auto: false ,
       dirty: false
     })),
     assignOpen: assign((_, event) => ({
       anchorEl: event.anchorEl,
       ID: event.ID,
       date: event.date,
+      auto: event.auto,
       busy: true
     })),
     assignUsers: assign((_, event) => ({
@@ -237,7 +246,7 @@ export const useEventPop = (onChange) => {
     services: {
 
       menuClicked: async (context, event) => {
-        onChange && onChange(event.value);
+        !!context.dirty && onChange && onChange(event.value);
       }, 
       loadUsers: async(context) => await getUsers(context),
       loadRooms: async(context) => await getRooms(context),
@@ -252,12 +261,13 @@ export const useEventPop = (onChange) => {
       type: "close",
       value,
     });
-  const handleClick = (event, ID, date) => {  
+  const handleClick = (event, ID, date, auto) => {  
     send({
       type: "open",
       anchorEl: event.currentTarget,
       ID,
-      date
+      date,
+      auto
     });
   };
  

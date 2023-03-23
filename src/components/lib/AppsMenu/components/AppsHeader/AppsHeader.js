@@ -62,6 +62,8 @@ const AppsHeader = ({ handler, icon, title, labelfield, label, color, singular, 
 
       {/* {!!handler && <> {JSON.stringify(handler.state.value)}</>} */}
 
+      
+
       <Spacer />
 
       {anchor === 'bottom' && <AppsFooter handler={handler} anchor={anchor} />}

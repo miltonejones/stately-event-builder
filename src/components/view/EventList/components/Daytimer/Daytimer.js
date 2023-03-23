@@ -1,9 +1,10 @@
 import React from 'react';
 import { styled, Box, Stack, IconButton } from '@mui/material';
 import { Columns, Spacer, Flex, Btn, TinyButton, TextIcon, Tooltag, Nowrap } from '../../../../../styled';
-import { useEventPop } from '../../../../../machines';
+// import { useEventPop } from '../../../../../machines';
+import { daytimerOptions } from '../../../../../util/daytimerOptions';  
 import DaytimerMenu from '../DaytimerMenu/DaytimerMenu';
-import EventPopover from '../EventPopover/EventPopover';
+// import EventPopover from '../EventPopover/EventPopover';
 import { 
   useNavigate
 } from "react-router-dom";
@@ -148,11 +149,11 @@ const DayRow = ({ time, date, factor, events, onChange, handler }) => {
       {!!secondBlock && <>{secondBlock.FullName}</>}
 
 
-      {!secondBlock && <>{!firstBlock 
+      {!secondBlock && <Tooltag component={Box} title={hoverBlock?.EventName || "Create new event"}>{!firstBlock 
         ? !hoverBlock && !divideInHalf
           ? <Flex sx={{zIndex: 0}}><TinyButton icon="Add" color="inherit" /> create event</Flex>
           : `${JSON.stringify(Boolean(bottomHalfBlock))}/${JSON.stringify(Boolean(topHalfBlock))}`
-        : hoverBlock.EventName}</>}
+        : <>{hoverBlock.EventName}</>}</Tooltag>}
 
 
 
@@ -184,7 +185,7 @@ const DayRow = ({ time, date, factor, events, onChange, handler }) => {
   );
 };
 
-const Daytimer = ({ handler }) => {
+const Daytimer = ({ handler, popMenu }) => {
 
   const navigate = useNavigate();
   const { eventList, params } = handler;
@@ -200,14 +201,11 @@ const Daytimer = ({ handler }) => {
     ? 3600
     : 1800
  
-  const sunday = moment().startOf('week').format('YYYY-MM-DD');
-  
-  const yesterday = moment(new Date(params.start_date || null)).format('YYYY-MM-DD');
-  const tomorrow = moment(new Date(params.start_date || null)).add(2, 'days').format('YYYY-MM-DD');
+  // const sunday = moment().startOf('week').format('YYYY-MM-DD');
 
-  const monday = moment().startOf('week').add(1, 'days').format('YYYY-MM-DD');
-  const friday = moment().startOf('week').add(5, 'days').format('YYYY-MM-DD');
-  const saturday = moment().startOf('week').add(6, 'days').format('YYYY-MM-DD');
+  // const monday = moment().startOf('week').add(1, 'days').format('YYYY-MM-DD');
+  // const friday = moment().startOf('week').add(5, 'days').format('YYYY-MM-DD');
+  // const saturday = moment().startOf('week').add(6, 'days').format('YYYY-MM-DD');
 
 
   const goto = params => {
@@ -217,81 +215,91 @@ const Daytimer = ({ handler }) => {
     navigate(`/find/${pieces}`);
   }
 
-  const buttons = {
-    today: {
-      icon: "Today",
-      params: {
-        start_date: moment().format('YYYY-MM-DD')
-      }
-    },
-    weekdays: {
-      icon: "DateRange",
-      params: { 
-        start_date: monday,
-        end_date: friday
-      }
-    },
-    week: {
-      icon: "ViewWeek",
-      params: {
-        start_date: sunday,
-        end_date: saturday
-      }
-    }
-  }
+  const buttons = daytimerOptions(params);
+  const activeOption = Object.keys(buttons).find(btn => buttons[btn].active);
+
+  // const yesterday = moment(new Date(params.start_date || null)).format('YYYY-MM-DD');
+  // const tomorrow = moment(new Date(params.start_date || null)).add(2, 'days').format('YYYY-MM-DD');
+
+  // const buttons = {
+  //   today: {
+  //     icon: "Today",
+  //     params: {
+  //       start_date: moment().format('YYYY-MM-DD')
+  //     }
+  //   },
+  //   weekdays: {
+  //     icon: "DateRange",
+  //     params: { 
+  //       start_date: monday,
+  //       end_date: friday
+  //     }
+  //   },
+  //   week: {
+  //     icon: "ViewWeek",
+  //     params: {
+  //       start_date: sunday,
+  //       end_date: saturday
+  //     }
+  //   }
+  // }
 
   return (
     <>
-    
- 
+    {/* {!!buttons[activeOption] && <pre>{JSON.stringify(buttons[activeOption],0,2)}</pre>} */}
+ {/* {JSON.stringify(buttons.weekdays)}/
+/
+
+ [ {JSON.stringify(params.start_date)}]/
+[ {JSON.stringify(params.end_date)}]/
+[ {moment(params.start_date).format('MM-DD-YYYY')}] */}
+
       {Object.keys(collated).map((key, i) => (<Box key={key}>
         <Flex>
 
-        {i === 0 && <IconButton onClick={() =>goto( {
-                start_date: yesterday
-              })}>
 
+        {i === 0 && !!buttons[activeOption] && (
+        <IconButton onClick={() =>goto(buttons[activeOption].yesterday)}> 
           <TextIcon icon="KeyboardArrowLeft" />
-        </IconButton>}
+        </IconButton>)}
  
         <Nowrap hover onClick={() => goto({
                 start_date: moment(new Date(key)).format('YYYY-MM-DD')
               })} sx={{m: 1}}> {moment(new Date(key)).format('dddd MMM Do, YYYY')}</Nowrap>
 
-        {i === 0 && <IconButton onClick={() => goto({
-                start_date: tomorrow
-              })}>
+
+        {i === 0 && (
+        <IconButton onClick={() =>goto(buttons[activeOption].tomorrow)}> 
 
           <TextIcon icon="KeyboardArrowRight" />
-        </IconButton>}
+        </IconButton>)}
  
         <Spacer />
         {i === 0 && <Flex sx={{m: 1}} spacing={1}>
             {Object.keys(buttons).map(btn => <Btn key={btn}
               startIcon={<TextIcon icon={buttons[btn].icon} />}
               size="small"
-              variant={(params.start_date === buttons[btn].params.start_date && params.end_date === buttons[btn].params.end_date) || 
-                (!params.start_date && !buttons[btn].params.end_date) ? "contained" : "outlined"}
+              variant={
+                buttons[btn].active
+                  ? "contained" 
+                  : "outlined"
+                }
               onClick={() => goto(buttons[btn].params)}
               >{btn}</Btn>)}
           </Flex>}
+
+
         </Flex>
-        <DaytimerDay date={key} handler={handler} factor={factor} eventList={collated[key]}  />
+        <DaytimerDay date={key} popMenu={popMenu} handler={handler} factor={factor} eventList={collated[key]}  />
       </Box>))}
     </>
   )
 
 }
 
-const DaytimerDay = ({ handler, date, factor, eventList }) => {
+const DaytimerDay = ({ handler, popMenu, date, factor, eventList }) => {
 
-  // const { eventList } = handler;
-  const menu = useEventPop(() => {
-    handler.send({
-      type: 'FIND',
-      params: handler.params
-    })
-  }); 
+ 
   const roomsList = eventList.reduce((out, ev) => {
     if (!out[ev.RoomNames]) {
       out[ev.RoomNames] = [];
@@ -412,7 +420,7 @@ const DaytimerDay = ({ handler, date, factor, eventList }) => {
               date={date}
               factor={factor}
               onChange={(e, ID, date) => {
-                menu.handleClick(e, ID, date)
+                popMenu.handleClick(e, ID, date)
               }}
               handler={handler} time={n} />
             ))}
@@ -420,7 +428,7 @@ const DaytimerDay = ({ handler, date, factor, eventList }) => {
         ))}
       </Columns>
 
-      <EventPopover menu={menu} />
+      {/* <EventPopover menu={popMenu} /> */}
  
     </Layout>
   );

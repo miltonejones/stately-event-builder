@@ -1,5 +1,5 @@
 import React from 'react';
-import { styled, Avatar, Popover, Switch, Stack, TextField, LinearProgress, Box } from '@mui/material';
+import { styled, Avatar, Popover, Collapse, Switch, Stack, TextField, LinearProgress, Box } from '@mui/material';
 import { Flex, Spacer, Btn, TextIcon, Warn, Tooltag, TinyButton, Nowrap } from '../../../../../styled';
 import { RoomSelect, DateInput } from '../../../..';
 import { timeToNum } from '../../../../../util/timeToNum';
@@ -73,7 +73,8 @@ const EventPopover = ({ menu }) => {
 
   const { copy } = useClipboard();
 
-  const isEditMode = menu.state.matches('opened.editing');
+  const isErrorMode = menu.state.matches('opened.cancelling')
+  const isEditMode = menu.state.matches('opened.editing') || isErrorMode  ;
   
 
 
@@ -90,24 +91,14 @@ const EventPopover = ({ menu }) => {
   onClose={menu.handleClose()}  
   open={Boolean(menu.anchorEl) }
    >
-    {/* {JSON.stringify(menu.state.value)} */}
+   {/* {JSON.stringify(isEditMode)}--
+    {JSON.stringify(menu.state.value)} */}
     {!menu.state.matches('opened') && <Layout><LinearProgress />Loading event details...</Layout>}
-    {menu.state.matches('opened.cancelling') && <Layout>
-      <Box sx={{ p: 2}}>
-        <Nowrap muted variant="body2">Confirm exit</Nowrap>
-      <Warn sx={{ mt: 1}} filled severity='warning'>You have unsaved changes</Warn>
-      Are you sure you want to leave without saving your changes?
-      <Flex spacing={1} sx={{ mt: 2}}>
-        <Btn variant="contained" onClick={() => menu.send('save')}>Save changes</Btn>
-        <Spacer />
-        <Btn  onClick={() => menu.send('exit')}>Cancel</Btn>
-        <Btn color="error" variant="contained" onClick={() => menu.send('ok')}>Discard changes</Btn>
-      </Flex>
-      </Box>
-      </Layout>}
 
 
-   {menu.state.matches('opened') && !menu.state.matches('opened.cancelling') && <Layout on={isEditMode}>
+
+
+   {menu.state.matches('opened') && <Layout on={isEditMode}>
     <Box sx={{ p: 2}}>
 
 
@@ -124,7 +115,7 @@ const EventPopover = ({ menu }) => {
 
         <Tooltag component={TinyButton}  title={isEditMode ? "Close edit mode" : "Edit event"}  
           onClick={() => menu.send(isEditMode ? "cancel" : "edit")}
-          icon={isEditMode ? "Close" : "BorderColor"} />
+          icon={menu.dirty ? "Circle" : isEditMode ? "Close" : "BorderColor"} />
 
 
         <Tooltag component={TinyButton} title="Edit event details"  
@@ -138,6 +129,8 @@ const EventPopover = ({ menu }) => {
         <Flex sx={{ mt: 1 }}> 
           <TextInput 
             label="Event Name"
+            error={isErrorMode}
+            helperText={isErrorMode ? "If you leave you will lose your unsaved changes!" : ""}
             bold={!!menu.data.RecurseEndDate}
             variant="h6" 
             editing={isEditMode}
@@ -206,53 +199,89 @@ const EventPopover = ({ menu }) => {
 
     </Stack>
    
-{/* 
-      <Flex sx={{ mt: 3 }} spacing={1}>
-
-
-        <Btn 
-          endIcon={<TextIcon  icon={isEditMode ? "Close" : "Edit"}   />}
-          variant={isEditMode ? "outlined" : "contained"}  
-          onClick={() => {
-            menu.send({
-              type: 'prop',
-              key: 'editing',
-              value: !isEditMode
-            })
-          }}>
-          {isEditMode ? "Cancel" : "Edit event"}
-        </Btn>
-
-
-      {!!isEditMode && <Btn onClick={menu.handleClose()} 
-        endIcon={<TextIcon icon="Save" />}
-        variant="contained">
-        Save changes
-      </Btn>}
-
-
-      </Flex> */}
-    </Box>
-
-    <Box sx={{ borderBottom: 1, borderColor: 'divider', p: 2, backgroundColor: t => isEditMode ? t.palette.grey[100] : 'white'}}>
-      <Flex spacing={1}  > 
-        {/* <TextIcon icon="Person" />  */}
-        <Avatar src={creator?.image} alt={event.FullName} />
-        <Stack>
-        <Nowrap>{menu.data.FullName}</Nowrap>
-        <Nowrap variant="caption">Creator</Nowrap>
-        </Stack>
-      </Flex>
-    </Box>
  
-    <Flex sx={{p: 2, backgroundColor: t => isEditMode ? t.palette.grey[100] : 'white'}} spacing={1}> 
-        <TextIcon icon="Email" /> 
-     
-        
-        <Nowrap hover><a rel="noreferrer" target="_blank" href={`mailto:${creator?.Email}`}>{creator?.Email}</a></Nowrap> 
+    </Box>
+
+    {/* {menu.state.matches('opened.cancelling') && <Layout>
+      <Box sx={{ p: 2}}>
+        <Nowrap muted variant="body2">Confirm exit</Nowrap>
+      <Warn sx={{ mt: 1}} filled severity='warning'>You have unsaved changes</Warn>
+      Are you sure you want to leave without saving your changes?
+      <Flex spacing={1} sx={{ mt: 2}}>
+        <Btn variant="contained" onClick={() => menu.send('save')}>Save changes</Btn>
         <Spacer />
-        <TinyButton icon="CopyAll" onClick={() => copy(creator?.Email)} />
+        <Btn  onClick={() => menu.send('exit')}>Cancel</Btn>
+        <Btn color="error" variant="contained" onClick={() => menu.send('ok')}>Discard changes</Btn>
       </Flex>
+      </Box>
+      </Layout>} */}
+
+
+    <Collapse in={menu.state.matches('opened.cancelling')}>
+        <Box sx={{ borderTop: 1, borderColor: 'divider', p: 2, backgroundColor: t => isEditMode ? t.palette.grey[100] : 'white'}}>
+          <Flex spacing={1}  > 
+        <Btn variant="contained" onClick={() => menu.send('save')}>Save changes</Btn>
+          <Spacer /> 
+        <Btn  onClick={() => menu.send('exit')}>Cancel</Btn>
+        <Btn color="error" variant="contained" onClick={() => menu.send('ok')}>Discard changes</Btn>
+          </Flex>
+        </Box> 
+    </Collapse>
+    
+
+
+    <Collapse in={isEditMode && !menu.state.matches('opened.cancelling')}>
+        <Box sx={{ borderTop: 1, borderColor: 'divider', p: 2, backgroundColor: t => isEditMode ? t.palette.grey[100] : 'white'}}>
+          <Flex spacing={1}  > 
+          <Spacer /> 
+              <Btn onClick={() => menu.send('cancel')}>Cancel</Btn>
+              <Btn disabled={!menu.dirty} onClick={() => menu.send('save')} variant="contained">Save</Btn>  
+          </Flex>
+        </Box> 
+    </Collapse>
+    
+
+    <Collapse in={!isEditMode}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', p: 2, backgroundColor: t => isEditMode ? t.palette.grey[100] : 'white'}}>
+          <Flex spacing={1}  > 
+            {/* <TextIcon icon="Person" />  */}
+            <Avatar src={creator?.image} alt={event.FullName} />
+            <Stack>
+            <Nowrap>{menu.data.FullName}</Nowrap>
+            <Nowrap variant="caption">Creator</Nowrap>
+            </Stack>
+            <Spacer />
+            <TinyButton deg={!menu.info ? 0 : 180} icon="KeyboardArrowDown" onClick={() => {
+              menu.send({
+                type: 'prop',
+                key: 'info',
+                value: !menu.info
+              })
+            }} />
+          </Flex>
+        </Box>
+
+        <Collapse in={!!menu.info}>
+        
+          <Flex sx={{borderBottom: 1, borderColor: 'divider', p: 2, backgroundColor: t => isEditMode ? t.palette.grey[100] : 'white'}} spacing={1}> 
+              <TextIcon icon="Email" />  
+              <Nowrap hover><a rel="noreferrer" target="_blank" href={`mailto:${creator?.Email}`}>{creator?.Email}</a></Nowrap> 
+              <Spacer />
+              <TinyButton icon="CopyAll" onClick={() => copy(creator?.Email)} />
+            </Flex>
+
+        {!!menu.data.modified && <Flex sx={{p: 2, backgroundColor: t => isEditMode ? t.palette.grey[100] : 'white'}} spacing={1}> 
+              <TextIcon icon="CalendarMonth" />  
+              <Nowrap muted>Last modified {moment(menu.data.modified.DateModified).format('MMM Do, YYYY')} by {menu.data.modified.FirstName} {menu.data.modified.LastName}</Nowrap>  
+            </Flex>}
+
+        
+        </Collapse>
+
+    </Collapse>
+    
+
+
    </Layout>}
  </Popover>
 

@@ -1,15 +1,20 @@
 import React from 'react';
-import { styled, Popover, Divider, Box } from '@mui/material';
+import { styled, Dialog,  Box } from '@mui/material';
 import { 
-  TextIcon, 
+  // TextIcon, 
   Columns,
-  Nowrap
+  Nowrap,
+  GridFormHeader,
+  Flex,
+  Spacer,
+  Btn
 } from '../../../styled';
-import { useMenu } from "../../../machines";
+// import { useMenu } from "../../../machines";
 import { themeTypes } from '../../../colors';
  
 const Layout = styled(Box)(({ theme }) => ({
- margin: theme.spacing(2)
+ margin: theme.spacing(0, 2),
+ width: 500
 }));
  
 const themeNames = {
@@ -22,36 +27,34 @@ const themeNames = {
 }
 
 const ThemeMenu = ({ handler }) => {
-
-  const menu = useMenu(val => handler.send({
-    type: 'CHANGE',
-    key: 'theme',
-    value: val
-  }));
-
+ 
 
  return (
 <>
-<TextIcon 
+{/* <TextIcon 
   icon="Palette"
-  onClick={menu.handleClick}
-      />
+  onClick={handler.handleClick}
+      /> */}
 
-<Popover
-  
-  onClose={menu.handleClose()} 
-  anchorEl={menu.anchorEl}
-  open={Boolean(menu.anchorEl)}
+<Dialog
+  maxWidth="md"
+  onClose={handler.handleClose()}  
+  open={handler.state.matches('opened')}
   >
-   <Layout data-testid="test-for-ThemeMenu">
-    <Nowrap>Choose theme:</Nowrap>
-    
-    <Divider sx={{ m: t => t.spacing(1, 0)}} />
+    <Box sx={{p: 1}}>
+
+    <GridFormHeader 
+      icon="Palette"
+      title="Choose theme"
+      handleClose={handler.handleClose()}  
+    />
+    </Box>
+   <Layout data-testid="test-for-ThemeMenu"> 
 
     {Object.keys(themeNames).map(f => <Columns
     
       sx={{ mb: 1 }} spacing={0} columns="160px 48px 48px 48px 48px" key={f}>
-      <Nowrap hover onClick={menu.handleClose(f)}>{themeNames[f]}</Nowrap>
+      <Nowrap hover onClick={handler.handleClose(f)}>{themeNames[f]}</Nowrap>
       {Object.keys(themeTypes[f]).map(k => <Box
         sx={{
           backgroundColor: themeTypes[f][k],
@@ -62,7 +65,12 @@ const ThemeMenu = ({ handler }) => {
       ></Box>)} 
     </Columns> )}
    </Layout>
-  </Popover>
+   <Flex sx={{p: 2, borderTop: 1, borderColor: 'divider', mt:  2, backgroundColor: t => t.palette.grey[200]}}>
+    <Spacer />
+    <Btn
+  onClick={handler.handleClose()}  >Close</Btn>
+   </Flex>
+  </Dialog>
   
 </>
 

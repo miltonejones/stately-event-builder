@@ -57,7 +57,7 @@ const TextPopover = ({
                   onClick={menu.handleClose(menu.data[props.name])}
                 />
               )}
-              <TinyButton icon="Close" onClick={menu.handleClose()} />
+              <TinyButton icon={menu.dirty ? "Circle" : "Close"} onClick={menu.handleClose()} />
             </Flex>
 
             <Nowrap variant="body1">{description}</Nowrap>
@@ -146,10 +146,11 @@ const IconTextField = ({ endIcon, startIcon, prompt, ...props }) => {
     <TextField
       size="small"
       autoComplete="off"
-      InputProps={{ startAdornment, endAdornment, ...props.InputProps }}
+      InputProps={{ ...props.InputProps,  style: { backgroundColor: "white" }, startAdornment, endAdornment,  }}
       {...props}
     />
   );
 };
 
 export default IconTextField;
+ 

@@ -126,7 +126,7 @@ const AppsMenu = ({ handler, samples, groups }) => {
               handler={handler}
               handleClose={(e) => {
                 handler.send('CLOSE');
-                menu.handleClick(e)
+                !handler.is('editing.work') && menu.handleClick(e)
               }}
               />
 

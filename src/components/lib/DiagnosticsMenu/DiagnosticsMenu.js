@@ -1,19 +1,19 @@
 import React from "react";
 import { Drawer, Box, Typography } from "@mui/material";
 import Diagnostics from "../Diagnostics/Diagnostics";
-import { useMenu } from "../../../machines";
-import { Flex, Nowrap, TextIcon } from "../../../styled";
+// import { useMenu } from "../../../machines";
+import { Flex, Nowrap } from "../../../styled";
  
  
-const DiagnosticsMenu = ({ machines = [], value, onChange, handler }) => {
-  const menu = useMenu(onChange); 
+const DiagnosticsMenu = ({ machines = [],  menu, value, handler }) => {
+ 
 
   return (
     <>
 
 
 
-<TextIcon icon="Settings"  onClick={menu.handleClick}/>
+{/* <TextIcon icon="Settings"  onClick={menu.handleClick}/> */}
 
  
 

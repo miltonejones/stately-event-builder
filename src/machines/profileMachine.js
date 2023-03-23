@@ -12,10 +12,25 @@ const profileMachine = createMachine({
       on: {
         OPEN: {
           target: "opened",
-          actions: ["assignUser", assign({ open: true })],
+          actions: ["assignUser", assign({ open: true, dirty: false })],
         },
       },
     },
+    
+    confirm: {
+      description:
+        "User has to confirm closing when there are unsaved changes.",
+      on: {
+        OK: {
+          target: "idle",
+          actions: assign({ open: false }),
+        },
+        CANCEL: {
+          target: "#profile.opened.ready",
+        },
+      },
+    },
+
     opened: {
       description: "show user form for editing profile",
       initial: "load",
@@ -36,9 +51,6 @@ const profileMachine = createMachine({
             SAVE: {
               target: "#profile.saving",
             },
-            CHANGE: {
-              actions: "applyChanges",
-            },
             JSON: {
               target: "#profile.json",
             },
@@ -46,9 +58,21 @@ const profileMachine = createMachine({
         },
       },
       on: {
-        CLOSE: {
-          target: "idle",
-          actions: assign({ open: false }),
+        CLOSE: [
+          {
+            target: "idle",
+            cond: "isClean",
+            actions: assign({ open: false }),
+          },
+          {
+            target: "confirm",
+          },
+        ],
+        CHANGE: {
+          actions: "applyChanges",
+        },
+        RESET: {
+          target: ".load",
         },
       },
     },
@@ -85,18 +109,24 @@ const profileMachine = createMachine({
       },
     }, 
   },
-  context: { open: false },
+  context: { open: false, dirty: false },
   predictableActionArguments: true,
   preserveActionOrder: true,
 },
 {
+  guards: {
+    isClean: context => !context.dirty 
+  },
   actions: {
-    curateUser: assign((context, event) => ({ user: {
+    curateUser: assign((context, event) => ({ 
+      dirty: false,
+      user: {
       ...context.user,
       ...event.data
     }})),
     assignUser: assign((_, event) => ({ user: event.user})),
     applyChanges: assign((context, event) => ({
+    dirty: 1,
      user: {
       ...context.user,
       [event.key]: event.value

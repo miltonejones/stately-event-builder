@@ -3,7 +3,7 @@ import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
 import { engDate } from '../util/engDate';
 import { searchEvents, getEventListCategories, saveEvent, getCognitoGroups,
-   getRooms, getCalendars, getEvent, getCategories } from '../connector';
+   getRooms, getReports, getCalendars, getEvent, getCategories } from '../connector';
 // import { scrubRoom } from '../util/scrubRoom';
 import moment from 'moment';
 import {  
@@ -30,7 +30,8 @@ const lookupItems = {
   roomList: getRooms,
   calendars: getCalendars,
   categories: getCategories,
-  groups: getCognitoGroups
+  groups: getCognitoGroups,
+  reports: getReports
 }
 
 
@@ -598,7 +599,7 @@ const eventListMachine = createMachine({
       }
     }),
     restoreProps: assign(() => {
-      const memory = localStorage.getItem('eb-memory');
+      const memory = localStorage.getItem('eb-memory-2');
       if (memory) {
         return {
           props: JSON.parse(memory)
@@ -616,7 +617,7 @@ const eventListMachine = createMachine({
         return out;
       }, {});
 
-      localStorage.setItem('eb-memory', JSON.stringify(memory))
+      localStorage.setItem('eb-memory-2', JSON.stringify(memory))
 
       return {
         props 
@@ -705,6 +706,13 @@ export const useEventList = () => {
     send,
   };
 
+  const setProp = (key, value) => { 
+    send({
+      type: 'CHANGE',
+      key, value 
+    })
+  }
+
   const is = (val) => Array.isArray(val)
     ? val.some(state.matches)
     : state.matches(val);
@@ -714,6 +722,7 @@ export const useEventList = () => {
     is,
     send, 
     diagnosticProps,
+    setProp,
     ...state.context
   };
 }

@@ -3,6 +3,11 @@ import { scrubRoom } from './util/scrubRoom';
 
 const API_ENDPOINT = 'https://34m4mho8me.execute-api.us-east-1.amazonaws.com';
 
+export const getPropertyTypes = async () => {
+  const response = await fetch(API_ENDPOINT + `/proptypes`);
+  return await response.json();
+};
+
 export const getEvents = async () => {
   const response = await fetch(API_ENDPOINT + `/events`);
   return await response.json();
@@ -51,6 +56,16 @@ export const setReport = async (options) => {
 
 export const getReports = async () =>  {
   const response = await fetch(API_ENDPOINT + `/reports`);
+  return await response.json();
+};
+
+export const setAmenity = async (options) =>  {
+  const requestOptions = {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(options),
+  };
+  const response = await fetch(API_ENDPOINT + '/amenities', requestOptions ); 
   return await response.json();
 };
 

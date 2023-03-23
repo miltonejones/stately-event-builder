@@ -1,23 +1,20 @@
 import React from "react";
 
-// import { apiDate } from "../../../util/apiDate";
-
-// import dayjs from 'dayjs';
-// import { LocalizationProvider } from '@mui/x-date-pickers';
-// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-// import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
+import { getPagination } from "../../../util/getPagination";
+ 
 
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Daytimer from './components/Daytimer/Daytimer';
+import EventPopover from './components/EventPopover/EventPopover';
 
 import { styled, 
-  Stack, 
+  Stack, Switch, Pagination,
   // IconButton, 
   Card, Box, Collapse, Typography } from "@mui/material";
 import { 
   // DateInput, 
-  CalendarInput, DateBox } from "../..";
+  CalendarInput, DateBox, ActionsMenu } from "../..";
 import {
   Nowrap,
   Btn,
@@ -32,26 +29,37 @@ import {
   // Demotip
 } from "../../../styled";
 
-import { VIEW } from '../../../machines';
+import { VIEW, useEventPop } from '../../../machines';
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 
-const LineItem = styled(Stack)(({ theme, collapsed }) => ({
+const LineItem = styled(Stack)(({ theme, collapsed, spacing=1 }) => ({
   alignItems: collapsed ? "flex-start" : 'center',
-  gap: collapsed ? 0 : theme.spacing(1), 
+  gap: collapsed ? 0 : theme.spacing(spacing), 
 }))
 
 const Layout = styled(Box)(({ theme }) => ({
   margin: theme.spacing(0),
 }));
 
-const EventList = ({ handler, collapsed }) => {
+const EventList = ({ handler, collapsed, search, appslist, reports }) => {
   const navigate = useNavigate();
-  const { eventList, state } = handler;
+  const { eventList: handlerList, state } = handler;
+  const eventList = search?.options?.length ? search.options : handlerList;
+  const eventPages = getPagination(eventList, {
+    page: handler.props.queryPage || 1,
+    pageSize: 20
+  })
+
   const { props,  } = state.context;
-  // const is = (val) => Array.isArray(val)
-  //   ? val.some(state.matches)
-  //   : state.matches(val);
+
+  const popMenu = useEventPop(() => {
+    handler.send({
+      type: 'FIND',
+      params: handler.params
+    })
+  }); 
+  
   const opened = Boolean(handler.view & VIEW.LIST_SIDEBAR) && handler.props.format === 1;
   const expandedCols = opened ? "275px 1fr" : "0 1fr";
 
@@ -60,11 +68,7 @@ const EventList = ({ handler, collapsed }) => {
  
 
   const handleChange = (event, value) => {
-    handler.send({
-      type: 'CHANGE',
-      key: 'format',
-      value
-    })
+    handler.setProp('format', value); 
   };
 
   const control = {
@@ -73,9 +77,19 @@ const EventList = ({ handler, collapsed }) => {
     exclusive: true,
   };
 
+  const { excluded = [], editmode } = handler.props;
+  const exclude = ID => { 
+    handler.setProp('excluded', 
+      excluded.indexOf(ID) > -1 
+        ? excluded.filter(f => f !== ID)
+        : excluded.concat(ID))
+  }
+
+
 
   return (
     <Layout data-testid="test-for-EventList">
+       <EventPopover menu={popMenu} /> 
       <Collapse in={!!props.showJSON}>
         <pre>{JSON.stringify(eventList, 0, 2)}</pre>
       </Collapse>
@@ -93,14 +107,20 @@ const EventList = ({ handler, collapsed }) => {
             
             {!collapsed && <Box sx={{ width: '100%', pt: 1}}>
 
-            <TinyButton icon={!opened ? "KeyboardArrowLeft" : "Close"} deg={opened?0:180} onClick={() => {
+            {/* <TinyButton icon={!opened ? "KeyboardArrowLeft" : "Close"} deg={opened?0:180} onClick={() => {
                   handler.send({
                     type: 'VIEW',
                     bit: VIEW.LIST_SIDEBAR
                   })
-                }} />
+                }} /> */}
 
-              {opened && <CalendarInput handler={handler} />}
+              <CalendarInput hidden={!opened} onClose={() => {
+                  handler.send({
+                    type: 'VIEW',
+                    bit: VIEW.LIST_SIDEBAR
+                  })
+                }} handler={handler} />
+             
               
               </Box>} 
 
@@ -115,21 +135,23 @@ const EventList = ({ handler, collapsed }) => {
                     width
                   }}
                 >
-                  {!collapsed && <Btn variant="contained" endIcon={<TextIcon icon="Menu" />}>
-                    Actions
-                  </Btn>}
+                  {!collapsed && <ActionsMenu handler={handler} appslist={appslist} reports={reports} />}
+
                   <Typography color="inherit">
-                    {handler.label}
+                    {search.label || handler.label}
                   </Typography>
-                  <Spacer />
-               
+
+                  <Spacer />          
                 
-                  {!collapsed && <ToggleButtonGroup sx={{ color: "inherit", 
-                  '& .Mui-selected': { backgroundColor: 'white !important', color: t => t.palette.primary.main } }} size="small" {...control} >
-                    <ToggleButton sx={{ color: "inherit"}} value={1} key="left">
+                {!collapsed && <ToggleButtonGroup sx={{ color: "inherit", 
+                  '& .Mui-selected': { 
+                    backgroundColor: t => `${t.palette.primary.light} !important`, 
+                    color: t => t.palette.common.white 
+                    } }} size="small" {...control} >
+                    <ToggleButton sx={{ color: "inherit"}} value={1} size="small">
                       <TextIcon icon="FormatListBulleted" />
                     </ToggleButton>,
-                    <ToggleButton sx={{ color: "inherit"}}  value={2} key="center">
+                    <ToggleButton sx={{ color: "inherit"}}  value={2} size="small">
                       <TextIcon icon="CalendarMonth" />
                     </ToggleButton>
                   </ToggleButtonGroup>}
@@ -145,73 +167,96 @@ const EventList = ({ handler, collapsed }) => {
                     })
                   }} />}
                 </Banner>
+ 
+                <Box sx={{
+                      height: 'calc(100vh - 124px)',
+                      overflowY: 'auto',
+                      overflowX: 'hidden',
+                      width 
+                    }}>
 
-{/*  
-                  <Collapse in={handler.props.format === 2}>
-                  
-                  horizontal date picker
-                  
-                  </Collapse> */}
-
-
-          
-
-            <Box sx={{
-                  height: 'calc(100vh - 124px)',
-                  overflowY: 'auto',
-                  overflowX: 'hidden',
-                  width 
-                }}>
-
-                {handler.props.format === 2 && <Daytimer handler={handler} />}
-
-              {handler.props.format  === 1 && eventList?.map((ev) => (
-                <Stack
-                  sx={{
-                    p: 1,
-                    borderBottom: 1,
-                    borderColor: "divider",
-                    width
-                  }}
-                >
-                  <LineItem direction={direction} collapsed={collapsed}>
-                    <Flex spacing={1}>
-                    {ev.categories?.map(c => <Pill  color={c.color}>{c.title}</Pill>)}
-                    </Flex>
-                    <Nowrap
-                      onClick={() => navigate(`/edit/${ev.ID}`)}
-                      hover
                       
-                      selected={Number(ev.ID) === Number(handler.ID) ? 1 : 0}
-                      bold={!!ev.RecurseEndDate}
+                  
+                  {eventPages.pageCount > 1 && handler.props.format === 1 && <Box sx={{m: 2}}><Pagination
+                      count={Number(eventPages.pageCount)}
+                      page={handler.props.queryPage || 1} 
+                      onChange={(a, num) => handler.setProp('queryPage', num)}
+                    /></Box>}
+                  
+
+
+                  {handler.props.format === 2 && !search.options?.length && <Daytimer popMenu={popMenu} handler={handler} />}
+
+                  {(handler.props.format === 1 || !!search.options?.length) && eventPages.visible?.map((ev) => (
+                    <Stack
+                      sx={{
+                        p: 1,
+                        borderBottom: 1,
+                        borderColor: "divider",
+                        width
+                      }}
                     >
-                      {ev.EventName} 
-                    </Nowrap>
+                      <LineItem direction={direction} collapsed={collapsed}>
+                        
+                        {!!editmode && <Switch 
+                          onClick={() => exclude(ev.ID)} 
+                          checked={!excluded || excluded.indexOf(ev.ID) < 0} 
+                          size="small" />}
 
-                    <Nowrap variant="caption" muted>
-                      {ev.RoomNames}
-                    </Nowrap>
 
-                    <Spacer />
-                    <DateBox collapsed={collapsed} event={ev} />
-                  </LineItem>
+                        {!!ev.categories?.length && <Flex spacing={1}>
+                        {ev.categories?.map(c => <Pill  color={c.color}>{c.title}</Pill>)}
+                        </Flex>}
 
-                  <LineItem direction={direction} collapsed={collapsed}>
-                  {!collapsed && <Nowrap sx={{maxWidth: '50vw'}} small>{ev.Comments}</Nowrap>}
-                    <Spacer />
-                    <Typography variant="caption">
-                      {moment("2022-08-22T" + ev.EventStartTime).format(
-                        "h:mm a"
-                      )}{" "}
-                      to{" "}
-                      {moment("2022-08-22T" + ev.EventEndTime).format("h:mm a")}
-                    </Typography>
-                  </LineItem>
-                </Stack>
-              ))}
+
+                        <Nowrap
+                          onClick={() => {
+                            if (editmode) {
+                              return exclude(ev.ID);
+                            }
+                            navigate(`/edit/${ev.ID}`)
+                          }}
+                          hover
+                          muted={excluded?.indexOf(ev.ID) > -1 && editmode} 
+                          selected={Number(ev.ID) === Number(handler.ID) ? 1 : 0}
+                          bold={!!ev.RecurseEndDate}
+                        >
+                          {ev.EventName} 
+                        </Nowrap>
+
+                        <Nowrap variant="caption" muted>
+                          {ev.RoomNames}
+                        </Nowrap>
+
+                        <Spacer />
+                        <DateBox collapsed={collapsed} event={ev} />
+                       {!collapsed && <TinyButton icon="MoreVert" 
+
+                              onClick={(e) => {
+                                popMenu.handleClick(e, ev.ID, ev.CustomDate, true)
+                              }}
+                          />}
+                      </LineItem>
+
+                      <LineItem direction={direction} collapsed={collapsed}>
+                      {!collapsed && <Nowrap sx={{maxWidth: '50vw'}} small>{ev.Comments}</Nowrap>}
+                        <Spacer />
+                        <Typography variant="caption">
+                           {!!search.options?.length && <b>{moment(ev.CustomDate).format('MMM Do YY')}</b>}
+                          {moment("2022-08-22T" + ev.EventStartTime).format(
+                            "h:mm a"
+                          )}{" "}
+                          to{" "}
+                          {moment("2022-08-22T" + ev.EventEndTime).format("h:mm a")}
+                        </Typography>
+                      </LineItem>
+                    </Stack>
+                  ))}
 
               
                 </Box>
+
+
               </Card>
 
 

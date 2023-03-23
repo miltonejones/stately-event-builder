@@ -59,7 +59,7 @@ const AppsFooter = ({ handler, anchor }) => {
       </Collapse>
 
       <Collapse
-        in={handler.is('editing')}
+        in={handler.is('editing.edit')}
         orientation={anchor === 'bottom' ? 'horizontal' : 'vertical'}
       >
         <Flex wrap="nowrap" spacing={1}>

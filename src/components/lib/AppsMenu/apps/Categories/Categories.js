@@ -1,7 +1,8 @@
 import React from 'react';
-import { styled, Stack, Collapse, Autocomplete, TextField, Box } from '@mui/material';
-import { Flex, Columns,  Spacer, IconTextField, ConfirmPop, TinyButton, Pill,  Nowrap } from '../../../../../styled';
+import { styled, Collapse, Box } from '@mui/material';
+import { Flex, Columns,  Spacer,  ConfirmPop, TinyButton, Pill,  Nowrap } from '../../../../../styled';
 import { htmlColors, opposite } from '../../../../../colors';
+import AppForm from '../../components/AppForm/AppForm';
 // import { Unsaved } from '../../../..';
 
  
@@ -11,7 +12,26 @@ const Layout = styled(Box)(({ theme }) => ({
 }));
  
 const Categories = ({ handler, children }) => { 
-  const { handleChange, handleDrop } = handler;
+  const {  handleDrop } = handler;
+
+  const fields = [
+    {
+      label: "Label",
+      caption: " This is the text that will appear in the category tag.",
+      field: 'title',
+      startIcon: <Pill color={handler.item?.color}>{handler.item?.title}</Pill>
+    },
+    {
+      label: "Color",
+      field: 'color',
+      type: 'auto',
+      options: htmlColors,
+      caption: "Select a color for this category.",
+      renderOption: (props, option) => (
+        <ColorOption props={props} option={option} />
+      )
+    },
+  ]
   
  return (
    <Layout data-testid="test-for-Categories">
@@ -48,54 +68,13 @@ const Categories = ({ handler, children }) => {
     </Columns>)}
     </Box>
     </Collapse>
-{/* 
-    <Collapse in={handler.is('confirm_close')}> 
-      <Unsaved handler={handler} save="UPDATE" />
-    </Collapse> */}
+ 
+    <Collapse in={handler.is(['editing', 'confirm_close'])}>  
 
-    <Collapse in={handler.is('editing')}> 
-    {!!handler.item &&  <Stack spacing={1}>
-        
-        <Nowrap>Title</Nowrap>
-          <IconTextField 
-          size="small"
-                startIcon={<Pill color={handler.item.color}>{handler.item.title}</Pill>}
-          fullWidth
-            value={handler.item.title}
-            name="title"
-            onChange={handleChange}
-            
-            />
-            
-          <Nowrap>Color</Nowrap>
-          <Autocomplete
-              options={htmlColors}
-              value={handler.item.color}
-              name="color"
-              onChange={(_, value) => {
-                handler.send({
-                  type: 'CHANGE',
-                  key: 'color',
-                  value
-                })
-              }}
-              renderOption={(props, option) => (
-                <ColorOption props={props} option={option} />
-              )}
-              renderInput={(params) => (
-                <TextField {...params} 
-                fullWidth size="small" label="Colors" />
-              )}
-            />
-            
-          {/* <Flex sx={{mt: 2}} spacing={1}>
-           
-            <Spacer />
-            <Btn onClick={() => handler.send('EXIT')}>Cancel</Btn>
-            <Btn onClick={() => handler.send('UPDATE')} variant="contained" disabled={!handler.dirty}>Save</Btn>
-          </Flex> */}
-        </Stack>}
-      {/* {JSON.stringify(handler.item)} */}
+      <AppForm  handler={handler}  icon="Class"  
+        title="Edit category details" fields={fields} /> 
+      
+ 
     </Collapse>
 
 

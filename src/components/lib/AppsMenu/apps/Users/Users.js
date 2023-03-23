@@ -1,10 +1,12 @@
 import React from 'react';
-import { styled, Grid, Avatar, Box } from '@mui/material';
-import {  IconTextField, Columns, TextIcon, Flex, TinyButton, Nowrap } from '../../../../../styled';
+import { styled, Box } from '@mui/material';
+import { Columns, TinyButton, Nowrap } from '../../../../../styled';
+import AppForm from '../../components/AppForm/AppForm';
+
  
 const Layout = styled(Box)(({ theme }) => ({
  margin: theme.spacing(1),
- height: '50vh'
+ height: '60vh'
 }));
  
 const Users = ({ handler, groups }) => {
@@ -17,20 +19,89 @@ const Users = ({ handler, groups }) => {
       title
     })
   };
+ 
 
-  const handleChange = (event) => {
-    handler.send({
-      type: 'CHANGE',
-      key: event.target.name, 
-      value: event.target.value
-    })
-  };
+
+const config = [
+  {
+    label: "Name",
+    caption: "Enter first and last name, or add an optional image"
+  },
+  {
+    field: "image",
+    // label: "Set user image",
+    type: 'avatar',
+    xs: 1,
+  },
+  {
+    field: "Salutation",
+    xs: 3,
+  },
+  {
+    field: "FirstName",
+    // label: 'First Name',
+    xs: 4,
+  },
+  {
+    field: "LastName",
+    // label: 'Last Name',
+    xs: 4,
+  },
+  {
+    label: "Username", 
+    caption: "This is the username the user will use to sign in.",
+  },
+  {
+    field: "UserID", 
+    icon: "Lock",
+    xs: 6
+  },
+  { 
+    field: "Title", 
+    xs: 6
+  },
+  {
+    caption: "Control user access by specifying a group name.",
+    label: "Security Group" , 
+  },
+  { 
+    field: "group" ,
+    icon: "Lock",
+    options: handler.subitems?.map(f => ({
+      value: f.GroupName,
+      label: f.GroupName
+    }))
+  },
+  {
+    caption: "The email address is required for authentication.",
+    label: "Contact information" , 
+  },
+  {
+    field: "Email", 
+    icon: "Email",
+    xs: 6
+  },
+  // {
+  //   caption: "Primary contact phone is optional.",
+  //   label: "Phone" , 
+  // },
+  {
+    field: "Phone", 
+    icon: "Phone",
+    xs: 6
+  },
+  // {
+  //   field: "image", 
+  //   label: "User Avatar", 
+  // },
+]
+
 
  return (
    <Layout data-testid="test-for-Users">
 
 
-<Columns sx={{ pt: 2, alignItems: 'flex-start' }} columns={handler.state.matches('editing') ? "65% 1fr" : "100% 0"}>
+<Columns sx={{ pt: 0, alignItems: 'flex-start' }} columns={handler.is(['editing', 'confirm_close']) ? "65% 1fr" : "100% 0"}>
     <Box>
 
     {items?.map((item, i) => (
@@ -45,21 +116,13 @@ const Users = ({ handler, groups }) => {
         ))}
     </Box>
     <Box>
-     {handler.is('editing') && <>
-     
-     <Grid  sx={{maxWidth: '100%'}} container spacing={2}>
 
+      <AppForm  handler={handler}  icon="Person"  
+      title="Edit user details" fields={config} 
 
-          {config.map(conf => (
-            <Grid item xs={conf.xs || 12} key={conf.field}
-            ><UserField label={conf.label || conf.field} name={conf.field} type={conf.type} 
-              onChange={handleChange}
-              fullWidth size="small" value={handler.item[conf.field]} /></Grid>
-          ))}
-
-      </Grid>
-     
-     </>}
+      />
+  
+{/* {JSON.stringify(handler.subitems)} */}
     </Box>
 
 </Columns>
@@ -73,78 +136,4 @@ const Users = ({ handler, groups }) => {
 }
 Users.defaultProps = {};
 export default Users;
-
-/** onClick={() => {
-        const value = window.prompt("Enter a path to the user image", props.value);
-        !!value && props.onChange({ target: { value, name: props.name }}); 
-      }}
-    */
-
-
-const UserField = ({type, ...props}) => {
-  // if (type === 'avatar') {
-  //   return <Avatar src={props.value} alt="user avatar" size="small" sx={{ width: 32, height: 32 }}
-  //     ><TextIcon icon="Person" /></Avatar>
-  // } 
-
-  return <IconTextField 
-  
-    prompt={type === 'avatar'} 
-    button={ 
-      <Avatar src={props.value} alt="user avatar" 
-      size="small" sx={{ cursor: 'pointer', width: 32, height: 32 }}
-      ><TextIcon icon="Person" /></Avatar>
-      } 
-      description={<Flex sx={{mb: 1}} spacing={1}>
-        <Avatar src={props.value} alt="value" />
-        Edit the image that is displayed in the user profile.</Flex>}
-      placeholder={`Type or paste the URL to a JPG or PNG image`}
-      okayText={`Save image`}
-
-
-    {...props} 
-     />
-}
-
-const config = [
-  {
-    field: "image",
-    label: "Set user image",
-    type: 'avatar',
-    xs: 1,
-  },
-  {
-    field: "FirstName",
-    label: 'First Name',
-    xs: 5,
-  },
-  {
-    field: "LastName",
-    label: 'Last Name',
-    xs: 6,
-  },
-  {
-    field: "Email", 
-    label: "EMail address" , 
-  },
-  {
-    field: "Salutation",
-    xs: 4,
-  },
-  {
-    field: "Title",
-    xs: 4,
-  },
-  {
-    field: "Phone",
-    xs: 4,
-  },
-  {
-    field: "UserID", 
-    label: "Username", 
-  },
-  // {
-  //   field: "image", 
-  //   label: "User Avatar", 
-  // },
-]
+ 
