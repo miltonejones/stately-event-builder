@@ -27,12 +27,18 @@ const ActionsMenu = ({ handler, appslist, reports }) => {
     handleReport(val);
   });
 
+  const opened =  menu.state.matches("opened") ;
+
   return (
     <>
       <Btn
         onClick={menu.handleClick}
-        variant="contained"
-        endIcon={<TextIcon icon="Menu" />}
+        variant={opened ? "outlined" : "contained"}
+        endIcon={<TextIcon className={
+          opened
+          ? "rotate up"
+          : "rotate down"
+        } icon="KeyboardArrowDown" />}
       >
         Actions
       </Btn>

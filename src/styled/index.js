@@ -1,3 +1,4 @@
+import Waiting from './Waiting';
 import MenuStack from './MenuStack';
 import GridFormHeader from './GridFormHeader';
 import GridForm from './GridForm';
@@ -50,6 +51,7 @@ export const typeIcons = {
 };
 
 export {
+  Waiting,
   MenuStack,
   GridFormHeader,
   GridForm,

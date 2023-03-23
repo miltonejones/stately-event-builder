@@ -241,8 +241,8 @@ const EventList = ({ handler, collapsed, search, appslist, reports }) => {
                       <LineItem direction={direction} collapsed={collapsed}>
                       {!collapsed && <Nowrap sx={{maxWidth: '50vw'}} small>{ev.Comments}</Nowrap>}
                         <Spacer />
+                           {!!search.options?.length && <Nowrap small bold sx={{mr: 1}}>{moment(ev.CustomDate).format('MMM Do YY')}</Nowrap>}
                         <Typography variant="caption">
-                           {!!search.options?.length && <b>{moment(ev.CustomDate).format('MMM Do YY')}</b>}
                           {moment("2022-08-22T" + ev.EventStartTime).format(
                             "h:mm a"
                           )}{" "}

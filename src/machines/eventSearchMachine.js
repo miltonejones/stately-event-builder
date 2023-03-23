@@ -182,7 +182,10 @@ const inferProp = value => {
 
   if (!isNaN(value) && value < 13 && value > 0) {
     const start_date = moment(`${value}/1/2023`).format('YYYY-MM-DD');
-    const end_date = moment(`${value}/1/2023`).add(1, 'months').format('YYYY-MM-DD');
+    const end_date = moment(`${value}/1/2023`)
+    .add(1, 'months')
+    .add(-1, 'days')
+    .format('YYYY-MM-DD');
     return {
       label: `during the month of ${moment(start_date).format('MMMM, YYYY')}`,
       params: {

@@ -206,7 +206,7 @@ const EventSearch = (props) => {
         ref={ref} 
         size="small"
         fullWidth
-        value={handler.param}
+        value={inputValue}
  
         placeholder="Start typing an event name or date"
         onChange={(e) => setInputValue(e.target.value)}

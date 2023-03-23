@@ -59,7 +59,7 @@ const eventListMachine = createMachine({
               },
               {
                 target: "#event_list.listing.searching",
-                actions: [assign({ busy: false })],  
+                actions: [assign({ busy: false }), "clearLookup"],  
               },
             ],
           },
@@ -494,12 +494,20 @@ const eventListMachine = createMachine({
       }
     }),
 
+    clearLookup: assign((context, event) => { 
+      return { 
+        lookup_index: 0,
+        lookup_progress: 0,
+      }
+    }),
+    
     assignLookup: assign((context, event) => {
       const { lookup_index } = context;
       const keys = Object.keys(lookupItems);
       return {
         [keys[lookup_index]]: event.data,
-        lookup_index: lookup_index + 1
+        lookup_index: lookup_index + 1,
+        lookup_progress: 100 * (lookup_index /  keys.length)
       }
     }),
     

@@ -29,7 +29,7 @@ import { DiagnosticsMenu, AppsMenu, Diagnostics, EventForm, UserMenu, PageTitle,
   UserList, EventList, AuthForm, EventSearch, ThemeMenu } from './components';
 import { APPTYPE, VIEW, useMenu, useAmplify, useProfile, useEventList, useUserList, useSimpleList, useDemo, useRoomList, useEventSearch } from './machines';
 // import { objectPath } from './util/objectPath';
-import {  BacklessDrawer, Columns, Nowrap, Btn, TinyButton, TextIcon, Warn, Flex } from './styled'; 
+import {  BacklessDrawer, Columns, Waiting, Nowrap, Btn, TinyButton, TextIcon, Warn, Flex } from './styled'; 
   
 Amplify.configure(awsExports);
 
@@ -119,7 +119,6 @@ function Application() {
 
   if (!authenticator.state.matches('signed_in')) {
     return <ThemeProvider theme={theme}>
-    {/* {JSON.stringify(authenticator.state.value)} */}
     <PageTitle handler={{
       pagename: "Home",
       label: "Please log in"
@@ -185,6 +184,7 @@ function Application() {
     <ThemeProvider theme={theme}>
     <div className="App">
 <PageTitle handler={events} />
+    {/* {JSON.stringify(events.state.value)} */}
  
 {!events.props.informed && !authenticator.admin && <Warn filled severity="warning" onDismiss={() => {
   events.send({
@@ -207,7 +207,7 @@ function Application() {
 <Box sx={{ fontSize: '3rem', }}>automated demo  starts in  {demo.ticks}</Box>
 <Btn onClick={() => demo.send('CANCEL')} variant="contained">Cancel</Btn>
 </Stack>}
-
+<Waiting handler={events} />
 
     <Columns 
     columns={events.is(['editing', 'saving']) ? `80px var(--sidebar-width) 1fr 64px` : `80px ${spacer} 1fr  64px`} 

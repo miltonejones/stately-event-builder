@@ -12,7 +12,7 @@ const MenuStack = ({icon, children, caption, bold, error, ...props}) => {
 
   <Stack>
     <Nowrap bold={bold} color={error?"error":"inherit"}>{children}</Nowrap>
-   {!!caption && <Nowrap color={error?"error":"inherit"} small>
+   {!!caption && <Nowrap muted color={error?"error":"inherit"} small>
        {caption}
     </Nowrap>}
   </Stack>

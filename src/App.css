@@ -28,3 +28,15 @@ body {
     transform: rotate(360deg);
   }
 }
+
+.rotate {
+  transition: transform 0.25s linear
+}
+
+.rotate.down {
+  transform: rotate(0deg);
+}
+
+.rotate.up {
+  transform: rotate(180deg);
+}
