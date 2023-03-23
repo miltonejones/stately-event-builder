@@ -46,10 +46,7 @@ const EventList = ({ handler, collapsed, search, appslist, reports }) => {
   const navigate = useNavigate();
   const { eventList: handlerList, state } = handler;
   const eventList = search?.options?.length ? search.options : handlerList;
-  const eventPages = getPagination(eventList, {
-    page: handler.props.queryPage || 1,
-    pageSize: 20
-  })
+  const eventPages = search.pages?.visible ? search.pages :  {visible: handlerList};
 
   const { props,  } = state.context;
 
@@ -146,7 +143,7 @@ const EventList = ({ handler, collapsed, search, appslist, reports }) => {
                 {!collapsed && <ToggleButtonGroup sx={{ color: "inherit", 
                   '& .Mui-selected': { 
                     backgroundColor: t => `${t.palette.primary.light} !important`, 
-                    color: t => t.palette.common.white 
+                    color: t => t.palette.common.white  
                     } }} size="small" {...control} >
                     <ToggleButton sx={{ color: "inherit"}} value={1} size="small">
                       <TextIcon icon="FormatListBulleted" />
@@ -156,7 +153,7 @@ const EventList = ({ handler, collapsed, search, appslist, reports }) => {
                     </ToggleButton>
                   </ToggleButtonGroup>}
 
-                  {!collapsed && <Btn variant="contained" color="warning" endIcon={<TextIcon icon="Add" />}>
+                  {!collapsed && <Btn size="small" variant="contained" color="warning" endIcon={<TextIcon icon="Add" />}>
                     Create Event
                   </Btn>}
 
@@ -179,12 +176,16 @@ const EventList = ({ handler, collapsed, search, appslist, reports }) => {
                   
                   {eventPages.pageCount > 1 && handler.props.format === 1 && <Box sx={{m: 2}}><Pagination
                       count={Number(eventPages.pageCount)}
-                      page={handler.props.queryPage || 1} 
-                      onChange={(a, num) => handler.setProp('queryPage', num)}
+                      page={search.page} 
+                      onChange={(a, num) => search.send({
+                        type: 'PAGE',
+                        page: num
+                      })}
                     /></Box>}
                   
 
-
+                  {/* [{JSON.stringify(search.pages)}] */}
+{/* [{JSON.stringify(search.state.value)}] */}
                   {handler.props.format === 2 && !search.options?.length && <Daytimer popMenu={popMenu} handler={handler} />}
 
                   {(handler.props.format === 1 || !!search.options?.length) && eventPages.visible?.map((ev) => (

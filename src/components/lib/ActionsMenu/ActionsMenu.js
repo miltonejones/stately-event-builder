@@ -33,6 +33,7 @@ const ActionsMenu = ({ handler, appslist, reports }) => {
     <>
       <Btn
         onClick={menu.handleClick}
+        size="small"
         variant={opened ? "outlined" : "contained"}
         endIcon={<TextIcon className={
           opened

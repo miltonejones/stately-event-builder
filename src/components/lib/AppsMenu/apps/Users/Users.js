@@ -107,6 +107,7 @@ const config = [
     {items?.map((item, i) => (
           <Columns spacing={0} columns="32px 80px 200px 300px 300px 1fr"  >
           <Nowrap selected={handler.ID === item.ID} border><TinyButton icon="Delete" /></Nowrap>
+          {/* <Avatar sx={{ w: 24, h: 24 }}>a</Avatar> */}
           <Nowrap selected={handler.ID === item.ID} border>{item.Salutation || hidden}</Nowrap>
           <Nowrap selected={handler.ID === item.ID} border onClick={() => handleEdit(item.ID, `${item.FirstName} ${item.LastName}`)} hover>{item.FirstName} {item.LastName}</Nowrap> 
           <Nowrap selected={handler.ID === item.ID} border >{item.Title || hidden}</Nowrap> 

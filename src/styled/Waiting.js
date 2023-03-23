@@ -1,8 +1,6 @@
-
 import React from 'react';
-import { styled, LinearProgress,Stack, Box } from '@mui/material';
+import { styled, LinearProgress, Stack, Box } from '@mui/material';
 import { objectPath } from '../util/objectPath';
-
 
 const Waiter = styled(Stack)(() => ({
   width: '100vw',
@@ -13,21 +11,26 @@ const Waiter = styled(Stack)(() => ({
   alignItems: 'center',
   zIndex: 25,
   justifyContent: 'center',
-}))
+}));
 
 const Waiting = ({ handler }) => {
   if (handler.is(['listing.ready', 'editing.form'])) {
-   return <i />
+    return <i />;
   }
 
-  
-
-  return <Waiter>
-    {objectPath(handler.state.value)}[{handler.lookup_progress}]
-   {!!handler.lookup_progress && <Box sx={{ width: 500 }}>
-      <LinearProgress value={handler.lookup_progress}  variant="determinate"/>
-    </Box>} 
-  </Waiter>
-}
+  return (
+    <Waiter>
+      {objectPath(handler.state.value)}[{handler.lookup_progress}]
+      {!!handler.lookup_progress && (
+        <Box sx={{ width: 500 }}>
+          <LinearProgress
+            value={handler.lookup_progress}
+            variant="determinate"
+          />
+        </Box>
+      )}
+    </Waiter>
+  );
+};
 
 export default Waiting;
