@@ -1,3 +1,5 @@
+import GridFormFooter from './GridFormFooter';
+import TinyButtonGroup from './TinyButtonGroup';
 import Waiting from './Waiting';
 import MenuStack from './MenuStack';
 import GridFormHeader from './GridFormHeader';
@@ -51,6 +53,8 @@ export const typeIcons = {
 };
 
 export {
+  GridFormFooter,
+  TinyButtonGroup,
   Waiting,
   MenuStack,
   GridFormHeader,

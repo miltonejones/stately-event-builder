@@ -6,6 +6,7 @@ import {
   Drawer,
   IconButton,
   Box,  
+  Typography
 } from '@mui/material';
 import { useMenu } from '../../../machines';
 import {
@@ -55,7 +56,8 @@ const AppsMenu = ({ handler, samples, groups }) => {
       component: Categories,
       anchor: 'left',
       singular: 'category',
-      labelfield: 'title'
+      labelfield: 'title',
+      description: "Categories can be addded to events to help identify them more easily."
     },
     {
       label: 'Reports',
@@ -84,12 +86,14 @@ const AppsMenu = ({ handler, samples, groups }) => {
     },
     {
       label: 'Users',
-      icon: 'Person',
+      icon: 'People',
       color: 'warning',
       dark: true, 
       component: Users,
       singular: 'user',
-      labelfield: 'FirstName'
+      labelfield: 'FirstName',
+      description: "User access to EventBuilder is managed by credentials which you can edit here. Click any user name to edit the settings for that " +
+        "person or use the menu in the toolbar to add a new user."
     },
     {
       label: 'Rooms',
@@ -98,7 +102,8 @@ const AppsMenu = ({ handler, samples, groups }) => {
       dark: true, 
       component: Rooms,
       singular: 'room',
-      labelfield: 'RoomName'
+      labelfield: 'RoomName',
+      description: "Rooms are locations in your facility where events can happen, whether or not they are physical 'rooms'.  Rooms may exist inside any other room other than themselves are one of their child rooms."
     },
   ];
   return (
@@ -129,9 +134,14 @@ const AppsMenu = ({ handler, samples, groups }) => {
                 !handler.is('editing.work') && menu.handleClick(e)
               }}
               />
-
+{/* {JSON.stringify(handler.state.value)} */}
             {handler.busy && <LinearProgress />}
- 
+              
+              {handler.is('idle') && !!app.description && <Stack sx={{ p: 2 , maxWidth: '100%', 
+                mb: 2 }}>
+                <Nowrap bold>{app.label}</Nowrap>
+                <Typography sx={{ lineHeight: 1.2, color: 'text.secondary', fontSize: '0.85rem' }} >{app.description}</Typography>
+              </Stack>}
          
               {!!Component && <Component handler={handler} samples={samples} groups={groups} >
               <AppsFooter handler={handler} anchor={app.anchor} />

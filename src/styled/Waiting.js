@@ -13,14 +13,25 @@ const Waiter = styled(Stack)(() => ({
   justifyContent: 'center',
 }));
 
+const messages = {
+  init_lookup: 'Loading app settings...',
+  'editing.reload': "Reloading event details...",
+  'listing.searching': "Starting search...",
+  'listing.list_received': "Collating response...",
+  'editing.load_event': "Loading event details..."
+}
+
 const Waiting = ({ handler }) => {
-  if (handler.is(['listing.ready', 'editing.form'])) {
+  if (handler.is(['listing.ready', 'editing.leaving', 'editing.form'])) {
     return <i />;
   }
+  const state = objectPath(handler.state.value);
+  const messageKey = Object.keys(messages).find(handler.state.matches);
+  const messageText = messages[messageKey] || state;
 
   return (
     <Waiter>
-      {objectPath(handler.state.value)}[{handler.lookup_progress}]
+      {messageText} 
       {!!handler.lookup_progress && (
         <Box sx={{ width: 500 }}>
           <LinearProgress

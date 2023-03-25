@@ -15,7 +15,7 @@ import {
 import { contains } from '../../../../../util/contains';
 
 const Layout = styled(Box)(({ theme, small, tall }) => ({
-  margin: theme.spacing(1),
+  margin: theme.spacing(0, 1),
   height:  '60vh'  ,
   transition: 'height  0.3s ease-in'
 }));

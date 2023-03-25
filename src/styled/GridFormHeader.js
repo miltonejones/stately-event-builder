@@ -1,36 +1,50 @@
-
-import React from 'react'; 
+import React from 'react';
 import Nowrap from './Nowrap';
 import Flex from './Flex';
 import Spacer from './Spacer';
 import TinyButton from './TinyButton';
 
-const GridFormHeader = ({ icon, title, handleClose, handleSave, handleUndo, dirty, error }) => {
+const GridFormHeader = ({
+  icon,
+  title,
+  handleClose,
+  handleSave,
+  handleUndo,
+  dirty,
+  children,
+  error,
+  ...props
+}) => {
   return (
-    <Flex spacing={1} sx={{ mb: 2 }}>
-    {!!icon && <TinyButton icon={icon} />}
-    <Nowrap bold={dirty}>{title}</Nowrap>{!!dirty && <>*</>}
-    <Spacer />
-    {!!handleUndo && (
-      <TinyButton
-        onClick={handleUndo}
-        disabled={!dirty || error}
-        icon={'Undo'}
-      />
-    )}
-    {!!handleSave && (
-      <TinyButton
-      
-        onClick={handleSave}
-        disabled={!dirty || error}
-        icon={'Save'}
-      />
-    )}
-    {!!handleClose && (
-      <TinyButton  color={error ? "error" : "inherit"} onClick={handleClose} icon={error ? "Error" : dirty ? 'Circle' : 'Close'} />
-    )}
-  </Flex>
-  )
-}
+    <Flex spacing={1} {...props} sx={{ mb: 0, ...props.sx }} >
+      {!!icon && <TinyButton icon={icon} />}
+      <Nowrap bold={dirty}>{title}</Nowrap>
+      {!!dirty && <>*</>}
+      <Spacer />
+      {children}
+      {!!handleUndo && (
+        <TinyButton
+          onClick={handleUndo}
+          disabled={!dirty || error}
+          icon={'Undo'}
+        />
+      )}
+      {!!handleSave && (
+        <TinyButton
+          onClick={handleSave}
+          disabled={!dirty || error}
+          icon={'Save'}
+        />
+      )}
+      {!!handleClose && (
+        <TinyButton
+          color={error ? 'error' : 'inherit'}
+          onClick={handleClose}
+          icon={error ? 'Error' : dirty ? 'Circle' : 'Close'}
+        />
+      )}
+    </Flex>
+  );
+};
 
 export default GridFormHeader;

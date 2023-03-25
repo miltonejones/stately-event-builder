@@ -1,25 +1,26 @@
 import React from 'react';
 import { styled, Switch, Card, TextField, Box } from '@mui/material';
-import { Flex, Banner, TinyButton, Spacer, Nowrap } from '../../../../../styled';
+import { Flex, GridFormHeader, TinyButton, Nowrap } from '../../../../../styled';
 import { VIEW } from '../../../../../machines'; 
 
 const Layout = styled(Card)(({ theme }) => ({
   border: 'solid 1px ' + theme.palette.divider,
+  padding: theme.spacing(3, 2)
 }));
 
 const EventOptions = ({ handler }) => {
   const opened = Boolean(handler.view & VIEW.FORM_OPTIONBAR);
   if (!opened) return <Box sx={{ p: 1 }}>
-    <TinyButton icon="KeyboardArrowLeft" onClick={() => {
-    handler.send({
-      type: 'VIEW',
-      bit: VIEW.FORM_OPTIONBAR
-    })
-  }} />
+    <TinyButton icon="KeyboardArrowLeft" onClick={() => handler.setView(VIEW.FORM_OPTIONBAR) } />
   </Box>
   return (
     <Layout>
-      <Banner disabled>
+      <GridFormHeader 
+        title="Options"
+        icon="Settings"
+        handleClose={() => handler.setView(VIEW.FORM_OPTIONBAR) }  
+      />
+      {/* <Banner disabled>
         <Nowrap small bold>
           <b>Options</b>
         </Nowrap>
@@ -31,7 +32,7 @@ const EventOptions = ({ handler }) => {
               bit: VIEW.FORM_OPTIONBAR
             })
           }} />
-      </Banner>
+      </Banner> */}
 
       <Box sx={{ m: 1 }}>
         <Flex>

@@ -1,30 +1,19 @@
 import React from 'react';
-import { IconButton, MenuItem, TextField } from '@mui/material';
-import { Spacer, TextIcon, Banner, Nowrap } from '../../../../../styled';
+import { IconButton, MenuItem } from '@mui/material';
+import { TextIcon, GridFormHeader, IconTextField } from '../../../../../styled';
 
-const FormHeader = ({ handler, handleIndex }) => {
+
+const EventNav = ({ handler, handleIndex}) => {
   const index = handler.eventList
     .map((f) => f.ID)
     .indexOf(handler.eventProp.ID);
-
-  return (
-    <Banner disabled={handler.busy || handler.saving}>
-      Edit{' '}
-
-      {/* event title */}
-      <Nowrap small bold>
-        {handler.eventProp.EventName}
-      </Nowrap>
-      
-      <Spacer />
-
-      {/* left navigation arrow */}
-      <IconButton disabled={index < 1} onClick={() => handleIndex(index - 1)}>
+  return <>
+  
+      <IconButton color="inherit" disabled={index < 1} onClick={() => handleIndex(index - 1)}>
         <TextIcon icon="KeyboardArrowLeft" />
       </IconButton>
-
-      {/* free form navigation text box */}
-      <TextField
+ 
+      <IconTextField
         select
         size="small"
         onChange={(e) => handleIndex(e.target.value)}
@@ -35,19 +24,52 @@ const FormHeader = ({ handler, handleIndex }) => {
             {key + 1}
           </MenuItem>
         ))}
-      </TextField>
+      </IconTextField>
 
 
       of {handler.eventList.length}
-
-      {/* right navigation arrow */}
-      <IconButton
+ 
+      <IconButton  color="inherit"
         disabled={!handler.eventList[index + 1]}
         onClick={() => handleIndex(index + 1)}
       >
         <TextIcon icon="KeyboardArrowRight" />
       </IconButton>
-    </Banner>
+
+  </>
+}
+
+const FormHeader = (props) => {
+  const { handler } = props;
+  // const index = handler.eventList
+  //   .map((f) => f.ID)
+  //   .indexOf(handler.eventProp.ID);
+
+  return (
+    <>
+    <GridFormHeader
+      dirty={handler.dirty}
+      handleSave={() => handler.send('SAVE')}
+      handleClose={() => handler.send('LIST')}
+      handleUndo={() => handler.send('UNDO')}
+      title={`Edit ${handler.eventProp.EventName}`}
+      icon="Bolt"
+      ><EventNav {...props} /></GridFormHeader>
+
+      
+    {/* <Banner disabled={handler.busy || handler.saving}>
+      Edit{' '}
+ 
+      <Nowrap small bold>
+        {handler.eventProp.EventName}
+      </Nowrap>
+      
+      <Spacer />
+ 
+
+    </Banner> */}
+    
+    </>
   );
 };
 FormHeader.defaultProps = {};

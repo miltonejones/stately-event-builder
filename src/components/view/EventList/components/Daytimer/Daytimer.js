@@ -142,9 +142,9 @@ const DayRow = ({ time, date, factor, events, onChange, handler }) => {
         }
       }}
     >
-      {!!conflict && <Tooltag component={TinyButton} 
+      {/* {!!conflict && <Tooltag component={TinyButton} 
       title={<>Event conflicts with <b>{conflict.EventName}</b></>}
-      color="error" icon="ErrorOutlined" />}
+      color="error" icon="ErrorOutlined" />} */}
 
       {!!secondBlock && <>{secondBlock.FullName}</>}
 

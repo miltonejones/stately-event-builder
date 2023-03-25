@@ -5,15 +5,23 @@ import {
   Flex, 
   IconTextField, 
   TinyButton, 
+  TextIcon,
+  // Nowrap
 } from '../../../../../styled';
 import { apiDate } from '../../../../../util/apiDate';
 
 import DateRange from  '../DateRange/DateRange';
+import SetupMenu from  '../SetupMenu/SetupMenu';
 
  
- 
-
 const EventInput = (props) => {
+  return <Flex sx={{ height: '100%',}} spacing={props.logo ? 2 : 0}>
+    {props.logo && <TextIcon icon={props.logo} />}
+    <EventInputContent {...props} />
+  </Flex>
+}
+
+const EventInputContent = (props) => {
   const {
     rows,
     handler,
@@ -27,6 +35,19 @@ const EventInput = (props) => {
     none,
     icon = 'AccessTime',
   } = props;
+
+  
+  if (type === 'setup') {
+    return <SetupMenu {...props} />
+  }
+
+  // if (type === 'setup') {
+  //   return <Flex spacing={1} sx={{ height: '100%'}}>
+  //     <Switch />
+  //    <Nowrap small muted> Allow 30 minutes setup</Nowrap>
+  //    <TinyButton icon="Settings" />
+  //   </Flex>
+  // }
 
   if (['range'].find((f) => f === type) && !!handler.eventProp.RecurseEndDate) {
     return <DateRange {...props} />;
@@ -48,7 +69,7 @@ const EventInput = (props) => {
       <>
         {/* {type === 'time' && <>{eventTime( handler.eventProp[field]) }--{handler.eventProp[field]}</>} */}
         <IconTextField
-          sx={{ mt: 1 }}
+          sx={{ mt: type === 'time' ? 1 : 0 }}
           fullWidth
           type={type}
           startIcon={

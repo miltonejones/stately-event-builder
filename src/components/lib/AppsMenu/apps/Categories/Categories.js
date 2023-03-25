@@ -7,7 +7,7 @@ import AppForm from '../../components/AppForm/AppForm';
 
  
 const Layout = styled(Box)(({ theme }) => ({
- margin: theme.spacing(2),
+ margin: theme.spacing(0, 2),
  width: 400
 }));
  
@@ -38,11 +38,13 @@ const Categories = ({ handler, children }) => {
     {/* {JSON.stringify(handler.state.value)} */}
     <Collapse in={handler.is('idle')}> 
     <Box>
-      <Columns columns="20px 200px 1fr" sx={{ m: 1 }}>
+      <Columns columns="20px 200px 1fr" sx={{ m: t => t.spacing(0, 1) }}>
         <Spacer />
         <Nowrap bold>Name</Nowrap>
         <Nowrap bold>Color</Nowrap>
       </Columns>
+
+
     {handler.items.map(item => <Columns columns="20px 200px 1fr" sx={{ m: 1 }} key={item.ID} >
       
       <ConfirmPop 

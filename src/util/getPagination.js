@@ -4,16 +4,21 @@ export  const getPagination = (collection,  {
   pageSize 
 }) => {
 
-  const pageCount = Math.ceil(collection?.length / pageSize);
+  const itemCount = collection?.length;
+  const pageCount = Math.ceil(itemCount / pageSize);
   const startNum = (page - 1) * pageSize;  
-  const visible = collection?.slice(startNum, startNum + pageSize);
+  const lastNum = Math.min(startNum + pageSize, itemCount);
+  const visible = collection?.slice(startNum, lastNum);
 
 
 
   return {
-    startNum,
+    startNum: startNum + 1,
+    itemCount,
     pageCount,
-    visible
+    visible,
+    lastNum,
+    pageSize
   }
 
   

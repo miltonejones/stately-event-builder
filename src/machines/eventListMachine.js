@@ -2,7 +2,7 @@ import React from 'react';
 import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
 import { engDate } from '../util/engDate';
-import { searchEvents, getEventListCategories, saveEvent, getCognitoGroups,
+import { searchEvents, getEventListCategories, saveEvent, getCognitoGroups, getUsers,
    getRooms, getReports, getCalendars, getEvent, getCategories } from '../connector';
 // import { scrubRoom } from '../util/scrubRoom';
 import moment from 'moment';
@@ -15,7 +15,9 @@ import {
 export const VIEW = {
   LIST_SIDEBAR: 1,
   FORM_SIDEBAR: 2,
-  FORM_OPTIONBAR: 4
+  FORM_OPTIONBAR: 4,
+  OPTION_CATEGORY: 8,
+  OPTION_CALENDAR: 16
 }
 
 
@@ -31,6 +33,7 @@ const lookupItems = {
   calendars: getCalendars,
   categories: getCategories,
   groups: getCognitoGroups,
+  users: getUsers,
   reports: getReports
 }
 
@@ -349,9 +352,9 @@ const eventListMachine = createMachine({
             ATTR: {
               actions: ["assignEventProp", assign({ dirty: true })],
             },
-            // SAVE: {
-            //   target: "#event_list.saving",
-            // },
+            UNDO: {
+              target: "reload",
+            }, 
             EDIT: {
               target: "#event_list.editing.leaving.edit",
               actions: "assignID",
@@ -525,7 +528,8 @@ const eventListMachine = createMachine({
     assignEventProps: assign((_, event) => ({
       eventProp: event.data,
       pagename: "Edit", 
-      title: event.data?.EventName
+      title: event.data?.EventName,
+      dirty: false
     })),
     clearID: assign((context, event) => ({
       ID: null,
@@ -588,8 +592,7 @@ const eventListMachine = createMachine({
       params: event.params,
       busy: 1
     })),
-    assignParam: assign((context, event) => ({
-      dirty: 1,
+    assignParam: assign((context, event) => ({ 
       params: {
         ...context.params,
         [event.key]: event.value
@@ -659,8 +662,16 @@ export const useEventList = () => {
       loadLookup: async(context) => {
         const { lookup_index } = context;
         const keys = Object.keys(lookupItems);
-        const get = lookupItems[keys[lookup_index]];
-        return await get();
+        const key = keys[lookup_index];
+        const get = lookupItems[key];
+        const storageKey = `datum-${key}`;
+        const store = localStorage.getItem(storageKey);
+        if (store) {
+          return JSON.parse(store);
+        }
+        const data = await get();
+        localStorage.setItem(storageKey, JSON.stringify(data))
+        return data;
       },
 
       loadCalendars: async() => await getCalendars(),
@@ -714,6 +725,13 @@ export const useEventList = () => {
     send,
   };
 
+  const setView = (bit) => {
+    send({
+      type: 'VIEW',
+      bit 
+    })
+  }
+
   const setProp = (key, value) => { 
     send({
       type: 'CHANGE',
@@ -731,6 +749,7 @@ export const useEventList = () => {
     send, 
     diagnosticProps,
     setProp,
+    setView,
     ...state.context
   };
 }

@@ -1,13 +1,14 @@
 export const formProps = [
-  {
-    label: "Event Name",
-    auto: 1,
-    field: "EventName",
-  },
+  // {
+  //   label: "Event Name",
+  //   auto: 1,
+  //   field: "EventName",
+  // },
   {
     label: "Room(s)",
     field: "rooms",
     type: "rooms",
+    logo: "Room"
   },
 
   {
@@ -15,25 +16,34 @@ export const formProps = [
     field: "EventDate",
     type: "date",
     xs: 4,
+    logo: "AccessTime"
   },
   {
-    prefix: "Start Time",
+    label: "Start Time",
     field: "EventStartTime",
     type: "time",
-    xs: 4,
+    xs: 2,
   },
   {
-    prefix: "End Time",
+    label: "End Time",
     field: "EventEndTime",
     type: "time",
-    xs: 4,
+    xs: 2,
   },
 
   {
-    prefix: "Repeats",
+    label: "DateRange",
+    field: "setup",
+    type: "setup",
+    xs: 3,
+  },
+
+  {
+    // prefix: "Repeats",
     field: "RecurseType",
     icon:"CalendarToday",
     none: 'Does not repeat',
+    label: "Repeats",
     types: [
       "daily",
       "weekly",
@@ -45,30 +55,33 @@ export const formProps = [
       "various",
     ],
     xs: 4,
+    logo: "Sync"
   },
-  {
-    prefix: "Setup Start",
-    field: "SetupStartTime",
-    type: "time",
-    xs: 4,
-  },
-  {
-    prefix: "Setup End",
-    field: "SetupEndTime",
-    type: "time",
-    xs: 4,
-  },
+  // {
+  //   prefix: "Setup Start",
+  //   field: "SetupStartTime",
+  //   type: "time",
+  //   xs: 4,
+  // },
+  // {
+  //   prefix: "Setup End",
+  //   field: "SetupEndTime",
+  //   type: "time",
+  //   xs: 4,
+  // },
 
   {
     label: "DateRange",
     field: "range",
     type: "range",
+    xs: 8, 
     rows: 3,
   },
 
   {
     label: "Comments",
     field: "Comments",
+    logo: "Comment",
     rows: 3,
   },
 ];

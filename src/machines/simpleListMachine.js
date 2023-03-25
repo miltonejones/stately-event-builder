@@ -397,6 +397,7 @@ const simpleListMachine = createMachine({
       [event.key]: event.value
     })),
     applyChanges: assign((context, event) => ({
+      dirty: true,
       item: {
         ...context.item,
         [event.key]: event.value

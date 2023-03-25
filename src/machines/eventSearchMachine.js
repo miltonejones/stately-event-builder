@@ -145,11 +145,11 @@ const eventSearchMachine = createMachine({
       const { visible } = context.pages;
       const categories = event.data || [];
 
-      console.log ({ categories });
+      // console.log ({ categories });
       return {
         pages: {
           ...context.pages,
-          visible: context.pages.visible.map(f => ({
+          visible: visible.map(f => ({
             ...f,
             categories: categories.filter(e => e.eventfk === f.ID)
           }))
@@ -164,7 +164,7 @@ const eventSearchMachine = createMachine({
     assignVisible: assign((context, event) => {
         const pages = getPagination(context.options, {
           page: context.page,
-          pageSize: 20
+          pageSize: 25
         });
 
         console.log ({ pages });

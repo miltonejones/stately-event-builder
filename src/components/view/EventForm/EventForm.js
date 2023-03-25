@@ -3,17 +3,23 @@ import {
   styled, 
   Card, 
   Grid, 
-  Divider, 
+  // Divider, 
   Stack,
+  // Box,
 } from '@mui/material';
 
 import {
   Flex,
-  Btn,
-  Spacer, 
+  // Btn,
+  // Spacer, 
   TextIcon,
-  Nowrap,
-  Columns,  Warn
+  // Nowrap,
+  Columns,  
+  IconTextField,
+  // Warn,
+  // GridFormHeader,
+  GridFormFooter,
+  Pill
 } from '../../../styled'; 
 import { formProps } from './config';
 import { useNavigate } from 'react-router-dom'; 
@@ -27,6 +33,7 @@ import { VIEW } from '../../../machines';
 
 const Layout = styled(Card)(({ theme }) => ({ 
   border: 'solid 1px ' + theme.palette.divider,
+  padding: theme.spacing(2)
 })); 
  
 const Field = (props) => {
@@ -39,13 +46,19 @@ const Field = (props) => {
   );
 };
 
-const EventForm = ({ handler, disabled }) => {
+const CategoryPill = ({categories, folderfk}) => {
+  const pill = categories.find(f => f.ID ===folderfk);
+  return <Pill sx={{ mr: 1 }} color={pill.color}>{pill.title}</Pill>
+}
+
+const EventForm = ({ handler, whois, disabled }) => {
   const navigate = useNavigate();
   const opened = Boolean(handler.view & VIEW.FORM_OPTIONBAR);
   if (!handler.eventProp) {
     return <i />;
   } 
 
+  const { dates, ...data} = handler.eventProp;
   const handleIndex = (i) => {
     handler.send({
       type: 'EDIT',
@@ -61,36 +74,58 @@ const EventForm = ({ handler, disabled }) => {
     });
   };
 
-  const columns = opened ? "1fr 300px" : "1fr 24px";
+  const columns = opened ? "1fr 360px" : "1fr 24px";
+  const error = handler.is('editing.leaving');
 
-
-  if (handler.is('editing.leaving')) {
-    return <Card sx={{p: 2, m: 2, maxWidth: 500}}><Stack>
-    <Warn filled severity="warning">You have unsaved changes.</Warn>
-      <Nowrap sx={{ mt: 1 }}>Are you sure you want to exit?</Nowrap>
-      <Flex sx={{ mt: 1 }} spacing={1}>
-        <Btn variant="contained" onClick={() => handler.send('SAVE')}>Save Changes</Btn>
-        <Spacer />
-        <Btn onClick={() => handler.send('CANCEL')}>Cancel</Btn>
-        <Btn variant="contained" color="error" onClick={() => handler.send('OK')}>Discard Changes</Btn>
-      </Flex>
-    </Stack></Card>
-  }
+  // if (handler.is('editing.leaving')) {
+  //   return <Card sx={{p: 2, m: 2, maxWidth: 500}}><Stack>
+  //   <Warn filled severity="warning">You have unsaved changes.</Warn>
+  //     <Nowrap sx={{ mt: 1 }}>Are you sure you want to exit?</Nowrap>
+  //     <Flex sx={{ mt: 1 }} spacing={1}>
+  //       <Btn variant="contained" onClick={() => handler.send('SAVE')}>Save Changes</Btn>
+  //       <Spacer />
+  //       <Btn onClick={() => handler.send('CANCEL')}>Cancel</Btn>
+  //       <Btn variant="contained" color="error" onClick={() => handler.send('OK')}>Discard Changes</Btn>
+  //     </Flex>
+  //   </Stack></Card>
+  // }
 
   return (
     <Columns sx={{ alignItems: 'flex-start', mb: 8 }} columns={columns}>
       <Stack spacing={1} sx={{ p: 1 }}>
 
-        <Layout>
+        <Layout sx={{ mb: 5}}>
 
           <FormHeader handler={handler} handleIndex={handleIndex} /> 
 
           {!handler.props.showJSON && (
             <Grid
               container
-              spacing={1}
-              sx={{ width: 'calc(100% - 48px)', m: 2 }}
+              spacing={2}
+              sx={{ width: 'calc(100%)', mt: 1 }}
             >
+
+              <Grid item xs={12}>
+                <Flex spacing={2}>
+                <TextIcon icon="Edit" />
+                <IconTextField 
+                  autoFocus
+                  name="EventName"
+                  error={error}
+                  helperText={error ? "If you leave now you will lose your unsaved changes!" : ""}
+                  onChange={e => handleChange(e.target.name, e.target.value)}
+                  startIcon={
+                    handler.eventProp.categories.map(c => <CategoryPill folderfk={c.folderfk} categories={handler.categories}/>)
+                  }
+                  size="small"
+                  fullWidth
+                  label="Event Name"
+                  value={handler.eventProp.EventName}
+                />      
+
+                </Flex>         
+              </Grid>
+
 
               {/* loop over form config to render event attribute elements */}
               {formProps.map((prop) => (
@@ -103,11 +138,18 @@ const EventForm = ({ handler, disabled }) => {
               ))}
 
               <Grid item xs={12}>
-                <Divider />
+                <GridFormFooter 
+                sx={{ ml: 5 }}
+                handler={handler} 
+                error={error} 
+                cancel="CANCEL" 
+                handleClose={() => navigate('/list')}
+                handleSave={() => handler.send('SAVE')}
+                />
               </Grid>
 
               {/* control buttons */}
-              <Grid item xs={12}>
+              {/* <Grid item xs={12}>
                 <Flex spacing={1}>
                   <Spacer />
                   <Btn size="small" onClick={() => navigate('/list')}>
@@ -124,12 +166,12 @@ const EventForm = ({ handler, disabled }) => {
                     Save
                   </Btn>
                 </Flex>
-              </Grid>
+              </Grid> */}
             </Grid>
           )}
 
           {!!handler.props.showJSON && (
-            <pre>{JSON.stringify(handler.eventProp, 0, 2)}</pre>
+            <pre>{JSON.stringify(data, 0, 2)}</pre>
           )}
         </Layout>
 
@@ -137,6 +179,7 @@ const EventForm = ({ handler, disabled }) => {
           value={handler.eventProp.comments}
           handleChange={handleChange}
           handler={handler}
+          whois={whois}
         />
 
       </Stack>

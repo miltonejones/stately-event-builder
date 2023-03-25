@@ -1,15 +1,15 @@
 import React from "react";
 
-import { getPagination } from "../../../util/getPagination";
+// import { getPagination } from "../../../util/getPagination";
  
 
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+// import ToggleButton from '@mui/material/ToggleButton';
+// import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Daytimer from './components/Daytimer/Daytimer';
 import EventPopover from './components/EventPopover/EventPopover';
 
 import { styled, 
-  Stack, Switch, Pagination,
+  Stack, Switch, Pagination, TablePagination,
   // IconButton, 
   Card, Box, Collapse, Typography } from "@mui/material";
 import { 
@@ -25,7 +25,8 @@ import {
   Spacer,
   Pill,
   Flex,
-  Banner
+  Banner,
+  TinyButtonGroup
   // Demotip
 } from "../../../styled";
 
@@ -41,6 +42,23 @@ const LineItem = styled(Stack)(({ theme, collapsed, spacing=1 }) => ({
 const Layout = styled(Box)(({ theme }) => ({
   margin: theme.spacing(0),
 }));
+
+const CollapsiblePagination = ({ pages, page, collapsed, onChange }) => {
+  if (collapsed) {
+    return <TablePagination
+    count={Number(pages.itemCount)}
+    page={page - 1} 
+    rowsPerPage={pages.pageSize}
+    rowsPerPageOptions={[]}
+    onPageChange={(a, num) => onChange(num)} 
+    />
+  } 
+  return <Pagination
+    count={Number(pages.pageCount)}
+    page={page}  
+    onChange={(a, num) => onChange(num)} 
+  />
+}
 
 const EventList = ({ handler, collapsed, search, appslist, reports }) => {
   const navigate = useNavigate();
@@ -70,6 +88,7 @@ const EventList = ({ handler, collapsed, search, appslist, reports }) => {
 
   const control = {
     value: handler.props.format,
+    values: [1, 2],
     onChange: handleChange,
     exclusive: true,
   };
@@ -139,19 +158,12 @@ const EventList = ({ handler, collapsed, search, appslist, reports }) => {
                   </Typography>
 
                   <Spacer />          
+
+                 {!collapsed &&  <TinyButtonGroup sx={{ mr: 1 }} buttons={[
+                    "FormatListBulleted", "CalendarMonth"
+                  ]} {...control} />}
                 
-                {!collapsed && <ToggleButtonGroup sx={{ color: "inherit", 
-                  '& .Mui-selected': { 
-                    backgroundColor: t => `${t.palette.primary.light} !important`, 
-                    color: t => t.palette.common.white  
-                    } }} size="small" {...control} >
-                    <ToggleButton sx={{ color: "inherit"}} value={1} size="small">
-                      <TextIcon icon="FormatListBulleted" />
-                    </ToggleButton>,
-                    <ToggleButton sx={{ color: "inherit"}}  value={2} size="small">
-                      <TextIcon icon="CalendarMonth" />
-                    </ToggleButton>
-                  </ToggleButtonGroup>}
+          
 
                   {!collapsed && <Btn size="small" variant="contained" color="warning" endIcon={<TextIcon icon="Add" />}>
                     Create Event
@@ -173,17 +185,24 @@ const EventList = ({ handler, collapsed, search, appslist, reports }) => {
                     }}>
 
                       
-                  
-                  {eventPages.pageCount > 1 && handler.props.format === 1 && <Box sx={{m: 2}}><Pagination
-                      count={Number(eventPages.pageCount)}
-                      page={search.page} 
-                      onChange={(a, num) => search.send({
+                  {eventPages.pageCount > 1 &&   <Flex>
+
+                 <Box sx={{m: 2}}><CollapsiblePagination
+                     collapsed={collapsed}
+                      pages={eventPages}
+                      page={search.page}  
+                      onChange={(num) => search.send({
                         type: 'PAGE',
                         page: num
                       })}
-                    /></Box>}
-                  
 
+
+                    /></Box>
+                  
+                   {!collapsed && <> {eventPages.startNum} to {eventPages.lastNum} of {eventPages.itemCount} events </>}
+
+                    <Spacer />
+                  </Flex>}
                   {/* [{JSON.stringify(search.pages)}] */}
 {/* [{JSON.stringify(search.state.value)}] */}
                   {handler.props.format === 2 && !search.options?.length && <Daytimer popMenu={popMenu} handler={handler} />}

@@ -2,19 +2,20 @@ import React from 'react';
 import {
   styled,
   Typography,
-  IconButton,
-  Collapse,
+  // IconButton,
+  Drawer,
   TextField,
   Card,
   Box,
 } from '@mui/material';
-import { Flex, TinyButton, TextIcon } from '../../../../../styled';
+import { Flex, TinyButton, RotateButton, TextIcon } from '../../../../../styled';
 import { DateInput } from '../../../..';
 import { recurseText } from '../../../../../util/recurseText';
 import moment from 'moment';
 
-const RangeCard = styled(Card)(({ theme }) => ({
-  padding: theme.spacing(1),
+const RangeCard = styled(Box)(({ theme }) => ({
+  // padding: theme.spacing(1),
+  // border: 'solid 1px ' + theme.palette.divider
 }));
 
 const DateRange = (props) => {
@@ -36,7 +37,8 @@ const DateRange = (props) => {
             <b>{caption.label}</b> {caption.middle} <b>{caption.suffix}</b>{' '}
             until <b>{caption.until}</b>
           </Typography>
-          <IconButton
+          <RotateButton
+          deg={handler.props.showRange ? 90 : 270}
             onClick={() => {
               handler.send({
                 type: 'CHANGE',
@@ -46,17 +48,13 @@ const DateRange = (props) => {
             }}
           >
             <TextIcon
-              icon={
-                handler.props.showRange
-                  ? 'KeyboardArrowUp'
-                  : 'KeyboardArrowDown'
-              }
+              icon="KeyboardArrowDown"
             />
-          </IconButton>
+          </RotateButton>
         </Flex>
       </RangeCard>
       {/* {JSON.stringify(recurseText(eventProp))} */}
-      <Collapse in={handler.props.showRange}>
+      <Drawer anchor="right" onClose={() => handler.setProp('showRange', false)} open={handler.props.showRange}>
         <Flex sx={{ p: 1 }}>
           <DateInput label="End Date" value={eventProp.RecurseEndDate} />
         </Flex>
@@ -73,7 +71,7 @@ const DateRange = (props) => {
             <Box sx={{ position: 'absolute', top: -8, background: 'white' }}>
               Selected dates
             </Box>
-            <Box sx={{ maxHeight: 400, overflow: 'auto' }}>
+            <Box sx={{ maxHeight: 'calc(100vh - 140px)', minWidth: 300, overflow: 'auto' }}>
               {eventProp.dates.map((f) => (
                 <Flex
                   spacing={1}
@@ -88,7 +86,7 @@ const DateRange = (props) => {
             </Box>
           </Box>
         </Card>
-      </Collapse>
+      </Drawer>
     </>
   );
 };

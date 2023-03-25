@@ -1,6 +1,13 @@
 import React from 'react';
 import { Stack, Collapse } from '@mui/material';
-import { Flex, Spacer, TinyButton, IconTextField, Nowrap, Btn } from '../../../../../styled';
+import { 
+  Flex, 
+  Spacer, 
+  IconTextField, 
+  Nowrap, 
+  TinyButton, 
+  Btn 
+} from '../../../../../styled';
 
 const AppsFooter = ({ handler, anchor }) => {
   if (!handler) return <i />;
