@@ -56,18 +56,7 @@ const FormHeader = (props) => {
       icon="Bolt"
       ><EventNav {...props} /></GridFormHeader>
 
-      
-    {/* <Banner disabled={handler.busy || handler.saving}>
-      Edit{' '}
- 
-      <Nowrap small bold>
-        {handler.eventProp.EventName}
-      </Nowrap>
-      
-      <Spacer />
- 
-
-    </Banner> */}
+    
     
     </>
   );

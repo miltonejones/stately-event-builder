@@ -21,7 +21,7 @@ const GridFormFooter = ({
 
   // save = 'SAVE',
   // quit = 'EXIT',
-  drop = 'DELETE',
+  drop , // = 'DELETE',
   ...props
 }) => {
   return <>
@@ -47,13 +47,13 @@ const GridFormFooter = ({
  
 
   <Flex wrap="nowrap" sx={{ width: error ? 0 : '100%', overflow: 'hidden', transition: 'width 0.3s linear'}} spacing={1}>
-      <Btn
+     {!!drop && <Btn
         variant="contained"
         color="error"
         onClick={() => handler.send(drop)}
       >
         delete
-      </Btn>
+      </Btn>}
       <Spacer />
       {handleClose && <Btn onClick={handleClose}>cancel</Btn>}
       {handleSave && <Btn

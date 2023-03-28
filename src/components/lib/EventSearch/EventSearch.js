@@ -30,6 +30,7 @@ const EventSearch = (props) => {
   const ref = React.useRef(null);
   const { 
     // onValueSelected, 
+    settings,
     handler } = props;
   // const [value] = React.useState(props.value);
   const [inputValue, setInputValue] = React.useState("");
@@ -197,12 +198,17 @@ const EventSearch = (props) => {
       <IconTextField
         autoFocus
         startIcon={<TextIcon className={searching ? "App-logo" : ""} icon={searching ? "Sync" : "Search"} />}
-        endIcon={!inputValue ? null : <TinyButton
+        endIcon={(<>
+        <TinyButton
+          onClick={settings.handleClick}
+          icon={"PhonelinkSetup"} />
+        {!inputValue ? null : <TinyButton
           onClick={() => {
             handler.send('EXIT');
             setInputValue("")
           }}
           icon={"Close"} />}
+        </>)}
         ref={ref} 
         size="small"
         fullWidth

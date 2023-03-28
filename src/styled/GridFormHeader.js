@@ -7,18 +7,18 @@ import TinyButton from './TinyButton';
 const GridFormHeader = ({
   icon,
   title,
+  error,
   handleClose,
   handleSave,
   handleUndo,
   dirty,
-  children,
-  error,
+  children, 
   ...props
 }) => {
   return (
     <Flex spacing={1} {...props} sx={{ mb: 0, ...props.sx }} >
-      {!!icon && <TinyButton icon={icon} />}
-      <Nowrap bold={dirty}>{title}</Nowrap>
+      {!!icon && <TinyButton color={error ? "error" : "inherit"} icon={icon} />}
+      <Nowrap color={error ? "error" : "inherit"} bold={error || dirty}>{title}</Nowrap>
       {!!dirty && <>*</>}
       <Spacer />
       {children}

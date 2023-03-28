@@ -96,9 +96,7 @@ const EventInputContent = (props) => {
           InputLabelProps={{
             shrink: true,
           }}
-          inputProps={{
-            min: '12:00',
-            max: '01:00',
+          inputProps={{ 
             step: 900, // 5 min
           }}
           onChange={(e) => handleChange(field, e.target.value)}

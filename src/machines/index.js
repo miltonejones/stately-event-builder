@@ -1,3 +1,4 @@
+import { useDomain } from './domainMachine';
 import { useSimpleList, APPTYPE } from './simpleListMachine';
 import { useEventPop } from './eventPopMachine';
 import { useMenu } from './menuMachine';
@@ -10,6 +11,7 @@ import { useRoomList } from './roomListMachine';
 import { useEventList, VIEW } from './eventListMachine';
 
 export {
+  useDomain,
   useSimpleList,
   useEventPop,
   useMenu,

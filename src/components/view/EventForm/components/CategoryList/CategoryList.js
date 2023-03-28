@@ -1,6 +1,6 @@
 import React from 'react';
-import { styled, Switch, Card, Collapse, Box } from '@mui/material';
-import { Flex, Btn, GridFormHeader, TinyButton, Nowrap } from "../../../../../styled";
+import { styled, Stack, Card, Collapse } from '@mui/material';
+import { Flex, Check, ConfirmPop, GridFormHeader, TinyButton, Nowrap } from "../../../../../styled";
 import { VIEW } from '../../../../../machines'; 
 
 const Layout = styled(Card)(({ theme }) => ({
@@ -41,30 +41,32 @@ const CategoryList = ({ handler, value, handleChange }) => {
       icon="Class"
       sx={{ mb: expanded || populated ? 2 : 0 }}
     >
-      <TinyButton 
-      icon={populated ? "Delete" : "KeyboardArrowDown"} 
-      deg={expanded && !populated ? 180 : 0}
-      onClick={handleCollapse}   />
-    </GridFormHeader>
-    
-    <Collapse in={handler.props.dropcat}>
-        <Box >
-         Remove all categories from this event?
-         <Btn
-          onClick={() =>  handler.setProp('dropcat', false)}
-         >No</Btn>
-        </Box>
-    </Collapse>
+      {!!populated && <ConfirmPop 
+        message="Remove all categories from this event?"
+        onChange={(ok) =>  {
+          if (!ok) return;
+          handleChange('categories', []);
+          handler.setProp('dropcat', false);
+        }}>
+        <TinyButton icon="Delete" />
+      </ConfirmPop>}
 
-    <Collapse in={(expanded || populated) && !handler.props.dropcat}>
-        <Box>
+
+      {!populated && <TinyButton 
+        icon={populated ? "Delete" : "KeyboardArrowDown"} 
+        deg={expanded && !populated ? 180 : 0}
+        onClick={handleCollapse}   />}
+    </GridFormHeader>
+   
+    <Collapse in={expanded || populated}>
+        <Stack spacing={1}>
         {handler.categories.map(cat => (
-          <Flex onClick={() => onChange(cat.ID)} key={cat.ID}>
-            <Switch checked={value.find(f => f.folderfk === cat.ID)} /> 
-            <Nowrap muted small>{cat.title}</Nowrap>
+          <Flex spacing={1} onClick={() => onChange(cat.ID)} key={cat.ID}>
+            <Check on={value.find(f => f.folderfk === cat.ID)} /> 
+            <Nowrap bold={value.find(f => f.folderfk === cat.ID)}  hover muted small>{cat.title}</Nowrap>
           </Flex>
         ))} 
-        </Box>
+        </Stack>
     </Collapse>
 
     {/* {JSON.stringify(value)} */}

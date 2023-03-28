@@ -16,6 +16,7 @@ import {
   // Nowrap,
   Columns,  
   IconTextField,
+  Section,
   // Warn,
   // GridFormHeader,
   GridFormFooter,
@@ -29,6 +30,7 @@ import CommentList from './components/CommentList/CommentList';
 import FormHeader from './components/FormHeader/FormHeader';
 import EventOptions from './components/EventOptions/EventOptions';
 import EventInput from './components/EventInput/EventInput'; 
+import ConflictList from './components/ConflictList/ConflictList'; 
 import { VIEW } from '../../../machines'; 
 
 const Layout = styled(Card)(({ theme }) => ({ 
@@ -184,22 +186,27 @@ const EventForm = ({ handler, whois, disabled }) => {
 
       </Stack>
 
-      <Stack spacing={1} sx={{ p: 1, alignItems: opened ? 'stretch' : 'center' }}>
+      <Section offset={56}>
+        <Stack spacing={1} sx={{ p: 1, alignItems: opened ? 'stretch' : 'center' }}>
 
-        <EventOptions handler={handler} />
-   
-        {opened && <CategoryList
-          value={handler.eventProp.categories}
-          handleChange={handleChange}
-          handler={handler}
-        />}
+          <ConflictList handler={handler} />
+    
+          <EventOptions handler={handler} />
 
-        {opened && <CalendarList
-          value={handler.eventProp.calendars}
-          handleChange={handleChange}
-          handler={handler}
-        />}
-      </Stack>
+          {opened && <CategoryList
+            value={handler.eventProp.categories}
+            handleChange={handleChange}
+            handler={handler}
+          />}
+
+          {opened && <CalendarList
+            value={handler.eventProp.calendars}
+            handleChange={handleChange}
+            handler={handler}
+          />}
+        </Stack>        
+      </Section>
+
     </Columns>
   );
 };

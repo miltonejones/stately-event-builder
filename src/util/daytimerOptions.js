@@ -56,7 +56,7 @@ export const daytimerOptions = (parameters = {}) => {
           start_date: today
         }
       }
-    })
+    });
   }
 
 

@@ -1,6 +1,6 @@
 import React from 'react';
-import { styled, Switch, Card, TextField, Box } from '@mui/material';
-import { Flex, GridFormHeader, TinyButton, Nowrap } from '../../../../../styled';
+import { styled, Card, Stack, TextField, Box } from '@mui/material';
+import { Flex, GridFormHeader, Check, TinyButton, Nowrap } from '../../../../../styled';
 import { VIEW } from '../../../../../machines'; 
 
 const Layout = styled(Card)(({ theme }) => ({
@@ -19,30 +19,17 @@ const EventOptions = ({ handler }) => {
         title="Options"
         icon="Settings"
         handleClose={() => handler.setView(VIEW.FORM_OPTIONBAR) }  
-      />
-      {/* <Banner disabled>
-        <Nowrap small bold>
-          <b>Options</b>
-        </Nowrap>
-        <Spacer />
+      /> 
 
-        <TinyButton icon="Close" onClick={() => {
-            handler.send({
-              type: 'VIEW',
-              bit: VIEW.FORM_OPTIONBAR
-            })
-          }} />
-      </Banner> */}
-
-      <Box sx={{ m: 1 }}>
-        <Flex>
-          <Switch checked={!!handler.eventProp.ApproveLogin} />
+      <Stack spacing={1} sx={{ m: t => t.spacing (1, 0) }}>
+        <Flex spacing={1}>
+          <Check on={!!handler.eventProp.ApproveLogin} />
           <Nowrap muted small>
             Approved by <b>{handler.eventProp.FullName}</b>
           </Nowrap>
         </Flex>
-        <Flex>
-          <Switch checked={!!handler.eventProp.Featured} />
+        <Flex spacing={1}>
+          <Check on={!!handler.eventProp.Featured} />
           <Nowrap small>Featured</Nowrap>
         </Flex>
         <Flex spacing={1}>
@@ -54,7 +41,7 @@ const EventOptions = ({ handler }) => {
           />
           <Nowrap small>attendees</Nowrap>
         </Flex>
-      </Box>
+      </Stack>
     </Layout>
   );
 };

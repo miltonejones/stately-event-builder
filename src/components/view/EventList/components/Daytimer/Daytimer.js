@@ -1,6 +1,6 @@
 import React from 'react';
 import { styled, Box, Stack, IconButton } from '@mui/material';
-import { Columns, Spacer, Flex, Btn, TinyButton, TextIcon, Tooltag, Nowrap } from '../../../../../styled';
+import { Columns, Spacer, Flex, TinyButton, TinyButtonGroup, TextIcon, Nowrap } from '../../../../../styled';
 // import { useEventPop } from '../../../../../machines';
 import { daytimerOptions } from '../../../../../util/daytimerOptions';  
 import DaytimerMenu from '../DaytimerMenu/DaytimerMenu';
@@ -136,7 +136,7 @@ const DayRow = ({ time, date, factor, events, onChange, handler }) => {
              bottomHalfBlock ) && 
              !topHalfBlock
               ? hoveredBackgroundColor 
-              : t.palette[nowBlock ? "secondary" : "primary"].light }`,
+              : t.palette[nowBlock ? "error" : "primary"].light }`,
         '&:hover': {
           backgroundColor: t => (divideInHalf || firstBlock || duringBlock) ? backcolor : t.palette.primary.dark
         }
@@ -149,11 +149,11 @@ const DayRow = ({ time, date, factor, events, onChange, handler }) => {
       {!!secondBlock && <>{secondBlock.FullName}</>}
 
 
-      {!secondBlock && <Tooltag component={Box} title={hoverBlock?.EventName || "Create new event"}>{!firstBlock 
+      {!secondBlock && <Box>{!firstBlock 
         ? !hoverBlock && !divideInHalf
           ? <Flex sx={{zIndex: 0}}><TinyButton icon="Add" color="inherit" /> create event</Flex>
           : `${JSON.stringify(Boolean(bottomHalfBlock))}/${JSON.stringify(Boolean(topHalfBlock))}`
-        : <>{hoverBlock.EventName}</>}</Tooltag>}
+        : <>{hoverBlock.EventName}</>}</Box>}
 
 
 
@@ -218,6 +218,14 @@ const Daytimer = ({ handler, popMenu }) => {
   const buttons = daytimerOptions(params);
   const activeOption = Object.keys(buttons).find(btn => buttons[btn].active);
 
+  const control = {
+    label: true,
+    value: activeOption,
+    values: Object.keys(buttons),
+    buttons: Object.keys(buttons).map(f => buttons[f].icon),
+    onChange: (e, f) => goto(buttons[f].params), 
+  };
+
   // const yesterday = moment(new Date(params.start_date || null)).format('YYYY-MM-DD');
   // const tomorrow = moment(new Date(params.start_date || null)).add(2, 'days').format('YYYY-MM-DD');
 
@@ -275,7 +283,18 @@ const Daytimer = ({ handler, popMenu }) => {
         </IconButton>)}
  
         <Spacer />
-        {i === 0 && <Flex sx={{m: 1}} spacing={1}>
+
+        {i === 0 && (
+            <TinyButtonGroup
+              sx={{ mr: 3 }} 
+              {...control}
+            />
+          )}
+
+{/* {JSON.stringify(control)} */}
+
+        {/* {i === 0 && <Flex sx={{m: 1}} spacing={1}>
+
             {Object.keys(buttons).map(btn => <Btn key={btn}
               startIcon={<TextIcon icon={buttons[btn].icon} />}
               size="small"
@@ -286,7 +305,8 @@ const Daytimer = ({ handler, popMenu }) => {
                 }
               onClick={() => goto(buttons[btn].params)}
               >{btn}</Btn>)}
-          </Flex>}
+
+          </Flex>} */}
 
 
         </Flex>

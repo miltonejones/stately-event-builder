@@ -1,6 +1,6 @@
 import React from 'react';
-import { styled, Collapse, Switch, Card, Box } from '@mui/material';
-import { Flex, Btn, GridFormHeader, TinyButton, Nowrap } from "../../../../../styled";
+import { styled, Collapse, Card, Stack, Box } from '@mui/material';
+import { Flex, Btn, GridFormHeader, Check, TinyButton, Nowrap } from "../../../../../styled";
 import { VIEW } from '../../../../../machines'; 
 
 const Layout = styled(Card)(({ theme }) => ({
@@ -47,22 +47,30 @@ const CalendarList = ({ handler, value, handleChange }) => {
     <Collapse in={handler.props.dropcal}>
         <Box >
          Remove all calendars from this event?
+        <Flex spacing={1}>
+        <Btn variant="contained"
+          onClick={() =>  {
+            handleChange('calendars', []);
+            handler.setProp('dropcal', false);
+          }}
+         >Yes</Btn>
          <Btn
           onClick={() =>  handler.setProp('dropcal', false)}
          >No</Btn>
+        </Flex>
         </Box>
     </Collapse>
-
-    {/* <Banner disabled><Nowrap small bold><b>Calendars</b></Nowrap></Banner> */}
+ 
     <Collapse in={expanded && !handler.props.dropcal}>
-      <Box>
+      <Stack spacing={1}>
         {handler.calendars.map(cat => (
-          <Flex onClick={() => onChange(cat.id)}  key={cat.id}>
-            <Switch checked={value.find(f => Number(f.Calendar) === Number(cat.id))} /> 
-            <Nowrap muted small>{cat.calendar_name}</Nowrap>
+          <Flex spacing={1} onClick={() => onChange(cat.id)}  key={cat.id}>
+            <Check on={value.find(f => Number(f.Calendar) === Number(cat.id))} />
+            {/* <Switch checked={value.find(f => Number(f.Calendar) === Number(cat.id))} />  */}
+            <Nowrap bold={value.find(f => Number(f.Calendar) === Number(cat.id))} muted small>{cat.calendar_name}</Nowrap>
           </Flex>
         ))} 
-      </Box>  
+      </Stack>  
     </Collapse>
 
   </Layout>

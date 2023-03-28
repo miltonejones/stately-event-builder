@@ -3,18 +3,18 @@
 import { styled, Typography } from '@mui/material';
 //  import { blue } from '@mui/material/colors';
 
-const Nowrap = styled(Typography)(( { theme, selected, color, width, muted, small, thin, border, bold = false, hover } ) => {
+const Nowrap = styled(Typography)(( { theme, selected, color, width, muted, cap, small, thin, border, bold = false, hover } ) => {
   const obj = {
     cursor:  hover ? "pointer" : 'default',
     fontWeight:  bold ? 600 : 400,
     // backgroundColor: odd ? blue[50] : theme.palette.common.white,
-    paddingLeft: selected ? theme.spacing(1) : 0,
+    padding: selected ? theme.spacing(0.5) : 0,
     whiteSpace: 'nowrap',
     overflowX: 'hidden',
     textOverflow: 'ellipsis',
-    backgroundColor: selected ? theme.palette.primary.dark : null ,
+    backgroundColor: selected ? theme.palette.primary.light : null ,
     width:  width || '',
-    color: selected ? theme.palette.common.white : (muted ? theme.palette.text.secondary : null) ,
+    color: selected ? theme.palette.primary.dark : (muted ? theme.palette.text.secondary : null) ,
     '&:hover': {
       textDecoration: hover ? 'underline' : 'none'
     }
@@ -32,6 +32,12 @@ const Nowrap = styled(Typography)(( { theme, selected, color, width, muted, smal
   if (thin) {
     Object.assign(obj, {
       lineHeight: '1em'
+    })
+  }
+
+  if (cap) {
+    Object.assign(obj, {
+      textTransform: 'capitalize'
     })
   }
 

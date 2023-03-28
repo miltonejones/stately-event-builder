@@ -154,3 +154,53 @@ export const saveEvent = async (options) => {
   return await response.json();  
 };
 
+
+const buildAPI = (endpoint, method = 'POST') => async (options = {}) => {
+  const requestOptions = {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(options),
+  };
+  const response =  await fetch(API_ENDPOINT + endpoint, requestOptions ); 
+  return await response.json();  
+} 
+
+
+export const createAmplifyDomain = async (id) => {
+  const response = await fetch(API_ENDPOINT + `/amplify/${id}`);
+  return await response.json();
+};
+
+export const getSubdomains = async (zone) => {
+  const response = await fetch(API_ENDPOINT + `/domains/${zone}`);
+  return await response.json();
+};
+
+export const getDomainChangeState = async (id) => {
+  const response = await fetch(API_ENDPOINT + `/domains/status/${id}`);
+  return await response.json();
+};
+
+export const unsetInstance = async (id) => {
+  const response = await fetch(API_ENDPOINT + `/instance/${id}/CNAME`);
+  return await response.json();
+};
+
+export const listAmplifyApps = async () => {
+  const response = await fetch(API_ENDPOINT + `/amplify`);
+  return await response.json();
+};
+
+
+export const getDomains = async () => {
+  const response = await fetch(API_ENDPOINT + `/domains`);
+  return await response.json();
+};
+
+
+export const setInstance = buildAPI('/instance')
+export const createSubdomain = buildAPI('/domains')
+export const checkDnsPropagation = buildAPI('/dns')
+export const getCertificateStatus = buildAPI('/cert/status')
+export const validateCertificate = buildAPI('/cert/validate')
+export const requestCertificate = buildAPI('/cert/create')

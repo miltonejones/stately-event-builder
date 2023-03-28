@@ -6,7 +6,7 @@ import {
   MenuItem,
   Switch,
   Alert,
-  Card,
+  // Card,
   Typography,
   LinearProgress,
   Stack,
@@ -27,9 +27,29 @@ const Layout = styled(Box)(({ theme }) => ({
   margin: theme.spacing(0),
   width: '100vw',
   height: '100vh',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
+  display: 'grid',
+  gridTemplateColumns: "50% 50%",
+  "& .half": {
+    backgroundColor: theme.palette.primary.dark,
+    alignItems: 'center',
+    display: 'flex', 
+    fontSize: '4rem',
+    paddingTop: '20vh',
+    color: theme.palette.common.white,
+    justifyContent: 'center',
+    flexDirection: 'column',
+    width: '50vw',
+    height: '100vh'
+  },
+  "& .login": {  
+    display: 'flex', 
+    // border: 'solid 3px red',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    width: '50vw',
+    height: 'calc(100vh - 30px)'
+  },
 }));
 
 const InvalidUser = ({ send, user }) => {
@@ -66,100 +86,7 @@ const SignInError = ({ send, error, stack }) => {
     </Stack>
   );
 };
-
-// const SignUpForm = ({
-//   send,
-//   state,
-//   email,
-//   verificationCode,
-//   username,
-//   password,
-// }) => {
-//   const handleChange = (event) => {
-//     send({
-//       type: 'CHANGE',s
-//       key: event.target.name,
-//       value: event.target.value,
-//     });
-//   };
-
-//   return (
-//     <Card sx={{ width: 400, height: 400 }}>
-//       <Banner>Create New Account</Banner>
-//       <Stack sx={{ p: 1 }} spacing={1}>
-//         <Collapse
-//           sx={{ width: '100%' }}
-//           in={state.matches('signing_up.config')}
-//         >
-//           <Stack sx={{ p: 1 }} spacing={1}>
-//             <Typography>Username</Typography>
-//             <IconTextField
-//               fullWidth
-//               startIcon={<TextIcon icon="Person" />}
-//               size="small"
-//               name="username"
-//               value={username}
-//               onChange={handleChange}
-//             />
-
-//             <Typography>Email Address</Typography>
-//             <IconTextField
-//               fullWidth
-//               startIcon={<TextIcon icon="Email" />}
-//               size="small"
-//               name="email"
-//               value={email}
-//               onChange={handleChange}
-//             />
-
-//             <Typography>Password</Typography>
-//             <IconTextField
-//               fullWidth
-//               startIcon={<TextIcon icon="Lock" />}
-//               size="small"
-//               type="password"
-//               name="password"
-//               value={password}
-//               onChange={handleChange}
-//             />
-//             <Flex spacing={1}>
-//               <Spacer />
-//               <Btn onClick={() => send('CANCEL')}>
-//                 Cancel
-//               </Btn>
-//               <Btn variant="contained" onClick={() => send('SEND')}>
-//                 Create account
-//               </Btn>
-//             </Flex>
-//           </Stack>
-//         </Collapse>
-
-//         <Collapse
-//           sx={{ width: '100%' }}
-//           in={state.matches('signing_up.confirming')}
-//         >
-//           <Typography>Verification Code</Typography>
-//           <IconTextField
-//             fullWidth
-//             startIcon={<TextIcon icon="Code" />}
-//             size="small"
-//             name="verificationCode"
-//             value={verificationCode}
-//             onChange={handleChange}
-//           />
-
-//           <Flex  spacing={1}>
-//             <Spacer />
-//             <Btn variant="contained" onClick={() => send('CONFIRM')}>
-//               Confirm
-//             </Btn>
-//           </Flex>
-//         </Collapse>
-//       </Stack>
-//     </Card>
-//   );
-// };
-
+ 
 const SignInForm = ({
   demo,
   send,
@@ -179,6 +106,8 @@ const SignInForm = ({
   };
   return (
     <Box>
+    <Stack className="login">
+      <Box>
       <Collapse in={demo.is('translate')}>
         <Stack sx={{ width: 500 }} spacing={2}>
           <Alert>{demo.message}</Alert>
@@ -249,10 +178,10 @@ const SignInForm = ({
       </Collapse>
 
       <Collapse in={demo.is('init')}>
-        <Card sx={{ width: 400, minHeight: 400 }}>
+        <Box sx={{ width: 400, minHeight: 400 }}>
 
           {/* form header with title and forgot link  */}
-          <Banner>
+          <Banner bold>
             {is('signing_up') ? "Create account" : "Please sign in"}
             <Spacer />
             {is('signing_in.form_entry')  && <Nowrap onClick={() => send('FORGOT')} hover variant="caption">
@@ -435,8 +364,8 @@ const SignInForm = ({
             {is('signing_in.form_entry') && <Flex spacing={1}>
               <Spacer />
               <Typography variant="caption">New to EventBuilder?</Typography>
-              <Btn
-                variant="contained"
+              <Btn 
+                hover
                 color="warning"
                 onClick={() => send('SIGNUP')}
               >
@@ -444,20 +373,12 @@ const SignInForm = ({
               </Btn>
             </Flex>}
           </Stack>
-        </Card>
-      </Collapse>
-
+        </Box>
+      </Collapse>        
+      </Box>
       
 
-      {demo.is('init') && is (['signing_in', 'signing_up']) && (
-        <Flex sx={{ m: 1, mb: 5, width: 400 }} spacing={1}>
-          <img src="/amplify.png" alt="aws" height="24" />
-          <Nowrap small>Security powered by <a href="https://aws.amazon.com/de/amplify/"
-            target="_blank" rel="noreferrer" >AWS Amplify</a></Nowrap>
-        </Flex>
-      )}
-
-      {demo.is('init') && is ('signing_in.form_entry') && (
+      {/* {demo.is('init') && is ('signing_in.form_entry') && (
         <Flex sx={{ m: 1, width: 400 }} spacing={1}>
           <Spacer />
           <Nowrap variant="body2" muted>
@@ -472,7 +393,18 @@ const SignInForm = ({
             Automated demo
           </Btn>
         </Flex>
+      )} */}
+    </Stack>
+
+    {demo.is('init') && is (['signing_in', 'signing_up']) && (
+        <Flex sx={{ width: '100%', pr: 2 }} spacing={1}>
+          <Spacer />
+          <img src="/amplify.png" alt="aws" height="24" />
+          <Nowrap small>Security powered by <a href="https://aws.amazon.com/de/amplify/"
+            target="_blank" rel="noreferrer" >AWS Amplify</a></Nowrap>
+        </Flex>
       )}
+
     </Box>
   );
 };
@@ -482,6 +414,7 @@ const AuthForm = ({ handler, demo }) => {
    <>
    {/* <Nowrap small muted>{objectPath(handler.state.value)}/{objectPath(demo.state.value)}</Nowrap>  */}
     <Layout data-testid="test-for-AuthForm">
+      <Box className="half"/>
       {handler.is('start.error') && <InvalidUser {...handler} />}
       {handler.is(['signing_in', 'signing_up']) && (
         <SignInForm demo={demo} {...handler} />

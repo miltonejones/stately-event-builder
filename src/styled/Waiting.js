@@ -18,7 +18,8 @@ const messages = {
   'editing.reload': "Reloading event details...",
   'listing.searching': "Starting search...",
   'listing.list_received': "Collating response...",
-  'editing.load_event': "Loading event details..."
+  'editing.load_event': "Loading event details...",
+  'saving': "Saving event details..."
 }
 
 const Waiting = ({ handler }) => {
@@ -27,7 +28,7 @@ const Waiting = ({ handler }) => {
   }
   const state = objectPath(handler.state.value);
   const messageKey = Object.keys(messages).find(handler.state.matches);
-  const messageText = messages[messageKey] || state;
+  const messageText = messages[messageKey] || `current state: ${state}`;
 
   return (
     <Waiter>

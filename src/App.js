@@ -7,6 +7,7 @@ import '@aws-amplify/ui-react/styles.css';
 
 import awsExports from './aws-exports';
 
+import ListSettings from './components/view/EventList/components/ListSettings/ListSettings';
 import {
   LinearProgress,
   Box,
@@ -36,6 +37,7 @@ import {
   // RoomList,
   DemoStepper,
   // UserList,
+  DomainManager,
   EventList,
   AuthForm,
   EventSearch,
@@ -51,7 +53,7 @@ import {
   // useUserList,
   useSimpleList,
   useDemo,
-  // useRoomList,
+  useDomain,
   useEventSearch,
 } from './machines';
 // import { objectPath } from './util/objectPath';
@@ -93,10 +95,12 @@ function Application() {
   const defaultTheme = useTheme();
   const appslist = useSimpleList();
   const navigate = useNavigate();
+  const domain = useDomain();
   // const users = useUserList();
   // const rooms = useRoomList();
   const events = useEventList();
   const search = useEventSearch();
+  const settings = useMenu(console.log);
   const palette = useMenu(
     (val) =>
       !!val &&
@@ -240,6 +244,7 @@ function Application() {
         <PageTitle handler={events} />
         {/* {JSON.stringify(events.state.value)} */}
 
+        {/* {JSON.stringify(events.state.nextEvents)} */}
         {!events.props.informed && !authenticator.admin && (
           <Warn
             filled
@@ -284,8 +289,8 @@ function Application() {
         <Columns
           columns={
             events.is(['editing', 'saving'])
-              ? `80px var(--sidebar-width) 1fr 64px`
-              : `80px ${spacer} 1fr  64px`
+              ? `80px var(--sidebar-width) 1fr 48px`
+              : `80px ${spacer} 1fr 48px`
           }
           sx={{
             p: 1,
@@ -311,12 +316,14 @@ function Application() {
 
           <EventSearch
             handler={search}
+            settings={settings}
             onValueSelected={(e) => !!e && navigate(`/edit/${e.ID}`)}
           /> 
 
           <UserMenu
             diagnosis={diagnosis}
             handler={authenticator}
+            domain={domain}
             profile={profile}
             palette={palette}
             app={events}
@@ -338,7 +345,7 @@ function Application() {
         <Columns
           sx={{ alignItems: 'flex-start' }}
           columns={
-            events.is(['editing', 'saving']) ? expandedCols : '72px 100vw'
+            events.is(['editing', 'saving']) ? expandedCols : '72px 1fr'
           }
         >
 
@@ -435,7 +442,8 @@ function Application() {
             {...mac.diagnosticProps}
           />
         ))}
-
+        <ListSettings handler={settings} source={events} />
+        <DomainManager handler={domain} /> 
         <DemoStepper step={demo.step} handler={demo} /> 
 
         <Snackbar

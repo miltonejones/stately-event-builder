@@ -8,11 +8,12 @@ import Nowrap from './Nowrap';
 import TinyButton from './TinyButton';
 import Btn from './Btn';
 
-const ConfirmPop =  ({ children, 
+const ConfirmPop =  ({ 
+    children, 
     onChange, 
     caption, 
     message = "Are you sure you want to delete this item?",
-    label = "Confirm", 
+    label = "Are you sure?", 
     okayText = 'Okay' }) => {
   const menu = useMenu(onChange)  ;
 

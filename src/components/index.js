@@ -18,10 +18,12 @@ import Diagnostics from './lib/Diagnostics/Diagnostics';
 import Unsaved from './lib/Unsaved/Unsaved';
 import ThemeMenu from './lib/ThemeMenu/ThemeMenu';
 import ActionsMenu from './lib/ActionsMenu/ActionsMenu';
+import DomainManager from './lib/DomainManager/DomainManager';
 
 
 export {
   ActionsMenu,
+  DomainManager,
   AuthForm,
   AppsMenu,
   UserMenu,

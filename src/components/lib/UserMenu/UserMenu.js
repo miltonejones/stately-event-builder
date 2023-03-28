@@ -8,7 +8,7 @@ const Layout = styled(Box)(({ theme }) => ({
  margin: theme.spacing(0)
 })); 
 
-const UserMenu = ({ handler, palette, profile, diagnosis, app }) => {
+const UserMenu = ({ handler, palette, profile, diagnosis, app, domain }) => {
   const actions = [
     () =>  handler.send('SIGNOUT'),
     () => {
@@ -23,7 +23,8 @@ const UserMenu = ({ handler, palette, profile, diagnosis, app }) => {
       user: handler.user
     }),
     () => palette.handleClick(),
-    () => diagnosis.handleClick()
+    () => diagnosis.handleClick(),
+    () => domain.send('OPEN')
   ]
   const menu = useMenu(index => {
     const action = actions[index];
@@ -155,6 +156,7 @@ const UserMenu = ({ handler, palette, profile, diagnosis, app }) => {
          <Divider textAlign="left"><Nowrap small muted>Developer Tools</Nowrap></Divider>
         <MenuItem onClick={menu.handleClose(1)}>{app.showJSON ? "Hide" : "Show"} JSON output</MenuItem>
         <MenuItem onClick={menu.handleClose(4)}>View machine states</MenuItem>
+        <MenuItem onClick={menu.handleClose(5)}>Manage Instances</MenuItem>
       </Menu>
   </Layout>
 }

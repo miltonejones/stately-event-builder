@@ -1,5 +1,5 @@
 import React from 'react';
-import { styled, Stack, Box, IconButton } from '@mui/material';
+import { styled, Stack, Box, TextField, Switch, IconButton } from '@mui/material';
 import {
   Flex,
   Nowrap,
@@ -11,7 +11,10 @@ import {
   Columns,
 } from '../../../../../styled';
 import { Unsaved } from '../../../..';
+// import Markdown from '../../components/Markdown/Markdown';
 import ReactQuill from 'doc-editor'; // ES6
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const Layout = styled(Box)(({ theme, taller, small, tall }) => ({
   margin: theme.spacing(1),
@@ -130,6 +133,7 @@ const Reports = ({ handler, samples }) => {
       taller={working}
     >
       {/* {JSON.stringify(handler.state.value)} */}
+      {/* <Markdown /> */}
       <Columns
         sx={{ alignItems: 'flex-start' }}
         columns={handler.state.matches('editing') ? '1fr' : '1fr 0'}
@@ -187,13 +191,46 @@ const Reports = ({ handler, samples }) => {
                   <Nowrap muted>Edit Report</Nowrap> 
                 </Flex>
                 <Nowrap variant="h6">{selectedReport.title}</Nowrap> 
+                <Flex 
+                  spacing={1}
+                  onClick={() => { 
+                    handler.send({
+                      type: 'CHANGE',
+                      key: 'wiki',
+                      value: !selectedReport.wiki,
+                    })
+                  }}
+                      >
+                  <Switch checked={selectedReport.wiki} />
+                  <Nowrap small muted>Use wiki markup</Nowrap>
+                </Flex>
               </Stack>
             )}
             {!!selectedReport && (
               <Columns columns={working ? "0 1fr" : "50% 50%"} sx={{ alignItems: 'flex-start' }}>
 
                 {/* edit pane */}
-                <Box sx={{ overflow: 'hidden'}}> 
+
+                {!!selectedReport.wiki && <Box>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    multiline
+                    rows={12}
+                    value={selectedReport.templatebody}
+                    onChange={(e) => { 
+
+                      handler.send({
+                        type: 'CHANGE',
+                        key: 'templatebody',
+                        value: e.target.value,
+                      });
+                    }} 
+                    />
+                  </Box>}
+
+
+                {!selectedReport.wiki && <Box sx={{ overflow: 'hidden'}}> 
 
                   <EditToolbar />
 
@@ -217,9 +254,19 @@ const Reports = ({ handler, samples }) => {
                     value={selectedReport.templatebody}
                   />
                 </Box>
+}
+                {!!selectedReport?.wiki && <Box>
+
+                  {samples.map((f) => (<ReactMarkdown children={reportItem({
+                          value: selectedReport.templatebody,
+                          source: f,
+                        })} remarkPlugins={[remarkGfm]} />) 
+                        ) }
+                  
+                  </Box>}
 
                 {/* view pane */}
-                <Box>
+               { !selectedReport?.wiki && <Box>
                   
                   <CustomToolbar working={working} title={selectedReport.title} />
 
@@ -241,7 +288,7 @@ const Reports = ({ handler, samples }) => {
                         .join('')}
                     />
                   )}
-                </Box>
+                </Box>}
 
 
               </Columns>

@@ -343,21 +343,43 @@ const eventListMachine = createMachine({
           },
         },
 
+
+        
         form: {
-          description: "Form state shows the event edit form",
+          description: "Form state shows the event edit form", 
+          initial: "findconflicts",
+          states: {
+            idle: {
+              on: {
+                ATTR: [
+                  {
+                    target: "idle",
+                    cond: "passCheck",
+                    actions: ["assignEventProp", assign({ dirty: true })],
+                    internal: false,
+                  },
+                  {
+                    target: "findconflicts",
+                    actions: ["assignEventProp", assign({ dirty: true })],
+                  },
+                ],
+              },
+            },
+            findconflicts: {
+              invoke: {
+                src: "loadConflicts",
+                onDone: [
+                  {
+                    target: "idle",
+                    actions: "assignConflicts",
+                  },
+                ],
+              },
+            },
+          },
           on: {
             CHANGE: {
               actions: "assignProp",
-            },
-            ATTR: {
-              actions: ["assignEventProp", assign({ dirty: true })],
-            },
-            UNDO: {
-              target: "reload",
-            }, 
-            EDIT: {
-              target: "#event_list.editing.leaving.edit",
-              actions: "assignID",
             },
             LIST: {
               target: "#event_list.editing.leaving.list",
@@ -366,8 +388,42 @@ const eventListMachine = createMachine({
               target: "#event_list.editing.leaving.find",
               actions: "assignParams",
             },
+            EDIT: {
+              target: "#event_list.editing.leaving.edit",
+              actions: "assignID",
+              description: "User opens another event while editing this one",
+            },
+            UNDO: {
+              target: "load_event",
+            },
           },
         },
+
+        // form: {
+        //   description: "Form state shows the event edit form",
+        //   on: {
+        //     CHANGE: {
+        //       actions: "assignProp",
+        //     },
+        //     ATTR: {
+        //       actions: ["assignEventProp", assign({ dirty: true })],
+        //     },
+        //     UNDO: {
+        //       target: "load_event",
+        //     }, 
+        //     EDIT: {
+        //       target: "#event_list.editing.leaving.edit",
+        //       actions: "assignID",
+        //     },
+        //     LIST: {
+        //       target: "#event_list.editing.leaving.list",
+        //     },
+        //     FIND: {
+        //       target: "#event_list.editing.leaving.find",
+        //       actions: "assignParams",
+        //     },
+        //   },
+        // },
       },
       on: {
         SAVE: {
@@ -463,6 +519,7 @@ const eventListMachine = createMachine({
   guards: {
     moreTicks: context => context.ticks > 0,
     isClean: context => !context.dirty,
+    passCheck: (_, event) => !['EventStartTime'].some(f => f === event.key),
     moreLookup: context => context.lookup_index < Object.keys(lookupItems).length
   },
   actions: {
@@ -483,6 +540,7 @@ const eventListMachine = createMachine({
     assignEventProp: assign((context, event) => {
       if (event.key.indexOf('Time') > 0) {
         return {
+          changedProp: event.key,
           eventProp: {
             ...context.eventProp,
             [event.key]: eventTime(event.value)
@@ -490,6 +548,7 @@ const eventListMachine = createMachine({
         } 
       }
       return {
+        changedProp: event.key,
         eventProp: {
           ...context.eventProp,
           [event.key]: event.value
@@ -524,12 +583,18 @@ const eventListMachine = createMachine({
     assignCategories: assign((_, event) => ({
       categories: event.data
     })),
+    assignConflicts: assign((_, event) => ({
+      conflicts: event.data
+    })),
+
+    
 
     assignEventProps: assign((_, event) => ({
       eventProp: event.data,
       pagename: "Edit", 
       title: event.data?.EventName,
-      dirty: false
+      dirty: false,
+      conflicts: null
     })),
     clearID: assign((context, event) => ({
       ID: null,
@@ -610,7 +675,7 @@ const eventListMachine = createMachine({
       }
     }),
     restoreProps: assign(() => {
-      const memory = localStorage.getItem('eb-memory-2');
+      const memory = localStorage.getItem('eb-memory-12');
       if (memory) {
         return {
           props: JSON.parse(memory)
@@ -628,7 +693,7 @@ const eventListMachine = createMachine({
         return out;
       }, {});
 
-      localStorage.setItem('eb-memory-2', JSON.stringify(memory))
+      localStorage.setItem('eb-memory-12', JSON.stringify(memory))
 
       return {
         props 
@@ -650,6 +715,38 @@ export const useEventList = () => {
         }
         return await searchEvents(context.params)
       },
+      
+      loadConflicts: async(context) => {
+        
+        const fields = {
+          id: 'ID',
+          start_date: 'EventDate',
+          start_time: 'EventStartTime',
+          end_time: 'EventEndTime',
+          roomfk: 'RoomID',
+          dates: 'dates'
+        };
+        
+        if (context.eventProp.RecurseEndDate) {
+          Object.assign(fields, {
+            end_date: 'RecurseEndDate'
+          })
+        }
+ 
+        const params = Object.keys(fields).reduce((out, key) => {
+          out[key] = key.indexOf('date') > 0 
+            ? apiDate( context.eventProp[ fields[key] ] )
+            : context.eventProp[ fields[key] ];
+          return out;
+        }, {});
+
+        const present = moment().format('YYYY-MM-DD') 
+        console.log ({ present, params })
+        const res = await searchEvents(params);
+        return res.filter(f => f.ID !== context.eventProp.ID);
+
+
+      },
       getListCategories: async(context) => {
         const { eventList } = context;
         const ids = eventList.map(d => d.ID);
@@ -664,7 +761,7 @@ export const useEventList = () => {
         const keys = Object.keys(lookupItems);
         const key = keys[lookup_index];
         const get = lookupItems[key];
-        const storageKey = `datum-${key}`;
+        const storageKey = `lookup-${key}`;
         const store = localStorage.getItem(storageKey);
         if (store) {
           return JSON.parse(store);
