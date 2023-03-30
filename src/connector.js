@@ -38,6 +38,11 @@ export const getEventListCategories = async (ids) => {
   return await response.json();
 };
 
+export const whois = async () => {
+  const response = await fetch(API_ENDPOINT + `/whois`);
+  return await response.json();
+};
+
 export const getCategories = async () => {
   const response = await fetch(API_ENDPOINT + `/categories`);
   return await response.json();
@@ -181,6 +186,16 @@ export const getDomainChangeState = async (id) => {
   return await response.json();
 };
 
+export const initCognito = async (id) => {
+  const response = await fetch(API_ENDPOINT + `/cognito/init/${id}`);
+  return await response.json();
+};
+
+export const createDatabase = async (id) => {
+  const response = await fetch(API_ENDPOINT + `/database/${id}`);
+  return await response.json();
+};
+
 export const unsetInstance = async (id) => {
   const response = await fetch(API_ENDPOINT + `/instance/${id}/CNAME`);
   return await response.json();
@@ -194,6 +209,11 @@ export const listAmplifyApps = async () => {
 
 export const getDomains = async () => {
   const response = await fetch(API_ENDPOINT + `/domains`);
+  return await response.json();
+};
+
+export const ping = async () => {
+  const response = await fetch(API_ENDPOINT + `/hello`);
   return await response.json();
 };
 

@@ -1,3 +1,4 @@
+import CardButton from './CardButton';
 import Section from './Section';
 import GridFormFooter from './GridFormFooter';
 import TinyButtonGroup from './TinyButtonGroup';
@@ -54,6 +55,7 @@ export const typeIcons = {
 };
 
 export {
+  CardButton,
   Section,
   GridFormFooter,
   TinyButtonGroup,

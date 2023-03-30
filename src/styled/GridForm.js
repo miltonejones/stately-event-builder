@@ -11,6 +11,7 @@ const GridForm = (props) => {
     values, 
     error,
     handleChange, 
+    disabled
   }  = props;
   return (
     <Box sx={{ p: 1 }}>
@@ -28,7 +29,7 @@ const GridForm = (props) => {
           <Grid item xs={conf.xs || 12} key={conf.field}>
             <Stack>
               {!!conf.label && (
-                <Nowrap bold variant="body2">
+                <Nowrap muted={conf.disabled || disabled} bold variant="body2">
                   {conf.label}
                 </Nowrap>
               )}
@@ -46,7 +47,7 @@ const GridForm = (props) => {
                   name={conf.field}
                   type={conf.type}
                   options={conf.options}
-                  disabled={conf.disabled}
+                  disabled={conf.disabled || disabled}
                   onChange={handleChange}
                   fullWidth
                   size="small"

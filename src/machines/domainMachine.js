@@ -9,15 +9,46 @@ const domainMachine = createMachine({
   id: "domain",
   initial: "idle",
   states: {
+
+
     idle: {
       description: "Modal is closed in idle state",
-      on: {
-        OPEN: {
-          target: "opened",
-          actions: assign({ open: true }),
+      initial: "ping",
+      states: {
+        ping: {
+          invoke: {
+            src: "pingAPI",
+            onDone: [
+              {
+                target: "ready",
+                actions: "assignPing",
+              },
+            ],
+          },
+        },
+        ready: {
+          on: {
+            OPEN: {
+              target: "#domain.opened",
+              actions: assign({ open: true }),
+            },
+          },
         },
       },
     },
+
+
+    // idle: {
+    //   description: "Modal is closed in idle state",
+    //   on: {
+    //     OPEN: {
+    //       target: "opened",
+    //       actions: assign({ open: true }),
+    //     },
+    //   },
+    // },
+
+
     opened: {
       initial: "load",
       states: {
@@ -78,7 +109,7 @@ const domainMachine = createMachine({
                     src: "saveDomainRecord",
                     onDone: [
                       {
-                        target: "#domain.opened.adding.get_cert",
+                        target: "#domain.opened.adding.create_env",
                       },
                     ],
                   },
@@ -86,11 +117,74 @@ const domainMachine = createMachine({
               },
             },
 
+            create_env: {
+              description: "Create cognito user pool and mysql database for new instance",
+              meta: {
+                message: "Initializing database",
+              },
+              entry: "incrementStep",
+              initial: "init_db",
+              states: {
+                init_db: {
+                  description: "Create mysql database and seed with records",
+                  meta: {
+                    message: "Creating database",
+                  },
+                  invoke: {
+                    src: "initDb",
+                    onDone: [
+                      {
+                        target: "init_pool",
+                      },
+                    ],
+                    onError: [
+                      {
+                        target: "#domain.opened.adding.error",
+                        actions: "assignProblem",
+                      },
+                    ],
+                  },
+                },
+                init_pool: {
+                  description: "Create Cognito user pool and add initial users",
+                  meta: {
+                    message: "Creating Cognito user pool",
+                  },
+                  invoke: {
+                    src: "initPool",
+                    onDone: [
+                      {
+                        target: "record",
+                        actions: "assignPool",
+                      },
+                    ],
+                    onError: [
+                      {
+                        target: "#domain.opened.adding.error",
+                        actions: "assignProblem",
+                      },
+                    ],
+                  },
+                },
+                record: {
+                  invoke: {
+                    src: "saveDomainRecord",
+                    onDone: [
+                      {
+                        target: "#domain.opened.adding.get_cert",
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+    
  
 
             get_cert: {
               description: "Request AWS cert for the new subdomain",
-              entry: ["incrementStep", assign({ counter: 60 })],
+              entry: ["incrementStep", assign({ counter: 60, limit: .6 })],
+              exit: assign({progress: 0}),
               meta: {
                 step: 3,
                 message: "Requesting domain certificate",
@@ -150,7 +244,8 @@ const domainMachine = createMachine({
                 step: 6,
                 message: "Checking validation status",
               },
-              entry: ["incrementStep", assign({ counter: 10 })],
+              entry: ["incrementStep", assign({ counter: 10, limit: .1 })],
+              exit: assign({progress: 0}),
               initial: "tik",
               states: {
                 tik: {
@@ -321,7 +416,7 @@ const domainMachine = createMachine({
               description: "Show  a form to complete instance infirmation",
               meta: {
                 step: 1,
-                message: "Getting initial data",
+                message: "Getting application details",
               },
               on: {
                 CREATE: {
@@ -351,7 +446,6 @@ const domainMachine = createMachine({
             ],
           },
         },
-
 
         dropping: {
           initial: "tik",
@@ -387,7 +481,63 @@ const domainMachine = createMachine({
           },
         },
 
-        editing: {},
+        editing: {
+          initial: "show_form",
+          states: {
+            show_form: {
+              description: "Display instance editing form",
+              on: {
+                SAVE: {
+                  target: "saving",
+                },
+                CHANGE: {
+                  actions: ["applyChanges", assign({ dirty: true })],
+                },
+                CANCEL: {
+                  target: "confirm",
+                  actions: assign({ selected: [] }),
+                },
+              },
+            },
+            saving: {
+              meta: {
+                message: "Saving changes",
+              },
+              invoke: {
+                src: "saveDomainRecord",
+                onDone: [
+                  {
+                    target: "#domain.opened.load",
+                    actions: assign({ dirty: false }),
+                  },
+                ],
+              },
+            },
+            confirm: {
+              description: "Confirm  closing when there are unsaved changed",
+              always: {
+                target: "#domain.opened.list",
+                cond: "isClean",
+                actions: "clearRecord"
+              },
+              on: {
+                OK: {
+                  target: "#domain.opened.list",
+                  actions:"clearRecord"
+                },
+              },
+            },
+          },
+          on: {
+            EDIT: {
+              target: "editing",
+              actions: "assignID",
+            },
+            DROP: {
+              target: "dropping",
+            },
+          },
+        },
       },
       on: {
         CLOSE: {
@@ -398,7 +548,7 @@ const domainMachine = createMachine({
     },
   },
   context: {
-    open: false, dirty: false, selected: [], step: -1
+    open: false, dirty: false, selected: [], step: -1, counter: 0, limit: 0
   },
   predictableActionArguments: true,
   preserveActionOrder: true,
@@ -413,12 +563,17 @@ const domainMachine = createMachine({
     certStatusPending: context => context.record.CertChangeInfoStatus !== 'INSYNC'
   },
   actions: {
+    assignID: assign ((context, event) =>  ({
+      ID: event.id,
+      record: context.domains.find(f => f.Subdomain === event.id),
+      selected: [event.id]
+    })),
     incrementStep: assign ((context, event) =>  ({
       step: context.step + 1
     })),
     decrementTick: assign ((context, event) =>  ({
       counter: context.counter - 1,
-      progress: 100 - (context.counter / .6)
+      progress: 100 - (context.counter / context.limit)
     })),
     updateSelected: assign ((context, event) =>  {
       const { selected } = context;
@@ -466,6 +621,7 @@ const domainMachine = createMachine({
     clearRecord: assign ((_, event) => ({
       dirty: false,
       step: -1,
+      ID: null,
       record: null
     })),
     assignProblem: assign ((_, event) => ({
@@ -508,6 +664,15 @@ const domainMachine = createMachine({
         } 
       }
     }),
+    assignPool: assign ((context, event) => ({
+      record: {
+        ...context.record,
+        UserPoolId: event.data.Id
+      }
+    })),
+    assignPing: assign((_, event) => ({
+      hello: event.data
+    })),
     assignValidationChangeInfo: assign ((context, event) => {
       
       const { record } = context; 
@@ -582,6 +747,17 @@ export const useDomain = () => {
         return await api.requestCertificate({
           subdomain: domainOf(record.Subdomain)
         });
+      },
+      initDb: async (context) =>  {
+        const { record } = context;
+        return await api.createDatabase(record.DbName)
+      },
+      initPool: async (context) =>  {
+        const { record } = context;
+        return await api.initCognito(record.UserPoolName)
+      },
+      pingAPI: async () =>  {
+        return await api.ping()
       },
       loadDomains: async () =>  {
         return await api.listAmplifyApps()

@@ -33,8 +33,8 @@ const Layout = styled(Box)(({ theme }) => ({
     backgroundColor: theme.palette.primary.dark,
     alignItems: 'center',
     display: 'flex', 
-    fontSize: '4rem',
-    paddingTop: '20vh',
+    fontSize: '2rem',
+    paddingBottom: '20vh',
     color: theme.palette.common.white,
     justifyContent: 'center',
     flexDirection: 'column',
@@ -409,12 +409,17 @@ const SignInForm = ({
   );
 };
 
-const AuthForm = ({ handler, demo }) => {
+const AuthForm = ({ handler, demo, source }) => {
   return (
    <>
    {/* <Nowrap small muted>{objectPath(handler.state.value)}/{objectPath(demo.state.value)}</Nowrap>  */}
     <Layout data-testid="test-for-AuthForm">
-      <Box className="half"/>
+      <Box className="half">
+          <Stack>
+            <Nowrap >EventBuilder 8</Nowrap>
+            <Nowrap variant="h5"> {source.whois?.InstanceName}</Nowrap>
+          </Stack>
+      </Box>
       {handler.is('start.error') && <InvalidUser {...handler} />}
       {handler.is(['signing_in', 'signing_up']) && (
         <SignInForm demo={demo} {...handler} />

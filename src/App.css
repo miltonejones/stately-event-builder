@@ -5,9 +5,13 @@
 sup {
   background-color: red;
   padding: 2px 4px;
-  border-radius: 2px;
+  border-radius: 4px;
   font-size: 0.7rem;
   text-transform: uppercase;
+  color: white;
+  letter-spacing: .061em;
+  font-size: 0.8rem;
+  font-weight: 900;
 }
 
 body {

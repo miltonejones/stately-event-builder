@@ -27,6 +27,7 @@ const CalendarInput = ({ handler, hidden, onClose }) => {
       <Flex>
         {!hidden && <>
           <img src={logo} alt="eb" />
+          <sup>beta</sup>
           <Spacer />       
         </>}
         {!!onClose && <TinyButton deg={hidden ? 180 : 0} icon={hidden ? "KeyboardArrowLeft" : "Close"} onClick={onClose} />}

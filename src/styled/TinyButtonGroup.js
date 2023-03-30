@@ -4,7 +4,7 @@ import { styled, Box } from '@mui/material';
 import TinyButton from './TinyButton';
 import Nowrap from './Nowrap';
   
-const TinyBox = styled(Box)(({ theme, active }) => ({
+const TinyBox = styled(Box)(({ theme, width, active }) => ({
   display: 'flex',
   alignItems: 'center',
   gap: theme.spacing(active ? 1 : 0),
@@ -28,7 +28,14 @@ const TinyBox = styled(Box)(({ theme, active }) => ({
       width: "fit-content"
     },
   },
-}))
+}));
+
+const Expand = ({ children, ...props}) => {
+  const ref = React.useRef(null);
+  return <TinyBox {...props} ref={ref} width={ref.current?.width}>
+    {children}
+  </TinyBox>
+}
 
 
 const TinyButtonGroup = ({ buttons, label, value, values = [], onChange, ...props }) => {
@@ -38,11 +45,11 @@ const TinyButtonGroup = ({ buttons, label, value, values = [], onChange, ...prop
   }
 
   return <Box {...props} sx={{...props.sx, ...sx}}>
-    {buttons.map((button, i) => <TinyBox first={i === 0} active={values[i] === value}
+    {buttons.map((button, i) => <Expand first={i === 0} active={values[i] === value}
     onClick={e => onChange(e, values[i])} > 
       <TinyButton color="inherit" key={button} icon={button} />
      {!!label && <Nowrap cap hover className={values[i] === value ? "" : "inner"} small>{values[i]}</Nowrap>}
-    </TinyBox>)}
+    </Expand>)}
   </Box>
 }
 

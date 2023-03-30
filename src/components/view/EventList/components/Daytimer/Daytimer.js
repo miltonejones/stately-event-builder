@@ -138,7 +138,7 @@ const DayRow = ({ time, date, factor, events, onChange, handler }) => {
               ? hoveredBackgroundColor 
               : t.palette[nowBlock ? "error" : "primary"].light }`,
         '&:hover': {
-          backgroundColor: t => (divideInHalf || firstBlock || duringBlock) ? backcolor : t.palette.primary.dark
+          backgroundColor: t => (divideInHalf || firstBlock || duringBlock) ? backcolor : t.palette.grey[200]
         }
       }}
     >
@@ -151,7 +151,7 @@ const DayRow = ({ time, date, factor, events, onChange, handler }) => {
 
       {!secondBlock && <Box>{!firstBlock 
         ? !hoverBlock && !divideInHalf
-          ? <Flex sx={{zIndex: 0}}><TinyButton icon="Add" color="inherit" /> create event</Flex>
+          ? <Flex sx={{zIndex: 0}}><TinyButton icon="Add" color="inherit" /> New Event</Flex>
           : `${JSON.stringify(Boolean(bottomHalfBlock))}/${JSON.stringify(Boolean(topHalfBlock))}`
         : <>{hoverBlock.EventName}</>}</Box>}
 

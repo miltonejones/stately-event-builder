@@ -1,5 +1,5 @@
 import React from 'react';
-import { styled, LinearProgress, Stack, Box } from '@mui/material';
+import { styled, LinearProgress, Snackbar, Alert, Stack, Box } from '@mui/material';
 import { objectPath } from '../util/objectPath';
 
 const Waiter = styled(Stack)(() => ({
@@ -31,6 +31,7 @@ const Waiting = ({ handler }) => {
   const messageText = messages[messageKey] || `current state: ${state}`;
 
   return (
+    <>
     <Waiter>
       {messageText} 
       {!!handler.lookup_progress && (
@@ -40,8 +41,16 @@ const Waiting = ({ handler }) => {
             variant="determinate"
           />
         </Box>
-      )}
-    </Waiter>
+      )}</Waiter>
+     {!!messages[messageKey] && <Snackbar
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        open 
+      >
+        <Alert severity="success" sx={{ maxWidth: 300 }}>
+          {messages[messageKey]}
+        </Alert>
+      </Snackbar>}
+    </>
   );
 };
 

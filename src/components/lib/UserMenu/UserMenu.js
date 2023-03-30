@@ -33,7 +33,7 @@ const UserMenu = ({ handler, palette, profile, diagnosis, app, domain }) => {
   const open = Boolean(menu.anchorEl)
   if (!handler.user) return <i />
 
-  const { image, FirstName, LastName, username } = handler.user;
+  const { image, FirstName, LastName, username , group} = handler.user;
 
   const handleChange = (event) => { 
     profile.send({
@@ -43,12 +43,15 @@ const UserMenu = ({ handler, palette, profile, diagnosis, app, domain }) => {
     })
   }
   const error = profile.state.matches('confirm');
+  
   return <Layout>
   <Flex spacing={1}>
   <Spacer /> 
 
           <Avatar onClick={menu.handleClick} 
-          sx={{ cursor: 'pointer',
+          sx={{ 
+            width: 32, height: 32,
+            cursor: 'pointer',
         '&:hover': {
           outline: t => `solid 2px ${t.palette.error.main}`,
           outlineOffset: 1
@@ -121,7 +124,7 @@ const UserMenu = ({ handler, palette, profile, diagnosis, app, domain }) => {
             <Avatar size="small" 
             src={image} alt={FirstName}>{initials(`${FirstName} ${LastName}`)}</Avatar>
   <Nowrap bold variant="body2">
-     Welcome back, {FirstName || username} 
+     Welcome back, {FirstName || username}  
     </Nowrap>
 
         </Flex>
@@ -153,10 +156,50 @@ const UserMenu = ({ handler, palette, profile, diagnosis, app, domain }) => {
             <TextIcon icon="Lock" />
           </ListItemIcon>
          <b>Sign out</b></MenuItem>
-         <Divider textAlign="left"><Nowrap small muted>Developer Tools</Nowrap></Divider>
-        <MenuItem onClick={menu.handleClose(1)}>{app.showJSON ? "Hide" : "Show"} JSON output</MenuItem>
-        <MenuItem onClick={menu.handleClose(4)}>View machine states</MenuItem>
-        <MenuItem onClick={menu.handleClose(5)}>Manage Instances</MenuItem>
+
+        {group === 'Admins' && (<>
+
+                 <Divider textAlign="left"><Nowrap small muted>Developer Tools</Nowrap></Divider>
+
+
+                 <MenuStack 
+          icon={'Code'} 
+          onClick={menu.handleClose(1)}
+          caption={"Show underlying object data."}
+        >
+        {app.props.showJSON ? "Hide" : "Show"} JSON output
+        </MenuStack>
+      
+        <MenuStack 
+          icon={'Microwave'} 
+          onClick={menu.handleClose(4)}
+          caption={"Monitor application state machines."}
+        >
+        View machine states
+        </MenuStack>
+      
+
+        {/* <MenuItem onClick={menu.handleClose(1)}>{app.showJSON ? "Hide" : "Show"} JSON output</MenuItem> */}
+
+        {/* <MenuItem onClick={menu.handleClose(4)}>View machine states</MenuItem> */}
+        
+
+        <Divider textAlign="left"><Nowrap small muted>Admin Tools</Nowrap></Divider>
+
+        <MenuStack 
+          icon={'AppRegistration'} 
+          onClick={menu.handleClose(5)}
+          caption={"Add or edit EventBuilder instances."}
+        >
+          Manage Instances
+        </MenuStack>
+      
+
+        {/* <MenuItem onClick={menu.handleClose(5)}>Manage Instances</MenuItem> */}
+        </>)}
+
+
+
       </Menu>
   </Layout>
 }

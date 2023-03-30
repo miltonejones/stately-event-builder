@@ -3,7 +3,7 @@ import { createMachine, assign } from 'xstate';
 import { useMachine } from "@xstate/react";
 import { engDate } from '../util/engDate';
 import { searchEvents, getEventListCategories, saveEvent, getCognitoGroups, getUsers,
-   getRooms, getReports, getCalendars, getEvent, getCategories } from '../connector';
+   getRooms, getReports, whois, getCalendars, getEvent, getCategories } from '../connector';
 // import { scrubRoom } from '../util/scrubRoom';
 import moment from 'moment';
 import {  
@@ -25,7 +25,8 @@ const PERSIST_PROPS = [
   "active_machine",
   "format",
   "informed",
-  "theme" 
+  "theme" ,
+  "excludedProps"
 ]
 
 const lookupItems = {
@@ -51,8 +52,23 @@ const eventListMachine = createMachine({
         assign({ lookup_index: 0 }),
         "restoreProps", "setInitParams", 
       ],
-      initial: "tick",
+      initial: "whois",
       states: {
+
+        whois: {
+          description: "Get identifying  information for this instance",
+          invoke: {
+            src: "identifyInstance",
+            onDone: [
+              {
+                target: "tick",
+                actions: "assignWhois",
+              },
+            ],
+          },
+        },
+
+
         tick: {
           after: {
             "500": [
@@ -92,7 +108,7 @@ const eventListMachine = createMachine({
           entry: [
             assign({ busy: false }),
             "assignMessage",
-            assign({ ticks: 5 }),
+            assign({ ticks: 15 }),
           ],
           initial: "tik",
           states: {
@@ -505,7 +521,10 @@ const eventListMachine = createMachine({
     params: {}, 
     props: {
       theme: 'secondary',
-      format: 1
+      format: 1,
+      excludedProps: {
+        FullName: true
+      } 
     },
     calendars: [],
     categories: [],
@@ -602,7 +621,8 @@ const eventListMachine = createMachine({
         active_machine: context.props.active_machine,
         format: context.props.format,
         informed: context.props.informed,
-        theme: context.props.theme
+        theme: context.props.theme,
+        excludedProps: context.props.excludedProps
       }
     })),
     assignID: assign((_, event) => ({
@@ -675,13 +695,16 @@ const eventListMachine = createMachine({
       }
     }),
     restoreProps: assign(() => {
-      const memory = localStorage.getItem('eb-memory-12');
+      const memory = localStorage.getItem('eb-memory-512');
       if (memory) {
         return {
           props: JSON.parse(memory)
         }
       }
     }),
+    assignWhois: assign((_, event) => ({
+      whois:  event.data
+    })),
     assignProp: assign((context, event) => {
       const props = {
         ...context.props,
@@ -693,7 +716,7 @@ const eventListMachine = createMachine({
         return out;
       }, {});
 
-      localStorage.setItem('eb-memory-12', JSON.stringify(memory))
+      localStorage.setItem('eb-memory-512', JSON.stringify(memory))
 
       return {
         props 
@@ -715,7 +738,9 @@ export const useEventList = () => {
         }
         return await searchEvents(context.params)
       },
-      
+      identifyInstance: async () => {
+        return await whois()
+      },
       loadConflicts: async(context) => {
         
         const fields = {

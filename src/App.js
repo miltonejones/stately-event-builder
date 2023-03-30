@@ -11,16 +11,16 @@ import ListSettings from './components/view/EventList/components/ListSettings/Li
 import {
   LinearProgress,
   Box,
-  Card,
+  // Card,
   Alert,
   createTheme,
   ThemeProvider,
   useTheme,
   Snackbar,
-  IconButton,
+  // IconButton,
   Stack,
   Typography,
-  styled,
+  // styled,
 } from '@mui/material';
 
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
@@ -42,9 +42,10 @@ import {
   AuthForm,
   EventSearch,
   ThemeMenu,
+  Sidebar,
 } from './components';
 import {
-  APPTYPE,
+  // APPTYPE,
   VIEW,
   useMenu,
   useAmplify,
@@ -64,7 +65,7 @@ import {
   Nowrap,
   Btn,
   TinyButton,
-  TextIcon,
+  // TextIcon,
   Warn,
   Flex,
 } from './styled';
@@ -117,6 +118,14 @@ function Application() {
       value: val,
     })
   );
+  const appMenu = useMenu((choice) => {
+    choice !== undefined &&
+    events.send({
+        type: 'LOAD',
+        choice,
+      });
+  });
+
 
   const demo = useDemo(events, appslist, search.send, authenticator.send);
 
@@ -173,59 +182,59 @@ function Application() {
             label: 'Please log in',
           }}
         />
-        <AuthForm handler={authenticator} demo={demo} />
+        <AuthForm handler={authenticator} source={events} demo={demo} />
       </ThemeProvider>
     );
   }
 
-  const buttons = [
-    {
-      label: 'Events',
-      active: ![APPTYPE.ROOM, APPTYPE.USER].some((f) => appslist.choice === f),
-      icon: 'Bolt',
-      activeIcon: 'Bolt',
-    },
-    {
-      label: 'Rooms',
-      active: appslist.choice === APPTYPE.ROOM,
-      action: () =>
-        appslist.send({
-          type: 'LOAD',
-          choice: APPTYPE.ROOM,
-        }),
-        icon: 'MeetingRoomOutlined',
-        activeIcon: 'MeetingRoom',
-    },
-    {
-      label: 'Users',
-      active: appslist.choice === APPTYPE.USER,
-      action: () =>
-        appslist.send({
-          type: 'LOAD',
-          choice: APPTYPE.USER,
-        }),
-      icon: 'PeopleOutlined',
-      activeIcon: "People"
-    },
-  ];
-  const controls = [
-    {
-      label: 'Back',
-      icon: 'KeyboardArrowLeft',
-      action: () => navigate('/list'),
-    },
-    {
-      label: 'Delete',
-      icon: 'Delete',
-    },
-    {
-      label: 'Save',
-      warning: 1,
-      icon: 'Save',
-    },
-  ];
+  // const buttons = [
+  //   {
+  //     label: 'Events',
+  //     active: ![APPTYPE.ROOM, APPTYPE.USER].some((f) => appslist.choice === f),
+  //     icon: 'Bolt',
+  //     activeIcon: 'Bolt',
+  //   },
+  //   {
+  //     label: 'Rooms',
+  //     active: appslist.choice === APPTYPE.ROOM,
+  //     action: () =>
+  //       appslist.send({
+  //         type: 'LOAD',
+  //         choice: APPTYPE.ROOM,
+  //       }),
+  //       icon: 'MeetingRoomOutlined',
+  //       activeIcon: 'MeetingRoom',
+  //   },
+  //   {
+  //     label: 'Users',
+  //     active: appslist.choice === APPTYPE.USER,
+  //     action: () =>
+  //       appslist.send({
+  //         type: 'LOAD',
+  //         choice: APPTYPE.USER,
+  //       }),
+  //     icon: 'PeopleOutlined',
+  //     activeIcon: "People"
+  //   },
+  // ];
+  // const controls = [
+  //   {
+  //     label: 'Back',
+  //     icon: 'KeyboardArrowLeft',
+  //     action: () => navigate('/list'),
+  //   },
+  //   {
+  //     label: 'Delete',
+  //     icon: 'Delete',
+  //   },
+  //   {
+  //     label: 'Save',
+  //     warning: 1,
+  //     icon: 'Save',
+  //   },
+  // ];
 
-  const navigation = events.is(['editing', 'saving']) ? controls : buttons;
+  // const navigation = events.is(['editing', 'saving']) ? controls : buttons;
 
   const opened =
     Boolean(events.view & VIEW.FORM_SIDEBAR) && events.props.format === 1;
@@ -302,17 +311,24 @@ function Application() {
           <Box sx={{ width: 64, textAlign: 'center' }}>
             {' '}
             <AppsMenu
+              menu={appMenu}
+              user={authenticator.user}
+              domain={domain}
               handler={appslist}
               groups={events.groups}
               samples={events.eventList}
             />{' '}
           </Box>
 
-          <Typography variant="body1">
-            <b>
-              EventBuilder 8 <sup>beta</sup>
-            </b>
-          </Typography>
+          <Stack>
+            <Nowrap sx={{ lineHeight: 1, fontSize: '0.75rem' }} small>EventBuilder 8</Nowrap>
+            <Typography sx={{ lineHeight: 1, letterSpacing: '.061em', fontSize: '0.85rem', fontWeight: 900 }} variant="body1">
+              <b>
+                {events.whois?.InstanceName || "EventBuilder 8"}
+                {/* <sup>beta</sup> */}
+              </b>
+            </Typography>
+          </Stack>
 
           <EventSearch
             handler={search}
@@ -350,57 +366,8 @@ function Application() {
         >
 
           {/* navigation sidebar */}
-          <Stack
-            sx={{
-              pb: 2,
-              borderRight: 1,
-              borderColor: 'divider',
-              height: 'calc(100vh - 60px)',
-              backgroundColor: (t) => t.palette.grey[200],
-            }}
-          >
-            {navigation.map((btn) => (
-              <Ctrl
-                raised={btn.active}
-                elevation={btn.active ? 1 : 0}
-                key={btn.label}
-                active={btn.active}
-                onClick={() => btn.action && btn.action()}
-              >
-                <Stack sx={{ alignItems: 'center' }}>
-                  <IconButton
-                    size="small"
-                    sx={{
-                      color: (theme) =>
-                        btn.active
-                          ? theme.palette.primary.dark
-                          : theme.palette.text.primary,
-                    }}
-                  >
-                    <TextIcon icon={btn.active ? btn.activeIcon : btn.icon} />
-                  </IconButton>
-                  <Nowrap
-                    color={btn.active ? 'primary.dark' : 'text.primary'}
-                    variant="caption"
-                  >
-                    {btn.label}
-                  </Nowrap>
-                </Stack>
-              </Ctrl>
-            ))}
-            <Box sx={{ flexGrow: 1 }} />
-            {['init.dormant'].some(demo.state.matches) && (
-              <Ctrl elevation={0} sx={{ m: 1 }}>
-                <Stack sx={{ alignItems: 'center' }}>
-                  <IconButton>
-                    <TextIcon icon="Help" />
-                  </IconButton>
-                  <Nowrap variant="caption">Demo</Nowrap>
-                </Stack>
-              </Ctrl>
-            )}
-          </Stack>
-
+          <Sidebar handler={appslist} appMenu={appMenu} demo={demo} />
+         
           {/* event search results list */}
           {['listing', 'searching', 'editing', 'saving'].some(
             events.state.matches
@@ -443,7 +410,7 @@ function Application() {
           />
         ))}
         <ListSettings handler={settings} source={events} />
-        <DomainManager handler={domain} /> 
+        <DomainManager handler={domain} source={events}  /> 
         <DemoStepper step={demo.step} handler={demo} /> 
 
         <Snackbar
@@ -459,22 +426,24 @@ function Application() {
   );
 }
 
-const Ctrl = styled(Card)(({ theme, warning, active }) => ({
-  backgroundColor: active
-    ? theme.palette.common.white
-    : warning
-    ? theme.palette.warning.main
-    : theme.palette.grey[200],
-  color:
-    active || warning ? theme.palette.common.white : theme.palette.text.main,
-  margin: theme.spacing(1),
-  cursor: 'pointer',
-  transition: 'all 0.1s linear',
-  // outline: active ? "solid 2px red" : "",
-  '&:hover': {
-    outline: active ? '' : 'solid 2px ' + theme.palette.primary.dark,
-    outlineOffset: 2,
-  },
-}));
+// const Ctrl = styled(Card)(({ theme, warning, active }) => ({
+//   width: 56,
+//   height: 56,
+//   backgroundColor: active
+//     ? theme.palette.common.white
+//     : warning
+//     ? theme.palette.warning.main
+//     : theme.palette.grey[200],
+//   color:
+//     active || warning ? theme.palette.common.white : theme.palette.text.main,
+//   margin: theme.spacing(1),
+//   cursor: 'pointer',
+//   transition: 'all 0.1s linear',
+//   // outline: active ? "solid 2px red" : "",
+//   '&:hover': {
+//     outline: active ? '' : 'solid 2px ' + theme.palette.primary.dark,
+//     outlineOffset: 2,
+//   },
+// }));
 
 export default App;

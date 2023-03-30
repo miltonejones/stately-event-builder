@@ -128,7 +128,7 @@ const TextPopover = ({
   );
 };
 
-const IconTextField = ({ endIcon, startIcon, prompt, ...props }) => {
+const IconTextField = ({ endIcon, startIcon, prompt, thin, ...props }) => {
   if (prompt) {
     return <TextPopover {...props} />;
   }
@@ -142,15 +142,29 @@ const IconTextField = ({ endIcon, startIcon, prompt, ...props }) => {
     </InputAdornment>
   ) : null;
 
+  const inputProps = {
+    ...props.InputProps,  
+    style: { backgroundColor: "white" }, 
+    startAdornment, 
+    endAdornment
+  }
+  if (thin) {
+    Object.assign(inputProps,{   sx: {
+        '& input': {
+          fontSize: '0.8rem', 
+        },
+      } })
+  }
+
   return (
     <TextField
       size="small"
       autoComplete="off"
-      InputProps={{ ...props.InputProps,  style: { backgroundColor: "white" }, startAdornment, endAdornment,  }}
+      InputProps={inputProps}
       {...props}
     />
   );
 };
 
 export default IconTextField;
- 
+  

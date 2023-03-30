@@ -5,7 +5,7 @@ import Flex from './Flex';
 import Nowrap from './Nowrap';
 import Spacer from './Spacer';
 import TextIcon from './TextIcon';
-// import TinyButton from './TinyButton';
+import ConfirmPop from './ConfirmPop';
 import Btn from './Btn';
 
 const GridFormFooter = ({ 
@@ -47,18 +47,21 @@ const GridFormFooter = ({
  
 
   <Flex wrap="nowrap" sx={{ width: error ? 0 : '100%', overflow: 'hidden', transition: 'width 0.3s linear'}} spacing={1}>
-     {!!drop && <Btn
+     {!!drop && <ConfirmPop
+            onChange={() => handler.send(drop)}
+      ><Btn
         variant="contained"
         color="error"
-        onClick={() => handler.send(drop)}
+        disabled={props.disabled || !handler.dirty}
       >
         delete
-      </Btn>}
+      </Btn></ConfirmPop>}
       <Spacer />
-      {handleClose && <Btn onClick={handleClose}>cancel</Btn>}
+      {handleClose && <Btn
+        disabled={props.disabled} onClick={handleClose}>cancel</Btn>}
       {handleSave && <Btn
         endIcon={<TextIcon icon="Save" />}
-        disabled={!handler.dirty}
+        disabled={props.disabled || !handler.dirty}
         variant="contained"
         onClick={handleSave}
       >
