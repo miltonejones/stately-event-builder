@@ -12,6 +12,7 @@ import {
   LinearProgress,
   Box,
   // Card,
+  Drawer,
   Alert,
   createTheme,
   ThemeProvider,
@@ -19,7 +20,7 @@ import {
   Snackbar,
   // IconButton,
   Stack,
-  Typography,
+  // Typography,
   // styled,
 } from '@mui/material';
 
@@ -96,9 +97,7 @@ function Application() {
   const defaultTheme = useTheme();
   const appslist = useSimpleList();
   const navigate = useNavigate();
-  const domain = useDomain();
-  // const users = useUserList();
-  // const rooms = useRoomList();
+  const domain = useDomain(); 
   const events = useEventList();
   const search = useEventSearch();
   const settings = useMenu(console.log);
@@ -120,19 +119,16 @@ function Application() {
   );
   const appMenu = useMenu((choice) => {
     choice !== undefined &&
-    events.send({
+      appslist.send({
         type: 'LOAD',
         choice,
       });
   });
 
-
   const demo = useDemo(events, appslist, search.send, authenticator.send);
 
   const debuggableMachines = [events, demo, authenticator];
-  const themeType = themeTypes[events.props.theme];
-
-  // return <pre>{JSON.stringify(defaultTheme,0,2)}</pre>
+  const themeType = themeTypes[events.props.theme]; 
 
   const theme = createTheme({
     palette: {
@@ -186,56 +182,7 @@ function Application() {
       </ThemeProvider>
     );
   }
-
-  // const buttons = [
-  //   {
-  //     label: 'Events',
-  //     active: ![APPTYPE.ROOM, APPTYPE.USER].some((f) => appslist.choice === f),
-  //     icon: 'Bolt',
-  //     activeIcon: 'Bolt',
-  //   },
-  //   {
-  //     label: 'Rooms',
-  //     active: appslist.choice === APPTYPE.ROOM,
-  //     action: () =>
-  //       appslist.send({
-  //         type: 'LOAD',
-  //         choice: APPTYPE.ROOM,
-  //       }),
-  //       icon: 'MeetingRoomOutlined',
-  //       activeIcon: 'MeetingRoom',
-  //   },
-  //   {
-  //     label: 'Users',
-  //     active: appslist.choice === APPTYPE.USER,
-  //     action: () =>
-  //       appslist.send({
-  //         type: 'LOAD',
-  //         choice: APPTYPE.USER,
-  //       }),
-  //     icon: 'PeopleOutlined',
-  //     activeIcon: "People"
-  //   },
-  // ];
-  // const controls = [
-  //   {
-  //     label: 'Back',
-  //     icon: 'KeyboardArrowLeft',
-  //     action: () => navigate('/list'),
-  //   },
-  //   {
-  //     label: 'Delete',
-  //     icon: 'Delete',
-  //   },
-  //   {
-  //     label: 'Save',
-  //     warning: 1,
-  //     icon: 'Save',
-  //   },
-  // ];
-
-  // const navigation = events.is(['editing', 'saving']) ? controls : buttons;
-
+ 
   const opened =
     Boolean(events.view & VIEW.FORM_SIDEBAR) && events.props.format === 1;
   const expandedCols = opened
@@ -251,9 +198,7 @@ function Application() {
     <ThemeProvider theme={theme}>
       <div className="App">
         <PageTitle handler={events} />
-        {/* {JSON.stringify(events.state.value)} */}
-
-        {/* {JSON.stringify(events.state.nextEvents)} */}
+   
         {!events.props.informed && !authenticator.admin && (
           <Warn
             filled
@@ -321,20 +266,30 @@ function Application() {
           </Box>
 
           <Stack>
-            <Nowrap sx={{ lineHeight: 1, fontSize: '0.75rem' }} small>EventBuilder 8</Nowrap>
-            <Typography sx={{ lineHeight: 1, letterSpacing: '.061em', fontSize: '0.85rem', fontWeight: 900 }} variant="body1">
+            <Nowrap sx={{ lineHeight: 1, fontSize: '0.75rem' }} small>
+              EventBuilder 8
+            </Nowrap>
+            <Nowrap
+              sx={{
+                lineHeight: 1,
+                letterSpacing: '.061em',
+                fontSize: '0.85rem',
+                fontWeight: 900,
+              }}
+              variant="body1"
+            >
               <b>
-                {events.whois?.InstanceName || "EventBuilder 8"}
+                {events.whois?.InstanceName || 'EventBuilder 8'}
                 {/* <sup>beta</sup> */}
               </b>
-            </Typography>
+            </Nowrap>
           </Stack>
 
           <EventSearch
             handler={search}
             settings={settings}
             onValueSelected={(e) => !!e && navigate(`/edit/${e.ID}`)}
-          /> 
+          />
 
           <UserMenu
             diagnosis={diagnosis}
@@ -355,19 +310,17 @@ function Application() {
           value={events.props.active_machine}
         />
 
-        {events.busy && <LinearProgress variant="indeterminate" />}
-
+        <Drawer anchor="top" open={events.busy}>
+          <LinearProgress variant="indeterminate" />
+        </Drawer>
 
         <Columns
           sx={{ alignItems: 'flex-start' }}
-          columns={
-            events.is(['editing', 'saving']) ? expandedCols : '72px 1fr'
-          }
+          columns={events.is(['editing', 'saving']) ? expandedCols : '72px 1fr'}
         >
-
           {/* navigation sidebar */}
           <Sidebar handler={appslist} appMenu={appMenu} demo={demo} />
-         
+
           {/* event search results list */}
           {['listing', 'searching', 'editing', 'saving'].some(
             events.state.matches
@@ -398,7 +351,11 @@ function Application() {
 
           {/* selected event edit form */}
           {events.is(['editing', 'saving']) && (
-            <EventForm handler={events} disabled={!authenticator.admin} whois={authenticator} />
+            <EventForm
+              handler={events}
+              disabled={!authenticator.admin}
+              whois={authenticator}
+            />
           )}
         </Columns>
 
@@ -410,8 +367,8 @@ function Application() {
           />
         ))}
         <ListSettings handler={settings} source={events} />
-        <DomainManager handler={domain} source={events}  /> 
-        <DemoStepper step={demo.step} handler={demo} /> 
+        <DomainManager handler={domain} source={events} />
+        <DemoStepper step={demo.step} handler={demo} />
 
         <Snackbar
           anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
@@ -424,26 +381,6 @@ function Application() {
       </div>
     </ThemeProvider>
   );
-}
-
-// const Ctrl = styled(Card)(({ theme, warning, active }) => ({
-//   width: 56,
-//   height: 56,
-//   backgroundColor: active
-//     ? theme.palette.common.white
-//     : warning
-//     ? theme.palette.warning.main
-//     : theme.palette.grey[200],
-//   color:
-//     active || warning ? theme.palette.common.white : theme.palette.text.main,
-//   margin: theme.spacing(1),
-//   cursor: 'pointer',
-//   transition: 'all 0.1s linear',
-//   // outline: active ? "solid 2px red" : "",
-//   '&:hover': {
-//     outline: active ? '' : 'solid 2px ' + theme.palette.primary.dark,
-//     outlineOffset: 2,
-//   },
-// }));
+} 
 
 export default App;

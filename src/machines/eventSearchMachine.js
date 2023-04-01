@@ -175,7 +175,7 @@ const eventSearchMachine = createMachine({
 
     }),
     assignOptions: assign((context, event) => {
-      const props = inferProp(context.param)
+      const props = inferProps(context.param)
       // const value = context.param;
       // const isDate =  moment(value).isValid();
       const opts = event.data;
@@ -227,7 +227,7 @@ export const useEventSearch = () => {
 
       eventSearch: async (context) => {
 
-        const props = inferProp(context.param)
+        const props = inferProps(context.param)
         
 
         // const isDate =  moment(context.param).isValid();
@@ -251,6 +251,34 @@ export const useEventSearch = () => {
     send, 
     ...state.context
   };
+}
+
+const inferProps = value => {
+  const values = value.split (',').map(inferProp);
+  const joined = values.reduce((out, val) => {
+    return {
+      ...out,
+      label: out.label.concat(val.label),
+      params: {
+        ...out.params,
+        ...val.params
+      }
+    };
+  }, {
+    label: [],
+    params: {}
+  });
+
+  Object.assign(joined, { label: joined.label.join(' ')})
+
+
+
+  console.log ({
+    values,
+    joined
+  });
+
+  return joined;// values[0]
 }
 
 const inferProp = value => {

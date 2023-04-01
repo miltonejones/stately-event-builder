@@ -333,7 +333,8 @@ const EventList = ({ handler, collapsed, search, appslist, reports }) => {
                               <Nowrap
                                 variant="caption"
                                 muted
-                                sx={{ lineHeight }}
+                                
+                                sx={{ lineHeight, maxWidth: '30vh' }}
                               >
                                 {ev.RoomNames}
                               </Nowrap>
@@ -353,12 +354,16 @@ const EventList = ({ handler, collapsed, search, appslist, reports }) => {
                             {!collapsed &&
                               !handler.props.excludedProps?.Comments && (
                                 <Nowrap
-                                  sx={{ maxWidth: '50vw', lineHeight }}
+                                  sx={{ 
+                                    maxWidth: '50vw', 
+                                    lineHeight, 
+                                    pl: !!handler.props.excludedProps?.FullName ? 3.25 : 0 
+                                  }}
                                   small
                                 >
                                   {ev.Comments}
                                 </Nowrap>
-                              )}
+                              )} 
                             <Spacer />
 
                             {/* event custom (current) date shown when multiple dates 

@@ -189,7 +189,7 @@ const EventForm = ({ handler, whois, disabled }) => {
       <Section offset={56}>
         <Stack spacing={1} sx={{ p: 1, alignItems: opened ? 'stretch' : 'center' }}>
 
-          <ConflictList handler={handler} />
+          {!!handler.conflicts?.length && <ConflictList handler={handler} />}
     
           <EventOptions handler={handler} />
 

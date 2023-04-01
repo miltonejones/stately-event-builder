@@ -216,6 +216,7 @@ const AppCard = ({ app, onClick }) => {
     <Flex
       spacing={1}
       key={app.label}
+      onClick={onClick}
       sx={{
         borderRadius: 1,
         cursor: 'pointer',
@@ -224,7 +225,6 @@ const AppCard = ({ app, onClick }) => {
           outline: (t) => `solid 2px ${t.palette[app.color].main}`,
         },
       }}
-      onClick={onClick}
     >
       <AppButton color={app.color} dark={app.dark}>
         <TextIcon icon={app.icon} />

@@ -94,7 +94,7 @@ const EventSearch = (props) => {
         size="small"
         fullWidth
         value={inputValue}
-        placeholder="Start typing an event name or date"
+        placeholder="Start typing an event name or date (use commas to search by multiple values)"
         onChange={(e) => setInputValue(e.target.value)}
       />
     </Layout>

@@ -12,7 +12,7 @@ const Layout = styled(Card)(({ theme }) => ({
   padding: theme.spacing(3, 2, 2, 2)
 }));
  
-const ConflictList = ({ handler  }) => {
+const ConflictList = ({ handler  }) => { 
  return (
   <Collapse in={!!handler.conflicts?.length}>
      <Layout data-testid="test-for-ConflictList">
