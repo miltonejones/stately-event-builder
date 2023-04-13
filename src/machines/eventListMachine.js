@@ -155,8 +155,8 @@ const eventListMachine = createMachine({
               actions: "assignID",
             },
             CREATE: {
-              target: "#event_list.editing",
-              actions: "assigNew",
+              target: "#event_list.editing.form",
+              actions: "assignNew",
             },
           },
         },
@@ -555,7 +555,6 @@ const eventListMachine = createMachine({
         ? context.view - event.bit 
         : Number(context.view) + Number(event.bit)
     })),
-    
     assignEventProp: assign((context, event) => {
       if (event.key.indexOf('Time') > 0) {
         return {
@@ -606,6 +605,15 @@ const eventListMachine = createMachine({
       conflicts: event.data
     })),
 
+    
+
+    assignNew: assign((_, event) => ({
+      eventProp: event.eventProp,
+      pagename: "New Event", 
+      title: event.eventProp?.EventName,
+      dirty: false,
+      conflicts: null
+    })),
     
 
     assignEventProps: assign((_, event) => ({

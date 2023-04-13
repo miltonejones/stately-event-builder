@@ -1,3 +1,4 @@
+import { useTranscriber } from './transcriberMachine';
 import { useDomain } from './domainMachine';
 import { useSimpleList, APPTYPE } from './simpleListMachine';
 import { useEventPop } from './eventPopMachine';
@@ -11,6 +12,7 @@ import { useRoomList } from './roomListMachine';
 import { useEventList, VIEW } from './eventListMachine';
 
 export {
+  useTranscriber,
   useDomain,
   useSimpleList,
   useEventPop,

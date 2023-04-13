@@ -19,6 +19,7 @@ import Unsaved from './lib/Unsaved/Unsaved';
 import ThemeMenu from './lib/ThemeMenu/ThemeMenu';
 import ActionsMenu from './lib/ActionsMenu/ActionsMenu';
 import DomainManager from './lib/DomainManager/DomainManager';
+import ChatDrawer from './lib/ChatDrawer/ChatDrawer';
 import Sidebar from './lib/Sidebar/Sidebar';
 
 
@@ -30,6 +31,7 @@ export {
   Sidebar,
   UserMenu,
   CalendarInput,
+  ChatDrawer,
   DateInput,
   EventList,
   RoomList,

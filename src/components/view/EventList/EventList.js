@@ -19,6 +19,7 @@ import {
   CalendarInput,
   DateBox,
   ActionsMenu,
+  ChatDrawer
 } from '../..';
 
 import {
@@ -397,6 +398,13 @@ const EventList = ({ handler, collapsed, search, appslist, reports }) => {
           </Columns>
         )}
       </Collapse>
+      <ChatDrawer onChange={(e) => {
+        alert (JSON.stringify(JSON.parse(e),0,2))
+         handler.send({
+          type: 'CREATE',
+          eventProp: JSON.parse(e)
+        })
+      }} />
     </Layout>
   );
 };

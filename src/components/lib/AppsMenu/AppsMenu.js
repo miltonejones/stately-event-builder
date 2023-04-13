@@ -235,3 +235,141 @@ const AppCard = ({ app, onClick }) => {
     </Flex>
   );
 };
+
+
+
+// const instructions = `
+// 'daily','weekly','monthly by date','monthly by day','yearly','weekdays','', 'custom'];
+
+
+// assume this is the interface for an Event
+
+ 
+// enum RecurseType {
+//   daily,
+//   weekly,
+//   monthly_by_date,
+//   monthly_by_day,
+//   yearly,
+//   weekday,
+//   custom
+// }  
+// format all times as HH:mm:ss
+// format all dates as MM/DD/YYYY
+// interface Event { 
+//   EventDate: string;
+//   RecurseEndDate: string;  
+//   EventStartTime: string; 
+//   EventEndTime: string;  
+//   EventName: string;  
+//   CreateDate: string;  
+//   RecurseType: RecurseType;
+//   RecurseUnit: number;
+//   SetupStartTime: string; // default 30 minutes before start
+//   SetupEndTime: string; // default 30 minutes after end
+// }
+
+// assume today is 12 april 2023
+// assume the time is 7:30pm
+
+
+// create a new Event called Officer training for tomorrow at noon that lasts 1  hour . the event occurs every 2 weeks for the next 6 months.
+
+
+// return a JSON code block with no additional comments
+
+
+
+
+// create a new Event called Officer training for tomorrow at noon that lasts 1 hour and takes 45 minutes to set up. the event occurs every 2 weeks for the next 6 months.
+
+// interface Event {
+//   ID: number;
+//   RoomID: number;
+//   EventDate: string;
+//   EventStartTime: string;
+//   EventEndTime: string;
+//   EventName: string;
+//   Featured: number;
+//   Description: string;
+//   CreateDate: string;
+//   CreateLogin: number;
+//   ApproveDate: string;
+//   ApproveLogin: number;
+//   Comments: string;
+//   Display: null;
+//   Recurring: number;
+//   SetupStartTime: string;
+//   SetupEndTime: string;
+//   eventfk: null;
+//   Attendees: number;
+//   RecurseType: number;
+//   RecurseUnit: number;
+//   RecurseEndDate: string;
+//   FullName: string;
+//   modified: Modified;
+//   rooms: Room[];
+//   categories: any[];
+//   customproperties: any[];
+//   calendars: any[];
+// }
+
+// interface Modified {
+//   FirstName: string;
+//   LastName: string;
+//   DateModified: string;
+//   EventFk: number;
+//   UserFk: number;
+// }
+
+// interface Room {
+//   eventfk: number;
+//   roomfk: number;
+//   id: number;
+// }
+
+// `
+
+// var t = {
+//   "ID": 49506,
+//   "RoomID": 560,
+//   "EventDate": "01-01-2023",
+//   "EventStartTime": "07:00:00",
+//   "EventEndTime": "08:00:00",
+//   "EventName": "Tennis Water",
+//   "Featured": 0,
+//   "Description": "",
+//   "CreateDate": "12-26-2022",
+//   "CreateLogin": 37,
+//   "ApproveDate": "02-16-2023",
+//   "ApproveLogin": 37,
+//   "Comments": "Make sure the water coolers on the tennis courts are refilled daily.",
+//   "Display": null,
+//   "Recurring": 1,
+//   "SetupStartTime": "06:30:00",
+//   "SetupEndTime": "08:30:00",
+//   "eventfk": null,
+//   "Attendees": 0,
+//   "RecurseType": 0,
+//   "RecurseUnit": 1,
+//   "RecurseEndDate": "12-31-2023",
+//   "FullName": "Aaron Herbster",
+//   "modified": {
+//     "FirstName": "Aaron",
+//     "LastName": "Herbster",
+//     "DateModified": "2023-02-16T07:28:04.000Z",
+//     "EventFk": 49506,
+//     "UserFk": 37
+//   },
+//   "rooms": [
+//     {
+//       "eventfk": 49506,
+//       "roomfk": 560,
+//       "id": 155005
+//     }
+//   ],
+//   "categories": [],
+//   "customproperties": [],
+//   "calendars": [],
+// }
+
