@@ -4,9 +4,9 @@
  * @returns JSX.Element
  */
 import React from 'react'; 
-import { Fab, Box, Drawer, CircularProgress, styled } from '@mui/material'; 
+import {  Box, Drawer, } from '@mui/material'; 
 import { 
-  Btn,
+  // Btn,
   TextIcon, 
   Circle,
   CircleWrap,
@@ -22,7 +22,7 @@ const ChatDrawer = ({ onChange }) => {
   const transcriber = useTranscriber(onChange); 
   const isIdle = transcriber.state.matches('idle');
   const isBusy = transcriber.state.matches('request.init');
-  const isDone = transcriber.state.matches('request.curate');
+  // const isDone = transcriber.state.matches('request.curate');
 
   // Open and close the chat drawer
   const handleDrawerOpen = () => {
