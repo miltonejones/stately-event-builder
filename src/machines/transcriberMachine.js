@@ -250,7 +250,7 @@ const generateText = async (messages, temperature, max_tokens = 128) => {
     method: "POST",
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer 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`,
+      'Authorization': `Bearer ${process.env.REACT_APP_API_KEY}`,
     },
     body: JSON.stringify({
       messages,
